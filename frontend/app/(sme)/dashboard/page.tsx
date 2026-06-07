@@ -1,10 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  TrendingUp, AlertTriangle, Award, CheckCircle,
-  ClipboardList, MessageSquare, Users,
-} from 'lucide-react';
+import { TrendingUp, AlertTriangle, Award, CheckCircle } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 
@@ -264,62 +261,6 @@ export default function SMEDashboardPage() {
               </button>
             );
           })}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="pb-2">
-        <h2 className="text-[#015376] font-semibold text-base mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            {
-              icon:  ClipboardList,
-              bg:    'rgba(0,181,237,0.08)',
-              color: '#00B5ED',
-              title: 'Update Your Data',
-              desc:  'Submit your latest KPI figures to refresh your scores',
-              link:  '→ Go to submission form',
-              href:  '/submit',
-            },
-            {
-              icon:  MessageSquare,
-              bg:    'rgba(0,166,81,0.08)',
-              color: '#00A651',
-              title: 'Ask Your AI Coach',
-              desc:  'Get personalised improvement steps for your lowest scoring goals',
-              link:  '→ Open AI Coach',
-              href:  '/coach',
-            },
-            {
-              icon:  Users,
-              bg:    'rgba(0,181,237,0.08)',
-              color: '#00B5ED',
-              title: 'See How You Compare',
-              desc:  'Benchmark your performance against sector peers',
-              link:  '→ View benchmarking',
-              href:  '/benchmarking',
-            },
-          ].map(({ icon: Icon, bg, color, title, desc, link, href }) => (
-            <div
-              key={title}
-              className="bg-white rounded-xl border border-[#DDE3EC] p-5"
-            >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
-                style={{ background: bg }}
-              >
-                <Icon size={20} style={{ color }} />
-              </div>
-              <p className="text-[#015376] font-semibold text-sm mb-1">{title}</p>
-              <p className="text-[#4A5568] text-sm mb-4">{desc}</p>
-              <button
-                onClick={() => router.push(href)}
-                className="text-[#00B5ED] text-sm hover:underline font-medium"
-              >
-                {link}
-              </button>
-            </div>
-          ))}
         </div>
       </div>
 
