@@ -65,7 +65,7 @@
 }
 
 :root {
-  /* Sanlam Brand Palette */
+  /* Sanlam Brand Palette — light mode */
   --sanlam-teal:   #00B5ED;
   --sanlam-navy:   #015376;
   --sanlam-tint:   #C9EEFB;
@@ -76,6 +76,15 @@
   --sanlam-border: #DDE3EC;
   --sanlam-muted:  #4A5568;
   --sanlam-white:  #FFFFFF;
+
+  /* Semantic surface tokens */
+  --surface-page:   #F4F6F8;
+  --surface-card:   #FFFFFF;
+  --surface-border: #DDE3EC;
+  --surface-input:  #FFFFFF;
+  --text-primary:   #015376;
+  --text-muted:     #4A5568;
+  --text-subtle:    rgba(74,85,104,0.6);
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -112,6 +121,20 @@
 }
 
 .dark {
+  /* Sanlam dark mode — deep navy palette */
+  --sanlam-bg:     #0B1629;
+  --sanlam-border: #1E3050;
+  --sanlam-muted:  #94A3B8;
+
+  /* Semantic surface tokens */
+  --surface-page:   #0B1629;
+  --surface-card:   #162035;
+  --surface-border: #1E3050;
+  --surface-input:  #1A2840;
+  --text-primary:   #E2E8F0;
+  --text-muted:     #94A3B8;
+  --text-subtle:    rgba(148,163,184,0.6);
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -154,5 +177,73 @@
   }
   html {
     @apply font-sans;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
+}
+
+/* ── Dark mode surface overrides ──────────────────────────────────────────
+   Components use inline hex styles — these CSS rules override the most
+   common patterns when .dark is active on <html>.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.dark body {
+  background: var(--surface-page);
+  color: var(--text-primary);
+}
+
+/* Page background containers */
+.dark .bg-\[\#F4F6F8\],
+.dark [style*="background: #F4F6F8"],
+.dark [style*="background: rgb(244, 246, 248)"] {
+  background: var(--surface-page) !important;
+}
+
+/* White cards and surfaces */
+.dark .bg-white,
+.dark [style*="background: white"],
+.dark [style*="background: #FFFFFF"],
+.dark [style*="background-color: white"] {
+  background: var(--surface-card) !important;
+}
+
+/* Borders */
+.dark .border-\[\#DDE3EC\] {
+  border-color: var(--surface-border) !important;
+}
+
+/* Inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  background: var(--surface-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--surface-border) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-subtle) !important;
+}
+
+/* Text overrides for the most common inline navy/muted colors */
+.dark [style*="color: #015376"],
+.dark [style*="color: rgb(1, 83, 118)"] {
+  color: var(--text-primary) !important;
+}
+
+.dark [style*="color: #4A5568"],
+.dark [style*="color: rgb(74, 85, 104)"] {
+  color: var(--text-muted) !important;
+}
+
+/* Table rows */
+.dark tr:hover {
+  background: rgba(255,255,255,0.03) !important;
+}
+
+/* Smooth transitions for all interactive surfaces */
+.dark * {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
 }

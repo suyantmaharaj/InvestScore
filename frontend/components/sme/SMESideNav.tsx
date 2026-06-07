@@ -5,8 +5,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Target, Users, ClipboardList,
   MessageSquare, LogOut, TrendingUp, ChevronLeft, ChevronRight,
+  Sun, Moon,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/context/ThemeContext';
 
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
@@ -17,28 +19,28 @@ const NAV_ITEMS = [
 ];
 
 interface Props {
-  collapsed:    boolean;
-  onCollapse:   (v: boolean) => void;
+  collapsed:  boolean;
+  onCollapse: (v: boolean) => void;
 }
 
 export default function SMESideNav({ collapsed, onCollapse }: Props) {
   const pathname         = usePathname();
   const router           = useRouter();
   const { user, logout } = useAuth();
+  const { theme, toggle } = useTheme();
+  const isDark = theme === 'dark';
 
   const handleLogout = async () => {
     await logout();
     router.replace('/login');
   };
 
-  const width = collapsed ? 'w-16' : 'w-60';
-
   return (
     <aside
-      className={`${width} min-h-screen bg-[#015376] flex flex-col fixed left-0 top-0 z-30 transition-all duration-200`}
+      className={`${collapsed ? 'w-16' : 'w-60'} min-h-screen bg-[#015376] flex flex-col fixed left-0 top-0 z-30 transition-all duration-200`}
     >
       {/* Logo */}
-      <div className={`flex items-center border-b border-white/10 h-[73px] ${collapsed ? 'justify-center px-0' : 'px-6'}`}>
+      <div className={`flex items-center border-b border-white/10 h-[73px] ${collapsed ? 'justify-center' : 'px-6'}`}>
         {collapsed ? (
           <TrendingUp size={22} className="text-[#00B5ED]" />
         ) : (
@@ -76,14 +78,50 @@ export default function SMESideNav({ collapsed, onCollapse }: Props) {
         })}
       </nav>
 
-      {/* User info + logout */}
-      <div className="px-2 py-4 border-t border-white/10">
+      {/* Theme toggle + user + logout */}
+      <div className="px-2 py-4 border-t border-white/10 flex flex-col gap-2">
+
+        {/* Theme toggle */}
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'px-2 gap-3'} mb-1`}>
+          <button
+            onClick={toggle}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle theme"
+            className="relative flex-shrink-0"
+            style={{ width: 40, height: 22 }}
+          >
+            {/* Track */}
+            <span
+              className="absolute inset-0 rounded-full transition-colors duration-300"
+              style={{ background: isDark ? '#00B5ED' : 'rgba(255,255,255,0.15)' }}
+            />
+            {/* Thumb */}
+            <span
+              className="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300"
+              style={{ left: isDark ? 22 : 3 }}
+            >
+              {isDark
+                ? <Moon size={8} strokeWidth={2} className="text-[#015376]" />
+                : <Sun  size={8} strokeWidth={2} className="text-[#015376]" />
+              }
+            </span>
+          </button>
+          {!collapsed && (
+            <span className="text-white/50 text-xs select-none">
+              {isDark ? 'Dark' : 'Light'}
+            </span>
+          )}
+        </div>
+
+        {/* User info */}
         {!collapsed && (
-          <div className="px-2 mb-3">
+          <div className="px-2">
             <p className="text-white text-sm font-medium truncate">{user?.name || 'SME User'}</p>
             <p className="text-white/40 text-xs truncate">{user?.email}</p>
           </div>
         )}
+
+        {/* Sign out */}
         <button
           onClick={handleLogout}
           title={collapsed ? 'Sign out' : undefined}
