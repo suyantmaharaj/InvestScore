@@ -1,6 +1,8 @@
-import express      from 'express';
-import cors         from 'cors';
-import dotenv       from 'dotenv';
+import dotenv from 'dotenv';
+dotenv.config();  // must run before any import that reads process.env
+
+import express from 'express';
+import cors    from 'cors';
 
 import authRoutes       from './routes/auth.routes';
 import smeRoutes        from './routes/sme.routes';
@@ -9,8 +11,6 @@ import scoringRoutes    from './routes/scoring.routes';
 import pmRoutes         from './routes/pm.routes';
 import adminRoutes      from './routes/admin.routes';
 import aiRoutes         from './routes/ai.routes';
-
-dotenv.config();
 
 const app  = express();
 const PORT = process.env.PORT || 4000;

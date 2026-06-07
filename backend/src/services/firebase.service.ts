@@ -1,3 +1,8 @@
+// dotenv must be loaded before this module initialises — use require() so it
+// is not hoisted like an import statement would be in CommonJS output.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('dotenv').config();
+
 import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
