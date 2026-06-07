@@ -396,7 +396,7 @@ async function seedCompany(company: typeof DEMO_COMPANIES[number]) {
 }
 
 async function main() {
-  console.log('\n🌱 INvestScore — Seeding Firebase...\n');
+  console.log('\n🌱 InvestScore — Seeding Firebase...\n');
 
   console.log('Creating users...');
   for (const user of DEMO_USERS) {

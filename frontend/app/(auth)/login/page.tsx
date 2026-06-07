@@ -97,7 +97,7 @@ export default function LoginPage() {
 
         {/* Centre content */}
         <div className="relative z-10">
-          <h1 className="text-white font-bold text-5xl mb-2">INvestScore</h1>
+          <h1 className="text-white font-bold text-5xl mb-2">InvestScore</h1>
           <p className="text-white/70 text-base mb-10">SDG Scorecard Platform</p>
           <div className="flex flex-col gap-4">
             {[
@@ -125,12 +125,12 @@ export default function LoginPage() {
 
           {/* Mobile logo */}
           <div className="md:hidden text-center mb-8">
-            <p className="text-[#015376] font-bold text-3xl">INvestScore</p>
+            <p className="text-[#015376] font-bold text-3xl">InvestScore</p>
             <p className="text-[#4A5568] text-sm">by Sanlam Investments</p>
           </div>
 
           <h2 className="text-[#015376] font-semibold text-2xl mb-1">Welcome back</h2>
-          <p className="text-[#4A5568] text-sm mb-8">Sign in to your INvestScore portal</p>
+          <p className="text-[#4A5568] text-sm mb-8">Sign in to your InvestScore portal</p>
 
           {/* Error alert */}
           {error && (
@@ -207,7 +207,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-[#DDE3EC]" />
-            <span className="text-[#4A5568] text-xs">New to INvestScore?</span>
+            <span className="text-[#4A5568] text-xs">New to InvestScore?</span>
             <div className="flex-1 h-px bg-[#DDE3EC]" />
           </div>
 

@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title:       'INvestScore — Sanlam Investments SDG Platform',
+  title:       'InvestScore — Sanlam Investments SDG Platform',
   description: 'SDG Scorecard Platform for Responsible SME Investment',
 };
 

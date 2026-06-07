@@ -1,4 +1,4 @@
-# INvestScore
+# InvestScore
 
 SDG Scorecard Platform for Sanlam Investments — Twin Transition Challenge 2026
 

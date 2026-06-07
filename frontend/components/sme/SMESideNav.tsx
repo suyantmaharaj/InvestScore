@@ -45,7 +45,7 @@ export default function SMESideNav({ collapsed, onCollapse }: Props) {
           <div className="flex items-center gap-2 flex-1">
             <TrendingUp size={22} className="text-[#00B5ED]" />
             <div>
-              <p className="text-white font-bold text-base leading-tight">INvestScore</p>
+              <p className="text-white font-bold text-base leading-tight">InvestScore</p>
               <p className="text-white/40 text-xs">SME Portal</p>
             </div>
           </div>

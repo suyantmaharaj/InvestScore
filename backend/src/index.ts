@@ -26,10 +26,10 @@ app.use('/api/pm',          pmRoutes);
 app.use('/api/admin',       adminRoutes);
 app.use('/api/ai',          aiRoutes);
 
-app.get('/health', (_, res) => res.json({ status: 'ok', service: 'INvestScore API' }));
+app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 
 app.listen(PORT, () => {
-  console.log(`INvestScore API running on port ${PORT}`);
+  console.log(`InvestScore API running on port ${PORT}`);
 });
 
 export default app;
