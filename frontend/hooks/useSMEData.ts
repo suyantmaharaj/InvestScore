@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   doc, getDoc,
-  collection, query, where, orderBy, limit, getDocs,
+  collection, query, where, getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
@@ -54,20 +54,23 @@ export function useSMEData() {
       try {
         setLoading(true);
 
+        // Load company profile
         const companySnap = await getDoc(doc(db, 'companies', user.companyId!));
         if (companySnap.exists()) {
           setCompany({ id: companySnap.id, ...companySnap.data() } as CompanyData);
         }
 
-        const q = query(
-          collection(db, 'scorecards'),
-          where('companyId', '==', user.companyId),
-          orderBy('calculatedAt', 'desc'),
-          limit(1)
+        // Load scorecards — query by companyId only (no orderBy = no composite index needed)
+        // then sort in JS to get the most recent
+        const snap = await getDocs(
+          query(collection(db, 'scorecards'), where('companyId', '==', user.companyId))
         );
-        const snap = await getDocs(q);
+
         if (!snap.empty) {
-          setScorecard(snap.docs[0].data() as ScorecardData);
+          const sorted = snap.docs
+            .map(d => d.data() as ScorecardData)
+            .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
+          setScorecard(sorted[0]);
         }
       } catch (err) {
         console.error('useSMEData error:', err);
