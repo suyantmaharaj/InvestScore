@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SMESideNav from '@/components/sme/SMESideNav';
+import { SMEDataProvider } from '@/context/SMEDataContext';
 
 export default function SMELayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,11 +30,16 @@ export default function SMELayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8]">
-      <SMESideNav />
-      <main className="ml-60 flex-1 p-8 min-h-screen">
-        {children}
-      </main>
-    </div>
+    <SMEDataProvider>
+      <div className="flex min-h-screen bg-[#F4F6F8]">
+        <SMESideNav collapsed={collapsed} onCollapse={setCollapsed} />
+        <main
+          className="flex-1 p-8 min-h-screen transition-all duration-200"
+          style={{ marginLeft: collapsed ? '4rem' : '15rem' }}
+        >
+          {children}
+        </main>
+      </div>
+    </SMEDataProvider>
   );
 }

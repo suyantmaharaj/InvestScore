@@ -5,7 +5,7 @@ import {
   TrendingUp, AlertTriangle, Award, CheckCircle,
   ClipboardList, MessageSquare, Users,
 } from 'lucide-react';
-import { useSMEData } from '@/hooks/useSMEData';
+import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 
 function ScoreDots({ score }: { score: number }) {

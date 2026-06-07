@@ -6,7 +6,8 @@ import {
   TrendingUp, Minus, AlertTriangle, X,
   ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
-import { useSMEData, SDGScoreData } from '@/hooks/useSMEData';
+import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
+import type { SDGScoreData } from '@/hooks/useSMEData';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
