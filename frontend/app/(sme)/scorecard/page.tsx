@@ -60,37 +60,34 @@ function DrillDownPanel({
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
-
-      {/* Panel */}
+      {/* Detailed view */}
       <div
-        className="fixed right-0 top-0 h-full w-full max-w-[420px] z-50 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
         style={{
           background: 'var(--surface, #fff)',
-          boxShadow:  '-4px 0 24px rgba(0,0,0,0.08)',
           animation:  'slideInRight 250ms ease-out forwards',
         }}
       >
         {/* SDG color strip */}
         <div className="h-1.5 w-full" style={{ background: sdg.color }} />
 
-        <div className="p-6 relative">
+        <div className="p-5 sm:p-8 lg:p-10 relative min-h-full">
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-[#4A5568] hover:text-[#015376] p-1 rounded-lg hover:bg-[#F4F6F8] transition"
+            className="absolute top-5 right-5 sm:top-8 sm:right-8 text-[#4A5568] hover:text-[#015376] p-2 rounded-lg hover:bg-[#F4F6F8] transition"
+            aria-label="Close detailed view"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
 
           {/* Header */}
-          <div className="flex items-start gap-3 mb-5 pr-8">
-            <span className="text-2xl">{sdg.icon}</span>
+          <div className="flex items-start gap-4 mb-8 pr-12 max-w-6xl">
+            <span className="text-4xl leading-none">{sdg.icon}</span>
             <div>
-              <p className="text-[#015376] font-semibold text-base leading-tight">{sdg.name}</p>
+              <p className="text-[#015376] font-bold text-2xl sm:text-3xl leading-tight">{sdg.name}</p>
               <span
-                className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
                 style={{
                   background: `${sdg.color}20`,
                   color:       sdg.color,
@@ -102,113 +99,125 @@ function DrillDownPanel({
             </div>
           </div>
 
-          {/* Score summary */}
-          <div className="mb-5">
-            <div className="flex items-end gap-3 mb-2">
-              <span
-                className="font-bold text-4xl leading-none"
-                style={{ color: scoreColor(selected.score) }}
-              >
-                {selected.score.toFixed(1)}
-              </span>
-              <span
-                className="mb-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{
-                  background: cc.bg,
-                  color:      cc.text,
-                  border:     `1px solid ${cc.border}`,
-                }}
-              >
-                {CLASSIFICATION_LABELS[selected.classification]}
-              </span>
-            </div>
-            <p className="text-[#4A5568] text-sm mb-3">out of 3.0</p>
-            <div className="w-full h-2.5 rounded-full bg-[#DDE3EC] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width:      `${((selected.score - 1) / 2) * 100}%`,
-                  background: scoreColor(selected.score),
-                }}
-              />
-            </div>
-          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)] xl:grid-cols-[minmax(320px,420px)_minmax(0,1fr)] max-w-7xl">
+            <div className="space-y-6">
+              {/* Score summary */}
+              <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border, #DDE3EC)' }}>
+                <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-4">
+                  Your score
+                </p>
+                <div className="flex items-end gap-3 mb-3">
+                  <span
+                    className="font-bold text-6xl leading-none"
+                    style={{ color: scoreColor(selected.score) }}
+                  >
+                    {selected.score.toFixed(1)}
+                  </span>
+                  <span
+                    className="mb-2 text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{
+                      background: cc.bg,
+                      color:      cc.text,
+                      border:     `1px solid ${cc.border}`,
+                    }}
+                  >
+                    {CLASSIFICATION_LABELS[selected.classification]}
+                  </span>
+                </div>
+                <p className="text-[#4A5568] text-sm mb-4">out of 3.0</p>
+                <div className="w-full h-3 rounded-full bg-[#DDE3EC] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width:      `${((selected.score - 1) / 2) * 100}%`,
+                      background: scoreColor(selected.score),
+                    }}
+                  />
+                </div>
+              </div>
 
-          {/* Sector comparison */}
-          <div className="bg-[#F4F6F8] rounded-xl p-4 mb-5">
-            <p className="text-[#4A5568] text-[11px] uppercase tracking-wider mb-3">
-              How you compare
-            </p>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-[#4A5568]">Your score</span>
-                <span className="font-bold text-sm" style={{ color: scoreColor(selected.score) }}>
-                  {selected.score.toFixed(1)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-[#4A5568]">Sector average</span>
-                <span className="font-semibold text-sm text-[#015376]">
-                  {selected.sectorAvg.toFixed(1)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-1 border-t border-[#DDE3EC]">
-                <span className="text-sm text-[#4A5568]">Difference</span>
-                <span
-                  className="font-bold text-sm"
-                  style={{ color: diff >= 0 ? '#00A651' : '#D0021B' }}
+              {/* Sector comparison */}
+              <div className="bg-[#F4F6F8] rounded-2xl p-6">
+                <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-4">
+                  How you compare
+                </p>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-[#4A5568]">Your score</span>
+                    <span className="font-bold text-base" style={{ color: scoreColor(selected.score) }}>
+                      {selected.score.toFixed(1)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-[#4A5568]">Sector average</span>
+                    <span className="font-semibold text-base text-[#015376]">
+                      {selected.sectorAvg.toFixed(1)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-[#DDE3EC]">
+                    <span className="text-sm text-[#4A5568]">Difference</span>
+                    <span
+                      className="font-bold text-base"
+                      style={{ color: diff >= 0 ? '#00A651' : '#D0021B' }}
+                    >
+                      {diff >= 0 ? '+' : ''}{diff.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className="mt-4 p-4 rounded-xl text-sm"
+                  style={
+                    diff > 0.05
+                      ? { background: '#DCFCE7', color: '#166534' }
+                      : diff < -0.05
+                      ? { background: '#FEF9C3', color: '#854D0E' }
+                      : { background: '#F1F5F9', color: '#4A5568' }
+                  }
                 >
-                  {diff >= 0 ? '+' : ''}{diff.toFixed(1)}
-                </span>
+                  {diff > 0.05
+                    ? 'You are performing above your sector peers on this goal.'
+                    : diff < -0.05
+                    ? 'This goal is below your sector average. Your AI coach can help you improve.'
+                    : 'You are performing at the sector average for this goal.'}
+                </div>
               </div>
             </div>
-            {/* Insight */}
-            <div
-              className="mt-3 p-3 rounded-lg text-xs"
-              style={
-                diff > 0.05
-                  ? { background: '#DCFCE7', color: '#166534' }
-                  : diff < -0.05
-                  ? { background: '#FEF9C3', color: '#854D0E' }
-                  : { background: '#F1F5F9', color: '#4A5568' }
-              }
-            >
-              {diff > 0.05
-                ? 'You are performing above your sector peers on this goal.'
-                : diff < -0.05
-                ? 'This goal is below your sector average. Your AI coach can help you improve.'
-                : 'You are performing at the sector average for this goal.'}
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
+              {/* What this measures */}
+              <div className="rounded-2xl border p-6 lg:p-8" style={{ borderColor: 'var(--border, #DDE3EC)' }}>
+                <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-3">
+                  What this measures
+                </p>
+                <p className="text-[#015376] text-base leading-7 max-w-3xl">
+                  {SDG_DESCRIPTIONS[sdg.id]}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="rounded-2xl border p-6 h-fit" style={{ borderColor: 'var(--border, #DDE3EC)' }}>
+                <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-4">
+                  Next steps
+                </p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => router.push(`/coach?sdg=${sdg.id}`)}
+                    className="w-full min-h-11 rounded-lg bg-[#00B5ED] px-4 py-3 text-white font-semibold text-sm hover:bg-[#0099CC] transition"
+                  >
+                    Ask AI Coach about this goal
+                  </button>
+                  <button
+                    onClick={() => { onClose(); router.push('/submit'); }}
+                    className="w-full min-h-11 rounded-lg border border-[#00B5ED] px-4 py-3 text-[#00B5ED] font-semibold text-sm hover:bg-[#C9EEFB] transition"
+                  >
+                    View submission form
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* What this measures */}
-          <div className="mb-5">
-            <p className="text-[#4A5568] text-[11px] uppercase tracking-wider mb-2">
-              What this measures
-            </p>
-            <p className="text-[#015376] text-sm leading-relaxed">
-              {SDG_DESCRIPTIONS[sdg.id]}
-            </p>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push(`/coach?sdg=${sdg.id}`)}
-              className="w-full h-11 rounded-lg bg-[#00B5ED] text-white font-semibold text-sm hover:bg-[#0099CC] transition"
-            >
-              Ask AI Coach about this goal
-            </button>
-            <button
-              onClick={() => { onClose(); router.push('/submit'); }}
-              className="w-full h-11 rounded-lg border border-[#00B5ED] text-[#00B5ED] font-semibold text-sm hover:bg-[#C9EEFB] transition"
-            >
-              View submission form
-            </button>
           </div>
         </div>
       </div>
-
     </>
   );
 }
@@ -272,7 +281,6 @@ export default function ScorecardPage() {
   const highCount   = sdgScores.filter(s => s.classification === 'High').length;
   const mediumCount = sdgScores.filter(s => s.classification === 'Medium').length;
   const lowCount    = sdgScores.filter(s => s.classification === 'Low').length;
-  const classColors = CLASSIFICATION_COLORS[classification];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-in">

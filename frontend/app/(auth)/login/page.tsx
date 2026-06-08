@@ -103,7 +103,7 @@ export default function LoginPage() {
             {[
               "Sanlam's SDG methodology, digitised",
               'Transparent scoring across all 17 goals',
-              'Powered by real South African SME data',
+              'Understand, improve, and submit SDG data in one place',
             ].map((line) => (
               <div key={line} className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-[#00B5ED] flex-shrink-0" />
