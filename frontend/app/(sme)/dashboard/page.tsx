@@ -255,16 +255,18 @@ export default function SMEDashboardPage() {
                   <p className="text-[10px] truncate leading-tight mb-1.5" style={{ color: 'var(--text-muted, #4A5568)' }}>
                     {sdg.shortName}
                   </p>
-                  {s ? (
-                    <>
-                      <p className="font-bold text-sm leading-none" style={{ color: scoreColor(s.score) }}>
-                        {s.score.toFixed(1)}
-                      </p>
-                      <ScoreDots score={s.score} />
-                    </>
-                  ) : (
-                    <p className="text-xs leading-none" style={{ color: 'var(--text-muted, #4A5568)', opacity: 0.5 }}>N/A</p>
-                  )}
+                  <div className="h-8 flex flex-col items-center justify-center">
+                    {s ? (
+                      <>
+                        <p className="font-bold text-sm leading-none" style={{ color: scoreColor(s.score) }}>
+                          {s.score.toFixed(1)}
+                        </p>
+                        <ScoreDots score={s.score} />
+                      </>
+                    ) : (
+                      <p className="text-xs leading-none" style={{ color: 'var(--text-muted, #4A5568)', opacity: 0.5 }}>N/A</p>
+                    )}
+                  </div>
                 </div>
               </button>
             );

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Target, Users, ClipboardList,
   MessageSquare, LogOut, TrendingUp, Menu, X,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Settings,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 

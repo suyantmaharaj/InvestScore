@@ -1,56 +1,26 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Sun, Moon, Bell, ChevronRight } from 'lucide-react';
+import {
+  Sun, Moon, Bell, ChevronRight,
+  Settings, LogOut, ChevronDown,
+} from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/hooks/useAuth';
 import Tooltip from '@/components/shared/Tooltip';
 
-const PAGE_META: Record<string, {
-  title:       string;
-  subtitle:    string;
-  breadcrumb?: string[];
-  icon:        string;
-}> = {
-  '/dashboard':    {
-    icon:       '📊',
-    title:      'Dashboard',
-    subtitle:   '',
-    breadcrumb: ['SME Portal', 'Dashboard'],
-  },
-  '/scorecard':    {
-    icon:       '🎯',
-    title:      'My Scorecard',
-    subtitle:   '',
-    breadcrumb: ['SME Portal', 'Scorecard'],
-  },
-  '/benchmarking': {
-    icon:       '📈',
-    title:      'Peer Benchmarking',
-    subtitle:   '',
-    breadcrumb: ['SME Portal', 'Benchmarking'],
-  },
-  '/submit':       {
-    icon:       '📋',
-    title:      'Submit SDG Data',
-    subtitle:   '',
-    breadcrumb: ['SME Portal', 'Submit Data'],
-  },
-  '/coach':        {
-    icon:       '🤖',
-    title:      'AI Coach',
-    subtitle:   '',
-    breadcrumb: ['SME Portal', 'AI Coach'],
-  },
+const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: string[]; icon: string }> = {
+  '/dashboard':    { icon: '📊', title: 'Dashboard',       subtitle: '', breadcrumb: ['SME Portal', 'Dashboard']    },
+  '/scorecard':    { icon: '🎯', title: 'My Scorecard',    subtitle: '', breadcrumb: ['SME Portal', 'Scorecard']     },
+  '/benchmarking': { icon: '📈', title: 'Peer Benchmarking', subtitle: '', breadcrumb: ['SME Portal', 'Benchmarking'] },
+  '/submit':       { icon: '📋', title: 'Submit SDG Data', subtitle: '', breadcrumb: ['SME Portal', 'Submit Data']   },
+  '/coach':        { icon: '🤖', title: 'AI Coach',        subtitle: '', breadcrumb: ['SME Portal', 'AI Coach']      },
+  '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences', breadcrumb: ['SME Portal', 'Settings'] },
 };
 
 function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 }
 
 function getAvatarColor(name: string): string {
@@ -64,26 +34,48 @@ function getAvatarColor(name: string): string {
 }
 
 interface Props {
-  title?:    string;
-  subtitle?: string;
-  icon?:     string;
-  actions?:  React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-export default function PageHeader({ title, subtitle, icon, actions }: Props) {
+export default function PageHeader({ actions }: Props) {
   const pathname               = usePathname();
   const router                 = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const { user }               = useAuth();
+  const { user, logout }       = useAuth();
 
-  const meta         = PAGE_META[pathname] || PAGE_META['/dashboard'];
-  const pageTitle    = title    || meta.title;
-  const pageSubtitle = subtitle || meta.subtitle;
-  const pageIcon     = icon     || meta.icon;
-  const breadcrumb   = meta.breadcrumb || ['SME Portal', meta.title];
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const meta        = PAGE_META[pathname] || PAGE_META['/dashboard'];
   const initials    = getInitials(user?.name || 'User');
   const avatarColor = getAvatarColor(user?.name || 'User');
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [dropdownOpen]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
+  const handleSignOut = async () => {
+    setDropdownOpen(false);
+    await logout();
+    router.replace('/login');
+  };
+
+  const handleSettings = () => {
+    setDropdownOpen(false);
+    router.push('/settings');
+  };
 
   return (
     <header
@@ -99,9 +91,8 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
         WebkitBackdropFilter: 'blur(8px)',
       }}
     >
-      {/* Left — icon + title + breadcrumb */}
+      {/* Left — icon + breadcrumb + title */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
-
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
           style={{
@@ -109,51 +100,37 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
             border:     '1px solid rgba(0,181,237,0.2)',
           }}
         >
-          {pageIcon}
+          {meta.icon}
         </div>
 
         <div className="min-w-0">
           <div className="hidden sm:flex items-center gap-1 mb-0.5">
-            {breadcrumb.map((crumb, i) => (
+            {(meta.breadcrumb || ['SME Portal', meta.title]).map((crumb, i, arr) => (
               <span key={crumb} className="flex items-center gap-1">
-                {i > 0 && (
-                  <ChevronRight
-                    size={11}
-                    style={{ color: 'var(--text-muted)', flexShrink: 0 }}
-                  />
-                )}
+                {i > 0 && <ChevronRight size={11} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
                 <span
                   className="text-[11px] font-medium"
-                  style={{
-                    color: i === breadcrumb.length - 1
-                      ? 'var(--sanlam-teal)'
-                      : 'var(--text-muted)',
-                  }}
+                  style={{ color: i === arr.length - 1 ? 'var(--sanlam-teal)' : 'var(--text-muted)' }}
                 >
                   {crumb}
                 </span>
               </span>
             ))}
           </div>
-
           <div className="flex items-baseline gap-2 min-w-0">
-            <h1
-              className="font-bold text-base leading-tight truncate"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              {pageTitle}
+            <h1 className="font-bold text-base leading-tight truncate" style={{ color: 'var(--text-primary)' }}>
+              {meta.title}
             </h1>
-            <span
-              className="text-xs hidden md:block truncate"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {pageSubtitle}
-            </span>
+            {meta.subtitle && (
+              <span className="text-xs hidden md:block truncate" style={{ color: 'var(--text-muted)' }}>
+                {meta.subtitle}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Right — actions + theme + notifications + avatar */}
+      {/* Right — actions + theme + bell + user dropdown */}
       <div className="flex items-center gap-2 flex-shrink-0">
 
         {actions && (
@@ -163,15 +140,12 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
           </>
         )}
 
+        {/* Theme toggle */}
         <Tooltip content={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} position="bottom">
           <button
             onClick={toggleTheme}
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-            style={{
-              background: 'var(--bg)',
-              border:     '1px solid var(--border)',
-              color:      'var(--text-secondary)',
-            }}
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
             aria-label="Toggle theme"
           >
             {theme === 'dark'
@@ -181,14 +155,11 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
           </button>
         </Tooltip>
 
+        {/* Notification bell */}
         <Tooltip content="Notifications" position="bottom">
           <button
             className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-            style={{
-              background: 'var(--bg)',
-              border:     '1px solid var(--border)',
-              color:      'var(--text-secondary)',
-            }}
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             aria-label="Notifications"
           >
             <Bell size={15} />
@@ -201,15 +172,18 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
 
         <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
 
-        <Tooltip content={`${user?.name || 'User'} · ${user?.email || ''}`} position="bottom">
+        {/* User avatar chip — click opens dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <button
+            onClick={() => setDropdownOpen(prev => !prev)}
             className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all duration-200"
             style={{
-              background: 'var(--bg)',
-              border:     '1px solid var(--border)',
+              background: dropdownOpen ? 'var(--surface-raised)' : 'var(--bg)',
+              border:     `1px solid ${dropdownOpen ? 'var(--sanlam-teal)' : 'var(--border)'}`,
+              boxShadow:  dropdownOpen ? '0 0 0 3px rgba(0,181,237,0.12)' : 'none',
             }}
-            onClick={() => router.push('/dashboard')}
-            aria-label="User profile"
+            aria-label="User menu"
+            aria-expanded={dropdownOpen}
           >
             <div
               className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
@@ -218,13 +192,116 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
               {initials}
             </div>
             <span
-              className="text-xs font-medium hidden md:block max-w-[100px] truncate"
+              className="text-xs font-medium hidden md:block max-w-[90px] truncate"
               style={{ color: 'var(--text-primary)' }}
             >
               {user?.name?.split(' ')[0] || 'User'}
             </span>
+            <ChevronDown
+              size={13}
+              className="hidden md:block transition-transform duration-200"
+              style={{
+                color:     'var(--text-muted)',
+                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            />
           </button>
-        </Tooltip>
+
+          {/* Dropdown panel */}
+          {dropdownOpen && (
+            <div
+              className="absolute right-0 top-full mt-2 w-64 rounded-2xl overflow-hidden animate-card-in"
+              style={{
+                background: 'var(--surface)',
+                border:     '1px solid var(--border)',
+                boxShadow:  'var(--shadow-float)',
+                zIndex:     50,
+              }}
+            >
+              {/* User info header */}
+              <div className="px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                    style={{ background: avatarColor }}
+                  >
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+                      {user?.name || 'User'}
+                    </p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                      {user?.email}
+                    </p>
+                    <span
+                      className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(0,181,237,0.12)', color: 'var(--sanlam-teal)' }}
+                    >
+                      SME User
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu items */}
+              <div className="px-2 py-2">
+                <button
+                  onClick={handleSettings}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group"
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(0,181,237,0.1)' }}
+                  >
+                    <Settings size={14} style={{ color: 'var(--sanlam-teal)' }} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Settings</p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Profile, appearance, preferences</p>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="ml-auto opacity-40 group-hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--text-muted)' }}
+                  />
+                </button>
+
+                <div className="my-1.5 mx-1" style={{ height: '1px', background: 'var(--border)' }} />
+
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(208,2,27,0.06)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(208,2,27,0.08)' }}
+                  >
+                    <LogOut size={14} style={{ color: 'var(--sanlam-red)' }} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium" style={{ color: 'var(--sanlam-red)' }}>Sign out</p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>End your current session</p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Footer */}
+              <div
+                className="px-4 py-2.5"
+                style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)' }}
+              >
+                <p className="text-[10px] text-center" style={{ color: 'var(--text-muted)' }}>
+                  INvestScore · Sanlam Investments · 2026
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
       </div>
     </header>
