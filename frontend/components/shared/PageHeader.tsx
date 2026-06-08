@@ -24,6 +24,12 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/compare':  { icon: '⚖️', title: 'Head to Head',        subtitle: 'Compare any two companies side by side',             breadcrumb: ['PM Portal', 'Head to Head']       },
   '/alerts':   { icon: '🔔', title: 'Alerts',              subtitle: 'Companies and goals that need attention',            breadcrumb: ['PM Portal', 'Alerts']            },
   '/company':  { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
+
+  // Admin Portal pages
+  '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',  subtitle: 'Platform overview and activity',                        breadcrumb: ['Admin Portal', 'Dashboard']     },
+  '/admin/users':         { icon: '👥', title: 'User Management',   subtitle: 'Manage PM and SME accounts',                            breadcrumb: ['Admin Portal', 'Users']         },
+  '/admin/registrations': { icon: '📝', title: 'Registrations',     subtitle: 'Review and approve pending SME requests',               breadcrumb: ['Admin Portal', 'Registrations'] },
+  '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor', subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
 };
 
 function getInitials(name: string): string {
