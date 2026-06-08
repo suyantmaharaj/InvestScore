@@ -17,6 +17,13 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/submit':       { icon: '📋', title: 'Submit SDG Data', subtitle: '', breadcrumb: ['SME Portal', 'Submit Data']   },
   '/coach':        { icon: '🤖', title: 'AI Coach',        subtitle: '', breadcrumb: ['SME Portal', 'AI Coach']      },
   '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences', breadcrumb: ['SME Portal', 'Settings'] },
+
+  // PM Portal pages
+  '/heatmap':  { icon: '📋', title: 'Portfolio Overview',  subtitle: 'SDG performance across all invested companies',      breadcrumb: ['PM Portal', 'Portfolio Overview'] },
+  '/explorer': { icon: '🗺️', title: 'SDG Heat Map',        subtitle: 'Visual matrix of all companies across all 17 goals', breadcrumb: ['PM Portal', 'Heat Map']           },
+  '/compare':  { icon: '⚖️', title: 'Head to Head',        subtitle: 'Compare any two companies side by side',             breadcrumb: ['PM Portal', 'Head to Head']       },
+  '/alerts':   { icon: '🔔', title: 'Alerts',              subtitle: 'Companies and goals that need attention',            breadcrumb: ['PM Portal', 'Alerts']            },
+  '/company':  { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
 };
 
 function getInitials(name: string): string {

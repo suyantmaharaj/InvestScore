@@ -433,9 +433,6 @@ function CoachInner() {
               }
             </button>
           </div>
-          <p className="text-[#4A5568]/50 text-[10px] mt-2 text-center">
-            AI responses are advisory only. SDG scores are always calculated by Sanlam's proprietary methodology.
-          </p>
         </div>
 
       </div>
