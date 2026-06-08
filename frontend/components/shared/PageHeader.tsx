@@ -27,13 +27,13 @@ const PAGE_META: Record<string, {
   '/benchmarking': {
     icon:       '📈',
     title:      'Peer Benchmarking',
-    subtitle:   'How you compare against sector peers',
+    subtitle:   '',
     breadcrumb: ['SME Portal', 'Benchmarking'],
   },
   '/submit':       {
     icon:       '📋',
     title:      'Submit SDG Data',
-    subtitle:   'Update your KPIs to recalculate your scores',
+    subtitle:   '',
     breadcrumb: ['SME Portal', 'Submit Data'],
   },
   '/coach':        {

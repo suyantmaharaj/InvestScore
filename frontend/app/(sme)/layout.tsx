@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SMESideNav from '@/components/sme/SMESideNav';
@@ -11,15 +11,23 @@ import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <div
       className="flex"
       style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}
     >
-      <SMESideNav />
+      <SMESideNav collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
       <div
-        className="flex flex-col lg:ml-60"
-        style={{ flex: 1, height: '100vh', overflow: 'hidden', minWidth: 0 }}
+        className={`flex flex-col ${collapsed ? 'lg:ml-16' : 'lg:ml-60'}`}
+        style={{
+          flex:       1,
+          height:     '100vh',
+          overflow:   'hidden',
+          minWidth:   0,
+          transition: 'margin-left 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
       >
         <PageHeader />
         <main
