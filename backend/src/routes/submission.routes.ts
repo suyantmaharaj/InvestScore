@@ -96,7 +96,7 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
     }));
 
     const { overallScore, classification, kpiResults } = calculateScore(sector as any, kpiInputs);
-    const sdgScores = calculateSDGScores(kpiResults);
+    const sdgScores = calculateSDGScores(kpiResults, sector);
 
     const now          = new Date().toISOString();
     const submissionId = `sub_${companyId}_${Date.now()}`;

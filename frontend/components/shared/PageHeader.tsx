@@ -296,7 +296,7 @@ export default function PageHeader({ actions }: Props) {
                 style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)' }}
               >
                 <p className="text-[10px] text-center" style={{ color: 'var(--text-muted)' }}>
-                  INvestScore · Sanlam Investments · 2026
+                  InvestScore · Sanlam Investments · 2026
                 </p>
               </div>
             </div>

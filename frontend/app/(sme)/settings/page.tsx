@@ -222,7 +222,7 @@ export default function SettingsPage() {
           {/* APPEARANCE */}
           {activeTab === 'appearance' && (
             <div className="space-y-5 animate-fade-in">
-              <SettingsSection title="Theme" description="Choose how INvestScore looks for you">
+              <SettingsSection title="Theme" description="Choose how InvestScore looks for you">
                 <SettingsRow label="Colour theme" description="Switch between light and dark mode">
                   <div className="flex items-center gap-3">
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -285,14 +285,14 @@ export default function SettingsPage() {
           {/* NOTIFICATIONS */}
           {activeTab === 'notifications' && (
             <div className="space-y-5 animate-fade-in">
-              <SettingsSection title="Email Notifications" description="Choose which emails you receive from INvestScore">
+              <SettingsSection title="Email Notifications" description="Choose which emails you receive from InvestScore">
                 <SettingsRow label="Score updates"        description="Get notified when your SDG scores are recalculated"><Toggle value={scoreUpdates} onChange={setScoreUpdates} /></SettingsRow>
                 <SettingsRow label="Email alerts"         description="Receive emails when a goal drops below your target"><Toggle value={emailAlerts}  onChange={setEmailAlerts}  /></SettingsRow>
                 <SettingsRow label="Weekly digest"        description="A summary of your SDG performance every Monday"><Toggle value={weeklyDigest} onChange={setWeeklyDigest} /></SettingsRow>
                 <SettingsRow label="Peer benchmark alerts" description="Get notified when your sector ranking changes"><Toggle value={peerAlerts}   onChange={setPeerAlerts}   /></SettingsRow>
               </SettingsSection>
 
-              <SettingsSection title="In-App Alerts" description="Alerts shown inside the INvestScore platform">
+              <SettingsSection title="In-App Alerts" description="Alerts shown inside the InvestScore platform">
                 <SettingsRow label="Low score warnings"     description="Show the amber alert banner when any goal drops to Low"><Toggle value={true} onChange={() => {}} /></SettingsRow>
                 <SettingsRow label="Submission reminders"   description="Remind me to submit data each quarter"><Toggle value={true} onChange={() => {}} /></SettingsRow>
               </SettingsSection>
@@ -331,7 +331,7 @@ export default function SettingsPage() {
               <SettingsSection title="About" description="Platform information">
                 <div className="space-y-2">
                   {[
-                    { label: 'Platform',  value: 'INvestScore'                    },
+                    { label: 'Platform',  value: 'InvestScore'                    },
                     { label: 'Version',   value: '1.0.0 — Demo Build'            },
                     { label: 'Challenge', value: 'Twin Transition Challenge 2026' },
                     { label: 'Partner',   value: 'Sanlam Investments'            },

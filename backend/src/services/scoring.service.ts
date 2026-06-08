@@ -1,4 +1,4 @@
-import { SECTOR_WEIGHTS, KPI_THRESHOLDS, INVERTED_KPIS, classifyScore, ScoreLevel, SectorType } from '../constants/scoring.constants';
+import { SECTOR_WEIGHTS, KPI_THRESHOLDS, INVERTED_KPIS, SECTOR_SDG_AVERAGES, classifyScore, ScoreLevel, SectorType } from '../constants/scoring.constants';
 import { SDG_LIST } from '../constants/sdg.constants';
 import { KPI_LIST } from '../constants/kpi.constants';
 import { CompanyScorecard, SDGScore } from '../types';
@@ -90,9 +90,11 @@ export function calculateScore(
 }
 
 export function calculateSDGScores(
-  kpiResults:     KPIResult[],
-  sectorAvgData?: Record<number, number>
+  kpiResults: KPIResult[],
+  sector:     string = 'other',
+  overrides?: Record<number, number>
 ): SDGScore[] {
+  const sectorAverages = SECTOR_SDG_AVERAGES[sector] || SECTOR_SDG_AVERAGES.other;
   const sdgScores: SDGScore[] = [];
 
   for (const sdg of SDG_LIST) {
@@ -101,17 +103,21 @@ export function calculateSDGScores(
 
     if (relevantResults.length === 0) continue;
 
-    const avgScore  = relevantResults.reduce((a, r) => a + r.score, 0) / relevantResults.length;
-    const rounded   = Math.round(avgScore * 100) / 100;
-    const sectorAvg = sectorAvgData?.[sdg.id] ?? 2.0;
+    const avgScore   = relevantResults.reduce((a, r) => a + r.score, 0) / relevantResults.length;
+    const roundedAvg = Math.round(avgScore * 100) / 100;
+    const sectorAvg  = overrides?.[sdg.id] ?? sectorAverages[sdg.id] ?? 2.0;
+
+    const diff  = roundedAvg - sectorAvg;
+    const trend: 'up' | 'down' | 'stable' =
+      diff > 0.15 ? 'up' : diff < -0.15 ? 'down' : 'stable';
 
     sdgScores.push({
       sdgId:          sdg.id,
       sdgName:        sdg.name,
-      score:          Math.min(3, Math.max(1, rounded)),
-      classification: classifyScore(rounded),
+      score:          Math.min(3, Math.max(1, roundedAvg)),
+      classification: classifyScore(roundedAvg),
       sectorAvg,
-      trend:          'stable',
+      trend,
     });
   }
 

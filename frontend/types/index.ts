@@ -27,6 +27,8 @@ export interface Company {
   spokespersonTitle: string;
   createdAt:    string;
   status:       'active' | 'pending' | 'suspended';
+  mandate?:     'Growth' | 'Empowerment' | 'Development';
+  bbbeeLevel?:  number;
 }
 
 export type Sector =

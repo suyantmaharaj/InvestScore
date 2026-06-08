@@ -167,7 +167,7 @@ function CoachInner() {
         ? `You are performing strongly — **${highSDGs.length} goals** are at High Impact. Let us talk about maintaining that and pushing your remaining goals higher.\n\n`
         : '';
 
-      greeting = `Hello! I am your INvestScore AI Coach.\n\nI have reviewed your latest scorecard for **${company.name}**. Your overall SDG score is **${scorecard.overallScore.toFixed(1)} / 3.0** — ${scorecard.classification} Impact.\n\n${focusSentence}What would you like to work on today?`;
+      greeting = `Hello! I am your InvestScore AI Coach.\n\nI have reviewed your latest scorecard for **${company.name}**. Your overall SDG score is **${scorecard.overallScore.toFixed(1)} / 3.0** — ${scorecard.classification} Impact.\n\n${focusSentence}What would you like to work on today?`;
     }
 
     setMessages([{ role: 'assistant', content: greeting, timestamp: new Date() }]);
@@ -356,7 +356,7 @@ function CoachInner() {
               <Bot size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-[#015376] font-semibold text-sm">INvestScore AI Coach</p>
+              <p className="text-[#015376] font-semibold text-sm">InvestScore AI Coach</p>
               <p className="text-[#4A5568] text-xs flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] inline-block" />
                 Powered by Claude · Context-aware
