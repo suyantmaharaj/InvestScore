@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import {
-  collection, getDocs, query, orderBy,
-  where, limit, doc, getDoc,
+  collection, getDocs, query,
+  where, doc, getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getCached, setCached } from '@/lib/queryClient';
@@ -77,14 +77,14 @@ export function usePMData() {
               query(
                 collection(db, 'scorecards'),
                 where('companyId', '==', company.id),
-                orderBy('calculatedAt', 'desc'),
-                limit(1)
               )
             );
 
             const scorecard = scorecardSnap.empty
               ? null
-              : (scorecardSnap.docs[0].data() as PMScorecard);
+              : (scorecardSnap.docs
+                  .map(d => d.data() as PMScorecard)
+                  .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt))[0]);
 
             return { company, scorecard };
           })
@@ -142,21 +142,29 @@ export function usePMCompanyDetail(companyId: string) {
           getDocs(query(
             collection(db, 'scorecards'),
             where('companyId', '==', companyId),
-            orderBy('calculatedAt', 'desc'),
-            limit(1)
           )),
           getDocs(query(
             collection(db, 'submissions'),
             where('companyId', '==', companyId),
             where('status', '==', 'scored'),
-            orderBy('scoredAt', 'desc'),
-            limit(1)
           )),
         ]);
 
         if (companySnap.exists()) setCompany({ id: companySnap.id, ...companySnap.data() } as PMCompany);
-        if (!scorecardSnap.empty) setScorecard(scorecardSnap.docs[0].data() as PMScorecard);
-        if (!submissionSnap.empty) setSubmission(submissionSnap.docs[0].data().data);
+
+        if (!scorecardSnap.empty) {
+          const latest = scorecardSnap.docs
+            .map(d => d.data() as PMScorecard)
+            .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt))[0];
+          setScorecard(latest);
+        }
+
+        if (!submissionSnap.empty) {
+          const latest = submissionSnap.docs
+            .map(d => d.data())
+            .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''))[0];
+          setSubmission(latest.data);
+        }
       } catch (err) {
         console.error('usePMCompanyDetail error:', err);
         setError('Failed to load company detail.');
