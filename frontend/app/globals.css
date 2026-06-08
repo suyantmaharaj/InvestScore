@@ -357,6 +357,38 @@
   border-radius: 6px;
 }
 
+/* ── CARD + BUTTON UTILITIES ─────────────────────────────────────────────── */
+.card {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.card-interactive {
+  cursor: pointer;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+.card-interactive:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+  transform: translateY(-1px);
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--sanlam-teal);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.btn-primary:hover  { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:active { opacity: 1.0; transform: translateY(0); }
+
 /* ── STAGGER DELAY UTILITIES ─────────────────────────────────────────────── */
 .delay-50  { animation-delay:  50ms; }
 .delay-100 { animation-delay: 100ms; }

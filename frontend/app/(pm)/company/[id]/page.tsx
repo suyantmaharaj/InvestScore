@@ -1,7 +1,524 @@
-export default function CompanyDetailPage() {
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  ArrowLeft, TrendingUp, TrendingDown, Minus,
+  Award, ChevronRight,
+} from 'lucide-react';
+import { usePMCompanyDetail } from '@/hooks/usePMData';
+import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
+import { SkeletonCard, SkeletonLine } from '@/components/shared/Skeleton';
+import EmptyState from '@/components/shared/EmptyState';
+import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
+import AnimatedScore from '@/components/shared/AnimatedScore';
+import Tooltip from '@/components/shared/Tooltip';
+
+type Tab = 'employment' | 'overview' | 'sdg';
+
+function scoreColor(s: number) {
+  if (s >= 2.4) return '#00A651';
+  if (s >= 1.6) return '#E8A020';
+  return '#D0021B';
+}
+
+function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
+  if (trend === 'up')   return <TrendingUp   size={14} style={{ color: '#00A651' }} />;
+  if (trend === 'down') return <TrendingDown size={14} style={{ color: '#D0021B' }} />;
+  return <Minus size={14} style={{ color: 'var(--text-muted)' }} />;
+}
+
+function NotYetReported() {
   return (
-    <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-muted)' }}>
-      <p className="text-sm">Company Detail — coming in Prompt 15</p>
+    <span
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+      style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+    >
+      Not yet reported
+    </span>
+  );
+}
+
+function MetricRow({
+  label,
+  value,
+  unit = '',
+}: {
+  label: string;
+  value: number | string | null | undefined;
+  unit?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between py-2.5"
+      style={{ borderBottom: '1px solid var(--border)' }}
+    >
+      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      {value == null ? (
+        <NotYetReported />
+      ) : (
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          {typeof value === 'number' ? value.toLocaleString() : value}
+          {unit && <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>{unit}</span>}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function MandateBadge({ mandate }: { mandate?: string }) {
+  if (!mandate) return null;
+  const styles: Record<string, { bg: string; color: string }> = {
+    Growth:      { bg: 'rgba(0,181,237,0.12)', color: '#00B5ED' },
+    Empowerment: { bg: 'rgba(0,166,81,0.12)',  color: '#00A651' },
+    Development: { bg: 'rgba(232,160,32,0.12)', color: '#E8A020' },
+  };
+  const s = styles[mandate] || styles.Growth;
+  return (
+    <span
+      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+      style={{ background: s.bg, color: s.color }}
+    >
+      {mandate}
+    </span>
+  );
+}
+
+/* ── Claude Narrative ── */
+function OverviewTab({
+  company,
+  scorecard,
+}: {
+  company: NonNullable<ReturnType<typeof usePMCompanyDetail>['company']>;
+  scorecard: NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']>;
+}) {
+  const [narrative, setNarrative] = useState('');
+  const [loading,   setLoading]   = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const generate = async () => {
+      setLoading(true);
+      setNarrative('');
+
+      const topSDGs = scorecard.sdgScores
+        .slice()
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      const lowSDGs = scorecard.sdgScores
+        .slice()
+        .sort((a, b) => a.score - b.score)
+        .filter(s => s.score < 1.6)
+        .slice(0, 2);
+
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        if (!token || cancelled) return;
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/narrative`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body:    JSON.stringify({ companyId: company.id }),
+        });
+
+        const json = await res.json();
+        if (!cancelled) setNarrative(json.narrative || json.error || 'Narrative unavailable.');
+      } catch {
+        if (!cancelled) setNarrative(
+          `${company.name} has achieved an overall SDG score of ${scorecard.overallScore.toFixed(2)}/3.0, ` +
+          `classified as ${scorecard.classification}. Key strengths are in ` +
+          `${topSDGs.map(s => `SDG ${s.sdgId}`).join(' and ')}. ` +
+          (lowSDGs.length ? `Areas requiring attention include ${lowSDGs.map(s => `SDG ${s.sdgId}`).join(' and ')}.` : 'Performance is broadly consistent across all measured goals.')
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    generate();
+    return () => { cancelled = true; };
+  }, [company.id]);
+
+  return (
+    <div className="space-y-5 animate-fade-in">
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-base">🤖</span>
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            AI Investment Narrative
+          </h3>
+          <span
+            className="text-[10px] font-medium px-2 py-0.5 rounded-full ml-auto"
+            style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
+          >
+            Claude-powered
+          </span>
+        </div>
+
+        {loading && !narrative ? (
+          <div className="space-y-2.5">
+            <SkeletonLine w="w-full"  h="h-4" />
+            <SkeletonLine w="w-5/6"  h="h-4" />
+            <SkeletonLine w="w-full"  h="h-4" />
+            <SkeletonLine w="w-4/5"  h="h-4" />
+            <SkeletonLine w="w-full"  h="h-4" />
+            <SkeletonLine w="w-3/4"  h="h-4" />
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+            {narrative}
+          </p>
+        )}
+      </div>
+
+      {/* Company info card */}
+      <div className="card p-5">
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Company Profile</h3>
+        <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-muted)' }}>
+          {company.description || 'No description available.'}
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: 'Sector',   value: company.sector.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) },
+            { label: 'Location', value: company.location },
+            { label: 'Mandate',  value: company.mandate ?? '—' },
+            { label: 'B-BBEE',   value: company.bbbeeLevel ? `Level ${company.bbbeeLevel}` : '—' },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SDG Scorecard Tab ── */
+function SDGTab({ scorecard }: { scorecard: NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']> }) {
+  const sorted = [...scorecard.sdgScores].sort((a, b) => b.score - a.score);
+
+  return (
+    <div className="space-y-3 animate-fade-in">
+      {sorted.map((s, i) => {
+        const sdg = SDG_LIST.find(d => d.id === s.sdgId);
+        const cc  = CLASSIFICATION_COLORS[s.classification];
+        const pct = ((s.score - 1) / 2) * 100;
+        const avgPct = ((s.sectorAvg - 1) / 2) * 100;
+
+        return (
+          <div
+            key={s.sdgId}
+            className="card p-4 animate-card-in"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                style={{ background: `${sdg?.color ?? '#888'}20` }}
+              >
+                {sdg?.icon ?? '🎯'}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    SDG {s.sdgId} — {s.sdgName}
+                  </p>
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}
+                  >
+                    {s.classification}
+                  </span>
+                  <TrendIcon trend={s.trend} />
+                </div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold" style={{ color: scoreColor(s.score) }}>
+                    {s.score.toFixed(2)}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 3.0</span>
+                  <span className="text-xs mx-1" style={{ color: 'var(--border)' }}>·</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Sector avg: {s.sectorAvg.toFixed(2)}
+                  </span>
+                </div>
+
+                {/* Progress vs sector avg */}
+                <div className="relative">
+                  <AnimatedProgressBar
+                    value={pct}
+                    color={scoreColor(s.score)}
+                    height={6}
+                    delay={i * 40 + 150}
+                  />
+                  {/* Sector avg marker */}
+                  <div
+                    className="absolute top-0 h-full w-0.5 rounded"
+                    style={{
+                      left:       `${Math.min(avgPct, 98)}%`,
+                      background: 'var(--text-muted)',
+                      opacity:    0.5,
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                  Dashed line = sector average
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Employment & Transformation Tab ── */
+function EmploymentTab({
+  company,
+  scorecard,
+  submission,
+}: {
+  company:    NonNullable<ReturnType<typeof usePMCompanyDetail>['company']>;
+  scorecard:  NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']>;
+  submission: Record<string, number | null> | null;
+}) {
+  const d = submission ?? {};
+
+  const sdg8  = scorecard.sdgScores.find(s => s.sdgId === 8);
+  const sdg10 = scorecard.sdgScores.find(s => s.sdgId === 10);
+
+  return (
+    <div className="space-y-5 animate-fade-in">
+
+      {/* SDG 8 + 10 score summary */}
+      <div className="grid grid-cols-2 gap-4">
+        {[
+          { sdg: sdg8,  label: 'SDG 8 – Decent Work',       icon: '💼' },
+          { sdg: sdg10, label: 'SDG 10 – Reduced Inequality', icon: '⚖️' },
+        ].map(({ sdg, label, icon }) => (
+          <div key={label} className="card p-4">
+            <p className="text-lg mb-1">{icon}</p>
+            <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>{label}</p>
+            {sdg ? (
+              <>
+                <AnimatedScore
+                  value={sdg.score}
+                  className="font-bold text-2xl block"
+                  style={{ color: scoreColor(sdg.score) }}
+                  decimals={2}
+                />
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>/ 3.0</p>
+                <div className="mt-2">
+                  <AnimatedProgressBar
+                    value={((sdg.score - 1) / 2) * 100}
+                    color={scoreColor(sdg.score)}
+                    height={5}
+                    delay={200}
+                  />
+                </div>
+              </>
+            ) : (
+              <NotYetReported />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Employment KPIs */}
+      <div className="card p-5">
+        <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+          Employment Metrics
+        </h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>From latest submitted impact report</p>
+        <MetricRow label="Total Employees"           value={d.total_employees}            />
+        <MetricRow label="New Jobs Created"          value={d.new_jobs_created}           />
+        <MetricRow label="Youth Employed (18–35)"    value={d.youth_employed}             />
+        <MetricRow label="Women Employed"            value={d.women_employed}             />
+        <MetricRow label="Employees with Disability" value={d.employees_with_disability}  />
+        <MetricRow label="Training Hours Delivered"  value={d.training_hours}  unit="hrs" />
+        <MetricRow label="Training Spend"            value={d.training_spend != null ? `R${d.training_spend.toLocaleString()}` : null} />
+        <MetricRow label="Living Wage Compliance"    value={d.living_wage_compliance != null ? `${d.living_wage_compliance}%` : null} />
+        <MetricRow label="Staff Turnover Rate"       value={d.staff_turnover != null ? `${d.staff_turnover}%` : null} />
+      </div>
+
+      {/* Transformation KPIs */}
+      <div className="card p-5">
+        <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+          Transformation & Governance
+        </h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>B-BBEE and ownership metrics</p>
+        <MetricRow label="B-BBEE Level"             value={company.bbbeeLevel ? `Level ${company.bbbeeLevel}` : null} />
+        <MetricRow label="Black Ownership %"        value={d.black_ownership != null ? `${d.black_ownership}%` : null} />
+        <MetricRow label="Black Female Ownership %" value={d.black_female_ownership != null ? `${d.black_female_ownership}%` : null} />
+        <MetricRow label="Black Management %"       value={d.black_management != null ? `${d.black_management}%` : null} />
+        <MetricRow label="Black Board Representation" value={d.black_board_representation != null ? `${d.black_board_representation}%` : null} />
+        <MetricRow label="Procurement from Black-owned" value={d.procurement_black_owned != null ? `${d.procurement_black_owned}%` : null} />
+        <MetricRow label="Enterprise Development Spend" value={d.enterprise_development_spend != null ? `R${d.enterprise_development_spend.toLocaleString()}` : null} />
+      </div>
+
+    </div>
+  );
+}
+
+/* ── Main Page ── */
+export default function CompanyDetailPage() {
+  const params   = useParams();
+  const router   = useRouter();
+  const id       = typeof params.id === 'string' ? params.id : '';
+  const [tab, setTab] = useState<Tab>('employment');
+
+  const { company, scorecard, submission, loading, error } = usePMCompanyDetail(id);
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: 'employment', label: 'Employment & Transformation' },
+    { key: 'overview',   label: 'Overview'                    },
+    { key: 'sdg',        label: 'SDG Scorecard'               },
+  ];
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-5">
+        <SkeletonCard className="h-28" />
+        <div className="grid grid-cols-3 gap-4">
+          <SkeletonCard className="h-24" />
+          <SkeletonCard className="h-24" />
+          <SkeletonCard className="h-24" />
+        </div>
+        <SkeletonCard className="h-64" />
+      </div>
+    );
+  }
+
+  if (error || !company) {
+    return (
+      <EmptyState
+        icon="🏢"
+        title="Company not found"
+        description="This company does not exist or could not be loaded."
+        action={<button className="btn-primary" onClick={() => router.back()}>Go back</button>}
+      />
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
+
+      {/* Back button */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-1.5 text-sm transition"
+        style={{ color: 'var(--text-muted)' }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+      >
+        <ArrowLeft size={15} />
+        Back to portfolio
+      </button>
+
+      {/* Header card */}
+      <div className="card p-5">
+        <div className="flex items-start gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+            style={{ background: 'var(--sanlam-navy)' }}
+          >
+            {company.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                {company.name}
+              </h1>
+              <MandateBadge mandate={company.mandate} />
+              {company.bbbeeLevel && (
+                <span
+                  className="text-xs font-semibold px-2 py-0.5 rounded"
+                  style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
+                >
+                  B-BBEE L{company.bbbeeLevel}
+                </span>
+              )}
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              {company.sector.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} · {company.location}
+            </p>
+          </div>
+
+          {/* Overall score */}
+          {scorecard && (
+            <div className="text-right flex-shrink-0">
+              <AnimatedScore
+                value={scorecard.overallScore}
+                className="font-bold text-3xl block leading-none"
+                style={{ color: scoreColor(scorecard.overallScore) }}
+                decimals={2}
+              />
+              <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>/ 3.0 overall</p>
+              {(() => {
+                const cc = CLASSIFICATION_COLORS[scorecard.classification];
+                return (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}
+                  >
+                    {scorecard.classification}
+                  </span>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div
+        className="flex gap-0.5 p-1 rounded-xl"
+        style={{ background: 'var(--bg)', border: '1px solid var(--border)', display: 'inline-flex' }}
+      >
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className="px-4 py-2 text-sm font-medium rounded-lg transition"
+            style={{
+              background: tab === t.key ? 'var(--sanlam-navy)' : 'transparent',
+              color:      tab === t.key ? 'white'               : 'var(--text-muted)',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {!scorecard ? (
+        <EmptyState
+          icon="📊"
+          title="No scorecard data"
+          description="This company has not submitted an impact report yet."
+        />
+      ) : (
+        <>
+          {tab === 'employment' && (
+            <EmploymentTab company={company} scorecard={scorecard} submission={submission} />
+          )}
+          {tab === 'overview' && (
+            <OverviewTab company={company} scorecard={scorecard} />
+          )}
+          {tab === 'sdg' && (
+            <SDGTab scorecard={scorecard} />
+          )}
+        </>
+      )}
+
     </div>
   );
 }
