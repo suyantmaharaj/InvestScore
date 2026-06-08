@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function LoginPage() {
   const router  = useRouter();
@@ -122,10 +121,6 @@ export default function LoginPage() {
 
       {/* RIGHT PANEL — form */}
       <div className="relative flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg, #F4F6F8)' }}>
-        {/* Theme toggle — top right */}
-        <div className="absolute top-4 right-4" style={{ background: '#015376', borderRadius: 8 }}>
-          <ThemeToggle compact />
-        </div>
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
@@ -224,11 +219,6 @@ export default function LoginPage() {
           >
             Register your company
           </button>
-
-          {/* Demo note */}
-          <p className="text-center text-[#4A5568]/60 text-xs">
-            Demo credentials available in CREDENTIALS.https
-          </p>
 
         </div>
       </div>
