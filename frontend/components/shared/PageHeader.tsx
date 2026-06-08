@@ -15,13 +15,13 @@ const PAGE_META: Record<string, {
   '/dashboard':    {
     icon:       '📊',
     title:      'Dashboard',
-    subtitle:   'Your SDG performance at a glance',
+    subtitle:   '',
     breadcrumb: ['SME Portal', 'Dashboard'],
   },
   '/scorecard':    {
     icon:       '🎯',
     title:      'My Scorecard',
-    subtitle:   'Full breakdown across all 17 SDGs',
+    subtitle:   '',
     breadcrumb: ['SME Portal', 'Scorecard'],
   },
   '/benchmarking': {
@@ -39,7 +39,7 @@ const PAGE_META: Record<string, {
   '/coach':        {
     icon:       '🤖',
     title:      'AI Coach',
-    subtitle:   'Personalised advice powered by Claude',
+    subtitle:   '',
     breadcrumb: ['SME Portal', 'AI Coach'],
   },
 };
@@ -174,15 +174,10 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
             }}
             aria-label="Toggle theme"
           >
-            <div
-              className="transition-transform duration-300"
-              style={{ transform: theme === 'dark' ? 'rotate(0deg)' : 'rotate(180deg)' }}
-            >
-              {theme === 'dark'
-                ? <Sun  size={15} style={{ color: 'var(--sanlam-teal)' }} />
-                : <Moon size={15} style={{ color: 'var(--text-secondary)' }} />
-              }
-            </div>
+            {theme === 'dark'
+              ? <Sun  size={15} style={{ color: 'var(--sanlam-teal)' }} />
+              : <Moon size={15} style={{ color: 'var(--text-secondary)' }} />
+            }
           </button>
         </Tooltip>
 
