@@ -105,8 +105,18 @@ export default function SMESideNav() {
     <>
       {/* Desktop sidebar */}
       <aside
-        className="w-60 min-h-screen fixed left-0 top-0 z-30 hidden lg:flex flex-col"
-        style={{ background: 'var(--sidebar-bg, #015376)' }}
+        className="w-60 hidden lg:flex flex-col"
+        style={{
+          position:   'fixed',
+          top:        0,
+          left:       0,
+          height:     '100vh',
+          zIndex:     30,
+          overflowY:  'auto',
+          overflowX:  'hidden',
+          background: 'var(--sidebar-bg, #015376)',
+          flexShrink: 0,
+        }}
       >
         <NavContent />
       </aside>

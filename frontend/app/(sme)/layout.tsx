@@ -12,11 +12,20 @@ import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg, #F4F6F8)' }}>
+    <div
+      className="flex"
+      style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}
+    >
       <SMESideNav />
-      <div className="lg:ml-60 flex-1 flex flex-col min-h-screen">
+      <div
+        className="flex flex-col lg:ml-60"
+        style={{ flex: 1, height: '100vh', overflow: 'hidden', minWidth: 0 }}
+      >
         <PageHeader />
-        <main className="flex-1 p-5 lg:p-8 pt-24 lg:pt-24">
+        <main
+          className="p-5 pt-5 lg:p-8"
+          style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
+        >
           <ErrorBoundary>
             {children}
           </ErrorBoundary>

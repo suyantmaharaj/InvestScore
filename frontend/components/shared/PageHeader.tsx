@@ -87,8 +87,11 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
 
   return (
     <header
-      className="fixed top-0 right-0 left-0 lg:left-60 z-20 h-16 flex items-center px-5 lg:px-8"
+      className="h-16 flex items-center px-5 lg:px-8 flex-shrink-0"
       style={{
+        position:             'sticky',
+        top:                  0,
+        zIndex:               20,
         background:           'var(--header-bg, var(--surface))',
         borderBottom:         '1px solid var(--border)',
         boxShadow:            'var(--shadow-card)',
