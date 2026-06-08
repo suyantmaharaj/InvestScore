@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SMESideNav from '@/components/sme/SMESideNav';
+import PageHeader from '@/components/shared/PageHeader';
 import { SMEDataProvider } from '@/context/SMEDataContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -13,11 +14,14 @@ function SMEShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg, #F4F6F8)' }}>
       <SMESideNav />
-      <main className="lg:ml-60 flex-1 p-5 lg:p-8 min-h-screen pt-16 lg:pt-8">
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
-      </main>
+      <div className="lg:ml-60 flex-1 flex flex-col min-h-screen">
+        <PageHeader />
+        <main className="flex-1 p-5 lg:p-8 pt-24 lg:pt-24">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </main>
+      </div>
     </div>
   );
 }

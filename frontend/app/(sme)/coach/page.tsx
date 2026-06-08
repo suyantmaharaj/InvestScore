@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Send, Bot, User, Sparkles, RefreshCw } from 'lucide-react';
 import { useSMEContext } from '@/context/SMEDataContext';
 import { SDG_LIST } from '@/lib/sdg';
+import PageContext from '@/components/shared/PageContext';
 
 interface Message {
   role:      'user' | 'assistant';
@@ -242,7 +243,31 @@ function CoachInner() {
   const highSDGs = scorecard.sdgScores.filter(s => s.classification === 'High');
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-80px)] flex gap-5 animate-page-in">
+    <div className="max-w-6xl mx-auto animate-page-in">
+      <PageContext>
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Model:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            Claude Sonnet
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Context:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            {company?.name} · {scorecard?.submissionPeriod}
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{ background: 'rgba(0,166,81,0.1)', color: 'var(--sanlam-green, #00A651)' }}
+        >
+          Advisory only · Scores unchanged
+        </span>
+      </PageContext>
+
+    <div className="h-[calc(100vh-180px)] flex gap-5">
 
       {/* LEFT — Context panel (desktop only) */}
       <div className="w-72 flex-shrink-0 flex-col gap-4 overflow-y-auto pb-4 hidden lg:flex">
@@ -319,25 +344,6 @@ function CoachInner() {
           </div>
         </div>
 
-        {/* Related links */}
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-4">
-          <p className="text-[#4A5568] text-[10px] uppercase tracking-wider mb-3">Related pages</p>
-          <div className="space-y-2">
-            {[
-              { label: 'View My Scorecard', href: '/scorecard'    },
-              { label: 'Submit New Data',   href: '/submit'       },
-              { label: 'See Benchmarking',  href: '/benchmarking' },
-            ].map(({ label, href }) => (
-              <button
-                key={href}
-                onClick={() => router.push(href)}
-                className="block w-full text-left text-xs text-[#00B5ED] hover:underline"
-              >
-                → {label}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* RIGHT — Chat window */}
@@ -433,6 +439,7 @@ function CoachInner() {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { SkeletonScorecard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import Tooltip from '@/components/shared/Tooltip';
 import EmptyState from '@/components/shared/EmptyState';
+import PageContext from '@/components/shared/PageContext';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
 type SortType   = 'number' | 'score_desc' | 'score_asc';
@@ -276,29 +277,43 @@ export default function ScorecardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
-      {/* Page header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[#015376] font-semibold text-xl">My SDG Scorecard</h1>
-          <p className="text-[#4A5568] text-sm mt-1">
-            Your sustainability performance across all 17 UN Sustainable Development Goals
-          </p>
-        </div>
-        {/* Overall score circle */}
-        <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${overallScore.toFixed(1)} / 3.0`} position="left">
-          <div
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-full flex-shrink-0"
-            style={{ border: `3px solid ${scoreColor(overallScore)}` }}
+      <PageContext>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>Showing:</span>
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{
+              background: 'rgba(0,181,237,0.1)',
+              color:      'var(--sanlam-teal, #00B5ED)',
+            }}
           >
-            <AnimatedScore
-              value={overallScore}
-              className="font-bold text-lg leading-none"
-              style={{ color: scoreColor(overallScore) }}
-            />
-            <span className="text-[9px] leading-none mt-0.5" style={{ color: 'var(--text-muted, #4A5568)' }}>/ 3.0</span>
-          </div>
-        </Tooltip>
-      </div>
+            {filter === 'All' ? 'All 17 goals' : `${filter} Impact goals`}
+          </span>
+        </div>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Period:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            {scorecard.submissionPeriod}
+          </strong>
+        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>Overall:</span>
+          <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${overallScore.toFixed(1)} / 3.0`} position="left">
+            <div
+              className="w-10 h-10 rounded-full flex flex-col items-center justify-center flex-shrink-0"
+              style={{ border: `2px solid ${scoreColor(overallScore)}` }}
+            >
+              <AnimatedScore
+                value={overallScore}
+                className="font-bold text-sm leading-none"
+                style={{ color: scoreColor(overallScore) }}
+              />
+              <span className="text-[8px]" style={{ color: 'var(--text-muted, #4A5568)' }}>/ 3.0</span>
+            </div>
+          </Tooltip>
+        </div>
+      </PageContext>
 
       {/* Summary strip */}
       <div className="flex flex-wrap gap-2">

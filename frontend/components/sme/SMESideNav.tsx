@@ -8,7 +8,6 @@ import {
   MessageSquare, LogOut, TrendingUp, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import ThemeToggle from '@/components/shared/ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
@@ -86,15 +85,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
         className="px-4 py-4"
         style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <ThemeToggle />
-
-        <div className="hidden lg:block mt-1 px-1">
-          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            Press D · S · B · C to navigate
-          </p>
-        </div>
-
-        <div className="mt-3 mb-3 px-1">
+        <div className="mb-3 px-1">
           <p className="text-white text-sm font-medium truncate">{user?.name || 'SME User'}</p>
           <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>
             {user?.email}

@@ -8,6 +8,7 @@ import { SkeletonDashboard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import EmptyState from '@/components/shared/EmptyState';
+import PageContext from '@/components/shared/PageContext';
 
 function ScoreDots({ score }: { score: number }) {
   const level = score >= 2.4 ? 3 : score >= 1.6 ? 2 : 1;
@@ -74,25 +75,32 @@ export default function SMEDashboardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-7 animate-page-in">
 
-      {/* Page header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="font-semibold text-xl" style={{ color: 'var(--text-primary, #015376)' }}>
-            {company.name}
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #4A5568)' }}>
-            {formatSector(company.sector)} · {company.location}
-          </p>
-        </div>
-        <div className="text-right">
-          <span className="bg-[#00B5ED] text-white text-xs font-medium px-3 py-1 rounded-full">
+      <PageContext>
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Reporting period:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
             {submissionPeriod}
-          </span>
-          <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted, #4A5568)', opacity: 0.6 }}>
-            Last updated: {formatDate(calculatedAt)}
-          </p>
-        </div>
-      </div>
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Last updated:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            {formatDate(calculatedAt)}
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span
+          className="flex items-center gap-1.5 text-xs font-medium"
+          style={{ color: 'var(--sanlam-green, #00A651)' }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: 'var(--sanlam-green, #00A651)' }}
+          />
+          Scores live
+        </span>
+      </PageContext>
 
       {/* Overall Score Hero */}
       <div

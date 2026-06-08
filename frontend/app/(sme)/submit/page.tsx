@@ -253,17 +253,6 @@ export default function SubmitPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-page-in">
 
-      {/* Header */}
-      <div>
-        <h1 className="font-semibold text-xl" style={{ color: 'var(--c-navy, #015376)' }}>
-          Submit SDG Data
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--c-muted, #4A5568)' }}>
-          Complete all sections to update your SDG scores for {PERIOD}.
-          Your progress is saved automatically.
-        </p>
-      </div>
-
       {/* Progress card */}
       <div className="rounded-xl p-5"
         style={{ background: 'var(--c-card, #fff)', border: '1px solid var(--c-border, #DDE3EC)' }}>

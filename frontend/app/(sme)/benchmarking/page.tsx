@@ -7,6 +7,7 @@ import { Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import SDGRadarChart from '@/components/sme/SDGRadarChart';
 import H2HChart from '@/components/sme/H2HChart';
+import PageContext from '@/components/shared/PageContext';
 
 type ViewMode    = 'radar' | 'h2h';
 type CompareMode = 'sector_avg' | 'top_quartile' | 'bottom_quartile';
@@ -44,26 +45,28 @@ export default function BenchmarkingPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
 
-      {/* Page header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[#015376] font-semibold text-xl">Peer Benchmarking</h1>
-          <p className="text-[#4A5568] text-sm mt-1">
-            How you compare against {data.totalPeers} companies in your sector.
-            Peer identities are kept anonymous.
-          </p>
-        </div>
-        <span
-          className="text-xs font-semibold px-3 py-1.5 rounded-full border"
-          style={{
-            background:  'rgba(0,181,237,0.08)',
-            color:       '#00B5ED',
-            borderColor: 'rgba(0,181,237,0.2)',
-          }}
-        >
-          {formatSector(data.sector)}
+      <PageContext>
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Sector:{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            {formatSector(data.sector)}
+          </strong>
         </span>
-      </div>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
+          Comparing against{' '}
+          <strong style={{ color: 'var(--text-primary, #015376)' }}>
+            {data.totalPeers} peer companies
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal, #00B5ED)' }}
+        >
+          Anonymous · Confidential
+        </span>
+      </PageContext>
 
       {/* Top-level comparison cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
