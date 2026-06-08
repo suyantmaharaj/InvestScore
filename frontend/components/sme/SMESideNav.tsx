@@ -1,14 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Target, Users, ClipboardList,
-  MessageSquare, LogOut, TrendingUp, ChevronLeft, ChevronRight,
-  Sun, Moon,
+  MessageSquare, LogOut, TrendingUp, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
@@ -18,17 +18,10 @@ const NAV_ITEMS = [
   { href: '/coach',        label: 'AI Coach',     icon: MessageSquare    },
 ];
 
-interface Props {
-  collapsed:  boolean;
-  onCollapse: (v: boolean) => void;
-}
-
-export default function SMESideNav({ collapsed, onCollapse }: Props) {
+function NavContent({ onClose }: { onClose?: () => void }) {
   const pathname         = usePathname();
   const router           = useRouter();
   const { user, logout } = useAuth();
-  const { theme, toggle } = useTheme();
-  const isDark = theme === 'dark';
 
   const handleLogout = async () => {
     await logout();
@@ -36,111 +29,131 @@ export default function SMESideNav({ collapsed, onCollapse }: Props) {
   };
 
   return (
-    <aside
-      className={`${collapsed ? 'w-16' : 'w-60'} min-h-screen bg-[#015376] flex flex-col fixed left-0 top-0 z-30 transition-all duration-200`}
-    >
+    <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className={`flex items-center border-b border-white/10 h-[73px] ${collapsed ? 'justify-center' : 'px-6'}`}>
-        {collapsed ? (
-          <TrendingUp size={22} className="text-[#00B5ED]" />
-        ) : (
-          <div className="flex items-center gap-2 flex-1">
-            <TrendingUp size={22} className="text-[#00B5ED]" />
-            <div>
-              <p className="text-white font-bold text-base leading-tight">InvestScore</p>
-              <p className="text-white/40 text-xs">SME Portal</p>
-            </div>
+      <div
+        className="px-6 pt-7 pb-6 flex items-center justify-between"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        <div className="flex items-center gap-2">
+          <TrendingUp size={22} style={{ color: '#00B5ED' }} />
+          <div>
+            <p className="text-white font-bold text-base leading-tight">InvestScore</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>SME Portal</p>
           </div>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-white/50 hover:text-white transition lg:hidden"
+          >
+            <X size={20} />
+          </button>
         )}
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 px-2 py-5 flex flex-col gap-1">
+      <nav className="flex-1 px-3 py-5 flex flex-col gap-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link
               key={href}
               href={href}
-              title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                collapsed ? 'justify-center' : ''
-              } ${
-                active
-                  ? 'bg-[#00B5ED]/20 text-[#00B5ED]'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`}
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+              style={{
+                background: active ? 'var(--sidebar-active-bg, rgba(0,181,237,0.15))' : 'transparent',
+                color:      active ? 'var(--sidebar-active-text, #00B5ED)'             : 'var(--sidebar-text, rgba(255,255,255,0.65))',
+              }}
             >
-              <Icon size={18} className="flex-shrink-0" />
-              {!collapsed && label}
+              <Icon
+                size={18}
+                style={{ color: active ? '#00B5ED' : 'var(--sidebar-text, rgba(255,255,255,0.65))' }}
+                className="flex-shrink-0"
+              />
+              <span>{label}</span>
+              {active && (
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#00B5ED]" />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Theme toggle + user + logout */}
-      <div className="px-2 py-4 border-t border-white/10 flex flex-col gap-2">
+      {/* Bottom */}
+      <div
+        className="px-4 py-4"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        <ThemeToggle />
 
-        {/* Theme toggle */}
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'px-2 gap-3'} mb-1`}>
-          <button
-            onClick={toggle}
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-label="Toggle theme"
-            className="relative flex-shrink-0"
-            style={{ width: 40, height: 22 }}
-          >
-            {/* Track */}
-            <span
-              className="absolute inset-0 rounded-full transition-colors duration-300"
-              style={{ background: isDark ? '#00B5ED' : 'rgba(255,255,255,0.15)' }}
-            />
-            {/* Thumb */}
-            <span
-              className="absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300"
-              style={{ left: isDark ? 22 : 3 }}
-            >
-              {isDark
-                ? <Moon size={8} strokeWidth={2} className="text-[#015376]" />
-                : <Sun  size={8} strokeWidth={2} className="text-[#015376]" />
-              }
-            </span>
-          </button>
-          {!collapsed && (
-            <span className="text-white/50 text-xs select-none">
-              {isDark ? 'Dark' : 'Light'}
-            </span>
-          )}
+        <div className="hidden lg:block mt-1 px-1">
+          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Press D · S · B · C to navigate
+          </p>
         </div>
 
-        {/* User info */}
-        {!collapsed && (
-          <div className="px-2">
-            <p className="text-white text-sm font-medium truncate">{user?.name || 'SME User'}</p>
-            <p className="text-white/40 text-xs truncate">{user?.email}</p>
-          </div>
-        )}
+        <div className="mt-3 mb-3 px-1">
+          <p className="text-white text-sm font-medium truncate">{user?.name || 'SME User'}</p>
+          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            {user?.email}
+          </p>
+        </div>
 
-        {/* Sign out */}
         <button
           onClick={handleLogout}
-          title={collapsed ? 'Sign out' : undefined}
-          className={`flex items-center gap-2 text-white/50 text-sm hover:text-white transition w-full px-2 py-1.5 rounded-lg hover:bg-white/5 ${
-            collapsed ? 'justify-center' : ''
-          }`}
+          className="flex items-center gap-2 text-sm transition-colors w-full px-1 py-1.5 rounded-lg hover:bg-white/5"
+          style={{ color: 'rgba(255,255,255,0.45)' }}
         >
           <LogOut size={15} />
-          {!collapsed && 'Sign out'}
+          Sign out
         </button>
       </div>
+    </div>
+  );
+}
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => onCollapse(!collapsed)}
-        className="absolute -right-3 top-[52px] w-6 h-6 rounded-full bg-[#015376] border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition"
+export default function SMESideNav() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className="w-60 min-h-screen fixed left-0 top-0 z-30 hidden lg:flex flex-col"
+        style={{ background: 'var(--sidebar-bg, #015376)' }}
       >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        <NavContent />
+      </aside>
+
+      {/* Mobile hamburger */}
+      <button
+        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl flex items-center justify-center"
+        style={{ background: 'var(--sidebar-bg, #015376)', boxShadow: 'var(--shadow-raised)' }}
+        onClick={() => setMobileOpen(true)}
+      >
+        <Menu size={20} className="text-white" />
       </button>
-    </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <>
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-40 animate-fade-in"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside
+            className="lg:hidden fixed left-0 top-0 h-full w-64 z-50 flex flex-col"
+            style={{
+              background: 'var(--sidebar-bg, #015376)',
+              animation:  'slideInLeft 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            }}
+          >
+            <NavContent onClose={() => setMobileOpen(false)} />
+          </aside>
+        </>
+      )}
+    </>
   );
 }

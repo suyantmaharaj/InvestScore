@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { SkeletonBenchmark } from '@/components/shared/Skeleton';
 import { Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import SDGRadarChart from '@/components/sme/SDGRadarChart';
@@ -27,17 +28,11 @@ export default function BenchmarkingPage() {
   const [viewMode,    setViewMode]    = useState<ViewMode>('h2h');
   const [compareMode, setCompareMode] = useState<CompareMode>('sector_avg');
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#00B5ED] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <SkeletonBenchmark />;
 
   if (error || !data) {
     return (
-      <div className="flex items-center justify-center h-64 text-[#4A5568]">
+      <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-muted, #4A5568)' }}>
         <p>Unable to load benchmarking data. Please try again.</p>
       </div>
     );
@@ -47,7 +42,7 @@ export default function BenchmarkingPage() {
   const vsTop       = data.myOverall - data.topQuartileOverall;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
 
       {/* Page header */}
       <div className="flex items-start justify-between">
@@ -73,7 +68,7 @@ export default function BenchmarkingPage() {
       {/* Top-level comparison cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-5">
+        <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">Your Overall Score</p>
           <p className="text-4xl font-bold mb-1" style={{ color: overallColor(data.myOverall) }}>
             {data.myOverall.toFixed(1)}
@@ -81,7 +76,7 @@ export default function BenchmarkingPage() {
           <p className="text-[#4A5568] text-xs">out of 3.0</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-5">
+        <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">vs Sector Average</p>
           <div className="flex items-end gap-2 mb-1">
             <p className="text-4xl font-bold text-[#015376]">{data.sectorAvgOverall.toFixed(1)}</p>
@@ -102,7 +97,7 @@ export default function BenchmarkingPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-5">
+        <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">vs Top Quartile</p>
           <div className="flex items-end gap-2 mb-1">
             <p className="text-4xl font-bold text-[#015376]">{data.topQuartileOverall.toFixed(1)}</p>

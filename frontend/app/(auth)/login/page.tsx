@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function LoginPage() {
   const router  = useRouter();
@@ -120,7 +121,11 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT PANEL — form */}
-      <div className="flex-1 flex items-center justify-center bg-[#F4F6F8] p-6">
+      <div className="relative flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg, #F4F6F8)' }}>
+        {/* Theme toggle — top right */}
+        <div className="absolute top-4 right-4" style={{ background: '#015376', borderRadius: 8 }}>
+          <ThemeToggle compact />
+        </div>
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
@@ -129,8 +134,8 @@ export default function LoginPage() {
             <p className="text-[#4A5568] text-sm">by Sanlam Investments</p>
           </div>
 
-          <h2 className="text-[#015376] font-semibold text-2xl mb-1">Welcome back</h2>
-          <p className="text-[#4A5568] text-sm mb-8">Sign in to your InvestScore portal</p>
+          <h2 className="font-semibold text-2xl mb-1" style={{ color: 'var(--text-primary, #015376)' }}>Welcome back</h2>
+          <p className="text-sm mb-8" style={{ color: 'var(--text-muted, #4A5568)' }}>Sign in to your InvestScore portal</p>
 
           {/* Error alert */}
           {error && (
@@ -156,7 +161,8 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="you@company.co.za"
-              className="w-full h-11 px-3 rounded-lg border border-[#DDE3EC] bg-white text-[#015376] placeholder:text-[#4A5568]/60 text-sm focus:outline-none focus:ring-2 focus:ring-[#00B5ED] focus:border-transparent transition"
+              className="w-full h-11 px-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B5ED] focus:border-transparent transition"
+              style={{ border: '1px solid var(--border, #DDE3EC)', background: 'var(--surface, #fff)', color: 'var(--text-primary, #015376)' }}
             />
           </div>
 

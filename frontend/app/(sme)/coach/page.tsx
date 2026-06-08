@@ -242,7 +242,7 @@ function CoachInner() {
   const highSDGs = scorecard.sdgScores.filter(s => s.classification === 'High');
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-80px)] flex gap-5">
+    <div className="max-w-6xl mx-auto h-[calc(100vh-80px)] flex gap-5 animate-page-in">
 
       {/* LEFT — Context panel (desktop only) */}
       <div className="w-72 flex-shrink-0 flex-col gap-4 overflow-y-auto pb-4 hidden lg:flex">

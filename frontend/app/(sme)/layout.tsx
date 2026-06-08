@@ -1,15 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SMESideNav from '@/components/sme/SMESideNav';
 import { SMEDataProvider } from '@/context/SMEDataContext';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+
+function SMEShell({ children }: { children: React.ReactNode }) {
+  useSMEKeyboardShortcuts();
+  return (
+    <div className="flex min-h-screen" style={{ background: 'var(--bg, #F4F6F8)' }}>
+      <SMESideNav />
+      <main className="lg:ml-60 flex-1 p-5 lg:p-8 min-h-screen pt-16 lg:pt-8">
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
+      </main>
+    </div>
+  );
+}
 
 export default function SMELayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,23 +38,15 @@ export default function SMELayout({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F6F8]">
-        <div className="w-8 h-8 border-4 border-[#00B5ED] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg, #F4F6F8)' }}>
+        <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#00B5ED', borderTopColor: 'transparent' }} />
       </div>
     );
   }
 
   return (
     <SMEDataProvider>
-      <div className="flex min-h-screen bg-[#F4F6F8]">
-        <SMESideNav collapsed={collapsed} onCollapse={setCollapsed} />
-        <main
-          className="flex-1 p-8 min-h-screen transition-all duration-200"
-          style={{ marginLeft: collapsed ? '4rem' : '15rem' }}
-        >
-          {children}
-        </main>
-      </div>
+      <SMEShell>{children}</SMEShell>
     </SMEDataProvider>
   );
 }

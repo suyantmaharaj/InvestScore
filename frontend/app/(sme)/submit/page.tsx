@@ -6,6 +6,7 @@ import { CheckCircle, ChevronLeft, ChevronRight, Save, Send } from 'lucide-react
 import { useSMEContext } from '@/context/SMEDataContext';
 import { FORM_CATEGORIES, FormKPI } from '@/lib/kpi-form';
 import HelpChip from '@/components/sme/HelpChip';
+import { invalidateCache } from '@/lib/queryClient';
 
 const PERIOD = 'Q2 2026';
 const API    = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -179,6 +180,7 @@ export default function SubmitPage() {
       });
       const json = await res.json();
       if (json.success) {
+        invalidateCache('sme_data_');
         setNewScore({ score: json.overallScore, classification: json.classification });
         setSubmitted(true);
       }
@@ -249,7 +251,7 @@ export default function SubmitPage() {
 
   // ── FORM ─────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 animate-page-in">
 
       {/* Header */}
       <div>

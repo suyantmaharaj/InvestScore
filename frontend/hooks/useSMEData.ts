@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
+import { getCached, setCached } from '@/lib/queryClient';
 
 export interface SDGScoreData {
   sdgId:          number;
@@ -54,23 +55,39 @@ export function useSMEData() {
       try {
         setLoading(true);
 
+        const cacheKey = `sme_data_${user.companyId}`;
+        const cached   = getCached<{ company: CompanyData; scorecard: ScorecardData }>(cacheKey);
+        if (cached) {
+          setCompany(cached.company);
+          setScorecard(cached.scorecard);
+          setLoading(false);
+          return;
+        }
+
         // Load company profile
         const companySnap = await getDoc(doc(db, 'companies', user.companyId!));
+        let companyData: CompanyData | null = null;
         if (companySnap.exists()) {
-          setCompany({ id: companySnap.id, ...companySnap.data() } as CompanyData);
+          companyData = { id: companySnap.id, ...companySnap.data() } as CompanyData;
+          setCompany(companyData);
         }
 
         // Load scorecards — query by companyId only (no orderBy = no composite index needed)
-        // then sort in JS to get the most recent
         const snap = await getDocs(
           query(collection(db, 'scorecards'), where('companyId', '==', user.companyId))
         );
 
+        let scorecardData: ScorecardData | null = null;
         if (!snap.empty) {
           const sorted = snap.docs
             .map(d => d.data() as ScorecardData)
             .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
-          setScorecard(sorted[0]);
+          scorecardData = sorted[0];
+          setScorecard(scorecardData);
+        }
+
+        if (companyData && scorecardData) {
+          setCached(cacheKey, { company: companyData, scorecard: scorecardData });
         }
       } catch (err) {
         console.error('useSMEData error:', err);

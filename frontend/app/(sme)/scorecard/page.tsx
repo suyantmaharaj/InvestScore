@@ -9,6 +9,10 @@ import {
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import type { SDGScoreData } from '@/hooks/useSMEData';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
+import { SkeletonScorecard } from '@/components/shared/Skeleton';
+import AnimatedScore from '@/components/shared/AnimatedScore';
+import Tooltip from '@/components/shared/Tooltip';
+import EmptyState from '@/components/shared/EmptyState';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
 type SortType   = 'number' | 'score_desc' | 'score_asc';
@@ -60,10 +64,11 @@ function DrillDownPanel({
 
       {/* Panel */}
       <div
-        className="fixed right-0 top-0 h-full w-full max-w-[420px] bg-white z-50 overflow-y-auto"
+        className="fixed right-0 top-0 h-full w-full max-w-[420px] z-50 overflow-y-auto"
         style={{
-          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
-          animation: 'slideInRight 250ms ease-out forwards',
+          background: 'var(--surface, #fff)',
+          boxShadow:  '-4px 0 24px rgba(0,0,0,0.08)',
+          animation:  'slideInRight 250ms ease-out forwards',
         }}
       >
         {/* SDG color strip */}
@@ -203,12 +208,6 @@ function DrillDownPanel({
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to   { transform: translateX(0); }
-        }
-      `}</style>
     </>
   );
 }
@@ -248,19 +247,23 @@ export default function ScorecardPage() {
     return list;
   }, [scoreMap, filter, sort]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#00B5ED] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <SkeletonScorecard />;
 
   if (error || !scorecard) {
     return (
-      <div className="flex items-center justify-center h-64 text-[#4A5568]">
-        <p>Unable to load scorecard. Please try again.</p>
-      </div>
+      <EmptyState
+        icon="🎯"
+        title="No scorecard yet"
+        description="Submit your SDG data to generate your scorecard."
+        action={
+          <button
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white text-sm font-semibold hover:bg-[#0099CC] transition mx-auto"
+            onClick={() => router.push('/submit')}
+          >
+            Submit data
+          </button>
+        }
+      />
     );
   }
 
@@ -271,7 +274,7 @@ export default function ScorecardPage() {
   const classColors = CLASSIFICATION_COLORS[classification];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       {/* Page header */}
       <div className="flex items-start justify-between">
@@ -282,18 +285,19 @@ export default function ScorecardPage() {
           </p>
         </div>
         {/* Overall score circle */}
-        <div
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-full flex-shrink-0"
-          style={{ border: `3px solid ${scoreColor(overallScore)}` }}
-        >
-          <span
-            className="font-bold text-lg leading-none"
-            style={{ color: scoreColor(overallScore) }}
+        <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${overallScore.toFixed(1)} / 3.0`} position="left">
+          <div
+            className="flex flex-col items-center justify-center w-14 h-14 rounded-full flex-shrink-0"
+            style={{ border: `3px solid ${scoreColor(overallScore)}` }}
           >
-            {overallScore.toFixed(1)}
-          </span>
-          <span className="text-[#4A5568] text-[9px] leading-none mt-0.5">/ 3.0</span>
-        </div>
+            <AnimatedScore
+              value={overallScore}
+              className="font-bold text-lg leading-none"
+              style={{ color: scoreColor(overallScore) }}
+            />
+            <span className="text-[9px] leading-none mt-0.5" style={{ color: 'var(--text-muted, #4A5568)' }}>/ 3.0</span>
+          </div>
+        </Tooltip>
       </div>
 
       {/* Summary strip */}
@@ -323,9 +327,9 @@ export default function ScorecardPage() {
               onClick={() => setFilter(f)}
               className="px-3 py-1.5 text-xs rounded-lg border font-medium transition"
               style={{
-                background:  filter === f ? '#00B5ED' : 'white',
-                color:       filter === f ? 'white'   : '#4A5568',
-                borderColor: filter === f ? '#00B5ED' : '#DDE3EC',
+                background:  filter === f ? '#00B5ED' : 'var(--surface, white)',
+                color:       filter === f ? 'white'   : 'var(--text-muted, #4A5568)',
+                borderColor: filter === f ? '#00B5ED' : 'var(--border, #DDE3EC)',
               }}
             >
               {f}
@@ -335,7 +339,8 @@ export default function ScorecardPage() {
         <select
           value={sort}
           onChange={e => setSort(e.target.value as SortType)}
-          className="text-xs border border-[#DDE3EC] rounded-lg px-3 py-1.5 bg-white text-[#015376] focus:outline-none focus:ring-1 focus:ring-[#00B5ED]"
+          className="text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#00B5ED]"
+          style={{ background: 'var(--surface, white)', color: 'var(--text-primary, #015376)', border: '1px solid var(--border, #DDE3EC)' }}
         >
           <option value="number">SDG Number</option>
           <option value="score_desc">Score: High to Low</option>
@@ -345,7 +350,7 @@ export default function ScorecardPage() {
 
       {/* SDG Goal Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredSDGs.map(({ sdg, score }) => {
+        {filteredSDGs.map(({ sdg, score }, idx) => {
           const cc   = score ? CLASSIFICATION_COLORS[score.classification] : null;
           const diff = score ? score.score - score.sectorAvg : 0;
 
@@ -353,31 +358,36 @@ export default function ScorecardPage() {
             <button
               key={sdg.id}
               onClick={() => score && setSelected(score)}
-              className="bg-white rounded-xl border border-[#DDE3EC] text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden"
+              className="rounded-xl border text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
               style={{
-                borderLeft: `4px solid ${sdg.color}`,
-                opacity:    score ? 1 : 0.45,
-                cursor:     score ? 'pointer' : 'default',
+                background:     'var(--surface, #fff)',
+                borderColor:    'var(--border, #DDE3EC)',
+                borderLeft:     `4px solid ${sdg.color}`,
+                opacity:        score ? 1 : 0.45,
+                cursor:         score ? 'pointer' : 'default',
+                animationDelay: `${idx * 40}ms`,
               }}
             >
               {/* Top row: icon + name + SDG badge */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xl flex-shrink-0">{sdg.icon}</span>
-                  <p className="text-[#015376] font-semibold text-sm leading-tight truncate">
+                  <p className="font-semibold text-sm leading-tight truncate" style={{ color: 'var(--text-primary, #015376)' }}>
                     {sdg.name}
                   </p>
                 </div>
-                <span
-                  className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ml-2"
-                  style={{
-                    background: `${sdg.color}20`,
-                    color:       sdg.color,
-                    border:      `1px solid ${sdg.color}40`,
-                  }}
-                >
-                  SDG {sdg.id}
-                </span>
+                <Tooltip content={sdg.name} position="top">
+                  <span
+                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ml-2"
+                    style={{
+                      background: `${sdg.color}20`,
+                      color:       sdg.color,
+                      border:      `1px solid ${sdg.color}40`,
+                    }}
+                  >
+                    SDG {sdg.id}
+                  </span>
+                </Tooltip>
               </div>
 
               {/* Score + bar + badge */}
