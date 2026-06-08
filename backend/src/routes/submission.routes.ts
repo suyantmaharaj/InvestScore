@@ -3,6 +3,7 @@ import { db } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { calculateScore, calculateSDGScores } from '../services/scoring.service';
+import { createNotification } from './notifications.routes';
 
 const router = Router();
 
@@ -122,6 +123,62 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
       calculatedAt:     now,
       submissionPeriod: period || 'Q2 2026',
     });
+
+    // Notifications
+    const company = companySnap.data()!;
+    try {
+      await createNotification({
+        type:        'submission',
+        title:       'New data submission',
+        body:        `${company.name} has submitted their ${period || 'Q2 2026'} SDG data. Overall score: ${overallScore.toFixed(1)} (${classification} Impact).`,
+        companyId,
+        companyName: company.name,
+        severity:    'info',
+        forRole:     'pm',
+        metadata:    { overallScore, classification, period },
+      });
+
+      if (classification === 'Low' || overallScore < 1.8) {
+        await createNotification({
+          type:        'risk_alert',
+          title:       `Risk alert: ${company.name}`,
+          body:        `${company.name} scored ${overallScore.toFixed(1)} on their latest submission — below the 1.8 risk threshold. Immediate portfolio review recommended.`,
+          companyId,
+          companyName: company.name,
+          severity:    'critical',
+          forRole:     'pm',
+          metadata:    { overallScore, classification },
+        });
+      }
+
+      // Classification change detection
+      const prevSnap = await db.collection('scorecards')
+        .where('companyId', '==', companyId)
+        .get();
+
+      const prevScorecards = prevSnap.docs
+        .map(d => d.data())
+        .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
+
+      if (prevScorecards.length >= 2) {
+        const prevClassification = prevScorecards[1].classification;
+        if (prevClassification !== classification) {
+          const improved = classification === 'High' || (classification === 'Medium' && prevClassification === 'Low');
+          await createNotification({
+            type:        'classification_change',
+            title:       `${company.name} changed classification`,
+            body:        `${company.name} moved from ${prevClassification} Impact to ${classification} Impact. ${improved ? 'This is a positive improvement.' : 'This requires attention.'}`,
+            companyId,
+            companyName: company.name,
+            severity:    improved ? 'info' : 'warning',
+            forRole:     'pm',
+            metadata:    { from: prevClassification, to: classification },
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error('Notification creation error (non-fatal):', notifErr);
+    }
 
     // Delete any draft
     const drafts = await db

@@ -9,8 +9,9 @@ import smeRoutes        from './routes/sme.routes';
 import submissionRoutes from './routes/submission.routes';
 import scoringRoutes    from './routes/scoring.routes';
 import pmRoutes         from './routes/pm.routes';
-import adminRoutes      from './routes/admin.routes';
-import aiRoutes         from './routes/ai.routes';
+import adminRoutes         from './routes/admin.routes';
+import aiRoutes            from './routes/ai.routes';
+import notificationRoutes  from './routes/notifications.routes';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -24,7 +25,8 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/scoring',     scoringRoutes);
 app.use('/api/pm',          pmRoutes);
 app.use('/api/admin',       adminRoutes);
-app.use('/api/ai',          aiRoutes);
+app.use('/api/ai',            aiRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 

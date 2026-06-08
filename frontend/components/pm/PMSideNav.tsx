@@ -4,22 +4,26 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, Map, Building2,
-  GitCompare, Bell, LogOut, TrendingUp, Menu, X,
+  LayoutDashboard, Map,
+  GitCompare, Bell, BellDot, LogOut, TrendingUp, Menu, X, Settings,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const NAV_ITEMS = [
-  { href: '/heatmap',  label: 'Portfolio Overview', icon: LayoutDashboard },
-  { href: '/explorer', label: 'Heat Map',            icon: Map             },
-  { href: '/compare',  label: 'Head to Head',        icon: GitCompare      },
-  { href: '/alerts',   label: 'Alerts',              icon: Bell            },
+  { href: '/heatmap',       label: 'Portfolio Overview', icon: LayoutDashboard },
+  { href: '/explorer',      label: 'Heat Map',            icon: Map             },
+  { href: '/compare',       label: 'Head to Head',        icon: GitCompare      },
+  { href: '/alerts',        label: 'Alerts',              icon: Bell            },
+  { href: '/notifications', label: 'Notifications',       icon: BellDot         },
+  { href: '/pm/settings',   label: 'Settings',            icon: Settings        },
 ];
 
 function NavContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router   = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout }       = useAuth();
+  const { unreadCount }        = useNotifications();
 
   const handleLogout = async () => {
     await logout();
@@ -66,7 +70,8 @@ function NavContent({ onClose }: { onClose?: () => void }) {
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/');
+          const active    = pathname === href || pathname.startsWith(href + '/');
+          const showBadge = href === '/notifications' && unreadCount > 0;
           return (
             <Link
               key={href}
@@ -86,12 +91,19 @@ function NavContent({ onClose }: { onClose?: () => void }) {
                 }}
               />
               <span>{label}</span>
-              {active && (
+              {showBadge ? (
+                <span
+                  className="ml-auto min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
+                  style={{ background: '#EF4444' }}
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              ) : active ? (
                 <div
                   className="ml-auto w-1.5 h-1.5 rounded-full"
                   style={{ background: 'var(--sanlam-teal)' }}
                 />
-              )}
+              ) : null}
             </Link>
           );
         })}

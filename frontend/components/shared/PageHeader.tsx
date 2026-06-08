@@ -8,7 +8,19 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import Tooltip from '@/components/shared/Tooltip';
+
+function formatTimeAgo(iso: string): string {
+  const diff  = Date.now() - new Date(iso).getTime();
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins < 1)   return 'Just now';
+  if (mins < 60)  return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
 
 const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: string[]; icon: string }> = {
   '/dashboard':    { icon: '📊', title: 'Dashboard',       subtitle: '', breadcrumb: ['SME Portal', 'Dashboard']    },
@@ -19,11 +31,13 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences', breadcrumb: ['SME Portal', 'Settings'] },
 
   // PM Portal pages
-  '/heatmap':  { icon: '📋', title: 'Portfolio Overview',  subtitle: 'SDG performance across all invested companies',      breadcrumb: ['PM Portal', 'Portfolio Overview'] },
-  '/explorer': { icon: '🗺️', title: 'SDG Heat Map',        subtitle: 'Visual matrix of all companies across all 17 goals', breadcrumb: ['PM Portal', 'Heat Map']           },
-  '/compare':  { icon: '⚖️', title: 'Head to Head',        subtitle: 'Compare any two companies side by side',             breadcrumb: ['PM Portal', 'Head to Head']       },
-  '/alerts':   { icon: '🔔', title: 'Alerts',              subtitle: 'Companies and goals that need attention',            breadcrumb: ['PM Portal', 'Alerts']            },
-  '/company':  { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
+  '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: 'SDG performance across all invested companies',      breadcrumb: ['PM Portal', 'Portfolio Overview'] },
+  '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: 'Visual matrix of all companies across all 17 goals', breadcrumb: ['PM Portal', 'Heat Map']           },
+  '/compare':       { icon: '⚖️', title: 'Head to Head',        subtitle: 'Compare any two companies side by side',             breadcrumb: ['PM Portal', 'Head to Head']       },
+  '/alerts':        { icon: '🔔', title: 'Alerts',              subtitle: 'Companies and goals that need attention',            breadcrumb: ['PM Portal', 'Alerts']            },
+  '/company':       { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
+  '/notifications': { icon: '🔔', title: 'Notifications',       subtitle: 'Activity and alerts across your portfolio',          breadcrumb: ['PM Portal', 'Notifications']     },
+  '/pm/settings':   { icon: '⚙️', title: 'Settings',            subtitle: 'Manage your profile and preferences',               breadcrumb: ['PM Portal', 'Settings']          },
 
   // Admin Portal pages
   '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',  subtitle: 'Platform overview and activity',                        breadcrumb: ['Admin Portal', 'Dashboard']     },
@@ -50,31 +64,57 @@ interface Props {
   actions?: React.ReactNode;
 }
 
+const NOTIF_ICONS: Record<string, string> = {
+  submission:             '📋',
+  classification_change:  '🔄',
+  registration_approved:  '✅',
+  risk_alert:             '🚨',
+};
+
+const SEVERITY_COLORS: Record<string, string> = {
+  info:     'var(--sanlam-teal)',
+  warning:  '#F59E0B',
+  critical: '#EF4444',
+};
+
 export default function PageHeader({ actions }: Props) {
   const pathname               = usePathname();
   const router                 = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { user, logout }       = useAuth();
+  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const meta        = PAGE_META[pathname] || PAGE_META['/dashboard'];
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  const isPM    = user?.role === 'pm';
+  const meta    = PAGE_META[pathname] ?? Object.entries(PAGE_META).find(([k]) => pathname.startsWith(k))?.[1] ?? PAGE_META['/dashboard'];
   const initials    = getInitials(user?.name || 'User');
   const avatarColor = getAvatarColor(user?.name || 'User');
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
     };
     if (dropdownOpen) document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [dropdownOpen]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false); };
+    const handler = (e: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
+    };
+    if (bellOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [bellOpen]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setDropdownOpen(false); setBellOpen(false); }
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, []);
@@ -87,7 +127,7 @@ export default function PageHeader({ actions }: Props) {
 
   const handleSettings = () => {
     setDropdownOpen(false);
-    router.push('/settings');
+    router.push(isPM ? '/pm/settings' : '/settings');
   };
 
   return (
@@ -169,19 +209,143 @@ export default function PageHeader({ actions }: Props) {
         </Tooltip>
 
         {/* Notification bell */}
-        <Tooltip content="Notifications" position="bottom">
+        <div className="relative" ref={bellRef}>
           <button
+            onClick={() => setBellOpen(prev => !prev)}
             className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-            style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            style={{
+              background: bellOpen ? 'var(--surface-raised)' : 'var(--bg)',
+              border:     `1px solid ${bellOpen ? 'var(--sanlam-teal)' : 'var(--border)'}`,
+            }}
             aria-label="Notifications"
           >
-            <Bell size={15} />
-            <span
-              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-              style={{ background: 'var(--sanlam-teal)' }}
-            />
+            <Bell size={15} style={{ color: 'var(--text-secondary)' }} />
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white px-0.5"
+                style={{ background: '#EF4444', lineHeight: 1 }}
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
-        </Tooltip>
+
+          {bellOpen && (
+            <div
+              className="absolute right-0 top-full mt-2 w-80 rounded-2xl overflow-hidden animate-card-in"
+              style={{
+                background: 'var(--surface)',
+                border:     '1px solid var(--border)',
+                boxShadow:  'var(--shadow-float)',
+                zIndex:     50,
+              }}
+            >
+              {/* Bell header */}
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell size={13} style={{ color: 'var(--sanlam-teal)' }} />
+                  <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notifications</span>
+                  {unreadCount > 0 && (
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                      style={{ background: '#EF4444' }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAllRead()}
+                    className="text-[11px] font-medium transition-opacity hover:opacity-80"
+                    style={{ color: 'var(--sanlam-teal)' }}
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              {/* Notification list */}
+              <div className="overflow-y-auto" style={{ maxHeight: '320px' }}>
+                {notifications.length === 0 ? (
+                  <div className="py-10 text-center">
+                    <Bell size={24} className="mx-auto mb-2 opacity-30" style={{ color: 'var(--text-muted)' }} />
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No notifications yet</p>
+                  </div>
+                ) : (
+                  notifications.slice(0, 8).map(n => (
+                    <button
+                      key={n.id}
+                      onClick={() => {
+                        markRead(n.id);
+                        if (n.companyId) { setBellOpen(false); router.push(`/company/${n.companyId}`); }
+                      }}
+                      className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors duration-150"
+                      style={{
+                        background:   n.read ? 'transparent' : 'rgba(0,181,237,0.04)',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(0,181,237,0.04)')}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
+                        style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+                      >
+                        {NOTIF_ICONS[n.type] || '🔔'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{n.title}</p>
+                          <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                            {formatTimeAgo(n.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{n.body}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span
+                            className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: SEVERITY_COLORS[n.severity] || 'var(--sanlam-teal)' }}
+                          />
+                          <span className="text-[10px]" style={{ color: SEVERITY_COLORS[n.severity] || 'var(--sanlam-teal)' }}>
+                            {n.severity.charAt(0).toUpperCase() + n.severity.slice(1)}
+                          </span>
+                          {!n.read && (
+                            <span
+                              className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(0,181,237,0.12)', color: 'var(--sanlam-teal)' }}
+                            >
+                              New
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {/* Bell footer */}
+              {isPM && (
+                <div
+                  className="px-4 py-2.5"
+                  style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)' }}
+                >
+                  <button
+                    onClick={() => { setBellOpen(false); router.push('/notifications'); }}
+                    className="w-full text-center text-xs font-medium transition-opacity hover:opacity-80"
+                    style={{ color: 'var(--sanlam-teal)' }}
+                  >
+                    See all notifications →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
 

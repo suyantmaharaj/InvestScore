@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { db, adminAuth } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
+import { createNotification } from './notifications.routes';
 
 const router = Router();
 
@@ -154,6 +155,20 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
     });
 
     await snap.ref.update({ status: 'approved', approvedAt: new Date().toISOString() });
+
+    try {
+      await createNotification({
+        type:        'registration_approved',
+        title:       'New company onboarded',
+        body:        `${reg.companyName} has been approved and is now active on the platform. ${reg.name} can now log in and submit SDG data.`,
+        companyName: reg.companyName,
+        severity:    'info',
+        forRole:     'pm',
+        metadata:    { email: reg.email, industry: reg.industry },
+      });
+    } catch (notifErr) {
+      console.error('Notification creation error (non-fatal):', notifErr);
+    }
 
     return res.json({ success: true, uid: fbUser.uid });
   } catch (err: any) {
