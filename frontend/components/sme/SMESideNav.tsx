@@ -75,19 +75,31 @@ function NavContent({
               href={href}
               onClick={onClose}
               title={collapsed ? label : undefined}
-              className="flex items-center rounded-xl text-sm font-medium transition-all duration-150 hover:bg-white/10"
+              className="group flex items-center rounded-xl text-sm font-medium transition-all duration-200"
               style={{
                 gap:            collapsed ? 0 : '0.75rem',
                 padding:        collapsed ? '0.625rem' : '0.625rem 0.75rem',
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                background:     active ? 'var(--sidebar-active-bg, rgba(0,181,237,0.15))' : 'transparent',
-                color:          active ? 'var(--sidebar-active-text, #00B5ED)' : 'var(--sidebar-text, rgba(255,255,255,0.65))',
+                background: active ? 'rgba(0,181,237,0.18)' : 'transparent',
+                color:      active ? '#00B5ED' : 'rgba(255,255,255,0.65)',
+              }}
+              onMouseEnter={e => {
+                if (!active) {
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+                  (e.currentTarget as HTMLElement).style.color      = 'rgba(255,255,255,0.95)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!active) {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color      = 'rgba(255,255,255,0.65)';
+                }
               }}
             >
               <Icon
                 size={18}
-                style={{ color: active ? '#00B5ED' : 'var(--sidebar-text, rgba(255,255,255,0.65))' }}
-                className="flex-shrink-0"
+                style={{ color: active ? '#00B5ED' : 'rgba(255,255,255,0.65)' }}
+                className="flex-shrink-0 transition-colors duration-200 group-hover:text-white"
               />
               {!collapsed && (
                 <>
@@ -110,12 +122,20 @@ function NavContent({
         <button
           onClick={handleLogout}
           title={collapsed ? 'Sign out' : undefined}
-          className="flex items-center text-sm transition-colors w-full rounded-lg hover:bg-white/5"
+          className="flex items-center text-sm transition-all duration-200 w-full rounded-lg"
           style={{
             color:          'rgba(255,255,255,0.45)',
             justifyContent: collapsed ? 'center' : 'flex-start',
             gap:            collapsed ? 0 : '0.5rem',
             padding:        '0.375rem 0.25rem',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+            (e.currentTarget as HTMLElement).style.color      = 'rgba(255,255,255,0.85)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.background = 'transparent';
+            (e.currentTarget as HTMLElement).style.color      = 'rgba(255,255,255,0.45)';
           }}
         >
           <LogOut size={15} />
