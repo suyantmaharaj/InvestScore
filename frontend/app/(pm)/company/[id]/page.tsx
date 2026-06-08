@@ -84,13 +84,103 @@ function MandateBadge({ mandate }: { mandate?: string }) {
   );
 }
 
+/* ── PM Notes ── */
+function PMNotesSection({ companyId }: { companyId: string }) {
+  const [notes,       setNotes]       = useState('');
+  const [notesSaving, setNotesSaving] = useState(false);
+  const [notesSaved,  setNotesSaved]  = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pm/notes/${companyId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const json = await res.json();
+        setNotes(json.notes || '');
+      } catch (err) {
+        console.error('Load PM notes error:', err);
+      }
+    };
+    load();
+  }, [companyId]);
+
+  const saveNotes = async () => {
+    setNotesSaving(true);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token    = await auth.currentUser?.getIdToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pm/notes/${companyId}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ notes }),
+      });
+      setNotesSaved(true);
+      setTimeout(() => setNotesSaved(false), 2000);
+    } catch (err) {
+      console.error('Save PM notes error:', err);
+    } finally {
+      setNotesSaving(false);
+    }
+  };
+
+  return (
+    <div className="card p-5" style={{ background: 'var(--surface)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          PM Notes
+        </p>
+        <div className="flex items-center gap-2">
+          {notesSaved && (
+            <span className="text-xs font-medium animate-fade-in" style={{ color: '#00A651' }}>
+              Saved
+            </span>
+          )}
+          <button
+            onClick={saveNotes}
+            disabled={notesSaving}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60"
+            style={{ background: 'var(--sanlam-teal)' }}
+          >
+            {notesSaving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        placeholder="Add your investment thesis, meeting notes, risk flags, or next steps for this company..."
+        rows={5}
+        className="w-full rounded-xl text-sm focus:outline-none resize-none"
+        style={{
+          background: 'var(--bg)',
+          border:     '1.5px solid var(--border)',
+          color:      'var(--text-primary)',
+          padding:    '10px 12px',
+          lineHeight: '1.6',
+        }}
+        onFocus={e  => (e.target.style.borderColor = 'var(--sanlam-teal)')}
+        onBlur={e   => (e.target.style.borderColor = 'var(--border)')}
+      />
+      <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
+        Notes are private to Portfolio Managers. Not visible to the company.
+      </p>
+    </div>
+  );
+}
+
 /* ── Claude Narrative ── */
 function OverviewTab({
   company,
   scorecard,
+  companyId,
 }: {
-  company: NonNullable<ReturnType<typeof usePMCompanyDetail>['company']>;
-  scorecard: NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']>;
+  company:    NonNullable<ReturnType<typeof usePMCompanyDetail>['company']>;
+  scorecard:  NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']>;
+  companyId:  string;
 }) {
   const [narrative, setNarrative] = useState('');
   const [loading,   setLoading]   = useState(true);
@@ -194,6 +284,9 @@ function OverviewTab({
           ))}
         </div>
       </div>
+
+      {/* PM Notes */}
+      <PMNotesSection companyId={companyId} />
     </div>
   );
 }
@@ -511,7 +604,7 @@ export default function CompanyDetailPage() {
             <EmploymentTab company={company} scorecard={scorecard} submission={submission} />
           )}
           {tab === 'overview' && (
-            <OverviewTab company={company} scorecard={scorecard} />
+            <OverviewTab company={company} scorecard={scorecard} companyId={id} />
           )}
           {tab === 'sdg' && (
             <SDGTab scorecard={scorecard} />

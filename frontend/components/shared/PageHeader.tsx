@@ -28,7 +28,9 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/benchmarking': { icon: '📈', title: 'Peer Benchmarking', subtitle: '', breadcrumb: ['SME Portal', 'Benchmarking'] },
   '/submit':       { icon: '📋', title: 'Submit SDG Data', subtitle: '', breadcrumb: ['SME Portal', 'Submit Data']   },
   '/coach':        { icon: '🤖', title: 'AI Coach',        subtitle: '', breadcrumb: ['SME Portal', 'AI Coach']      },
-  '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences', breadcrumb: ['SME Portal', 'Settings'] },
+  '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences',             breadcrumb: ['SME Portal', 'Settings']    },
+  '/history':      { icon: '📅', title: 'Submission History', subtitle: 'Your SDG data submissions and score progression',  breadcrumb: ['SME Portal', 'History']     },
+  '/learn':        { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
 
   // PM Portal pages
   '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: 'SDG performance across all invested companies',      breadcrumb: ['PM Portal', 'Portfolio Overview'] },

@@ -134,7 +134,8 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
       return res.status(404).json({ error: 'Registration not found.' });
     }
 
-    const reg = snap.data()!;
+    const reg        = snap.data()!;
+    const { companyId } = req.body;
 
     const fbUser = await adminAuth.createUser({
       email:         reg.email,
@@ -150,9 +151,16 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
       email:     reg.email,
       name:      reg.name,
       role:      'sme',
-      companyId: null,
+      companyId: companyId || null,
       createdAt: new Date().toISOString(),
     });
+
+    if (companyId) {
+      await db.collection('companies').doc(companyId as string).update({
+        spokespersonEmail: reg.email,
+        spokespersonName:  reg.name,
+      });
+    }
 
     await snap.ref.update({ status: 'approved', approvedAt: new Date().toISOString() });
 

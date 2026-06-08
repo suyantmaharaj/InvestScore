@@ -56,9 +56,11 @@ export default function PMPortfolioOverviewPage() {
   const router = useRouter();
   const { portfolio, stats, loading, error } = usePMData();
 
-  const [filter, setFilter] = useState<FilterKey>('All');
-  const [sort,   setSort]   = useState<SortKey>('score_desc');
-  const [search, setSearch] = useState('');
+  const [filter,        setFilter]        = useState<FilterKey>('All');
+  const [sort,          setSort]          = useState<SortKey>('score_desc');
+  const [search,        setSearch]        = useState('');
+  const [mandateFilter, setMandateFilter] = useState<string>('All');
+  const [bbbeeFilter,   setBbbeeFilter]   = useState<string>('All');
 
   if (loading) {
     return (
@@ -85,6 +87,13 @@ export default function PMPortfolioOverviewPage() {
 
   let filtered = portfolio.filter(e => {
     if (filter !== 'All' && e.scorecard?.classification !== filter) return false;
+    if (mandateFilter !== 'All' && e.company.mandate !== mandateFilter) return false;
+    if (bbbeeFilter !== 'All') {
+      const level = e.company.bbbeeLevel;
+      if (bbbeeFilter === '1-2' && !(level && level <= 2))             return false;
+      if (bbbeeFilter === '3-4' && !(level && level >= 3 && level <= 4)) return false;
+      if (bbbeeFilter === '5+'  && !(level && level >= 5))             return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       return (
@@ -127,6 +136,28 @@ export default function PMPortfolioOverviewPage() {
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--sanlam-green)' }} />
           Live scores
         </span>
+        {mandateFilter !== 'All' && (
+          <>
+            <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
+            >
+              {mandateFilter} mandate
+            </span>
+          </>
+        )}
+        {bbbeeFilter !== 'All' && (
+          <>
+            <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(212,175,55,0.15)', color: '#B8860B' }}
+            >
+              B-BBEE {bbbeeFilter}
+            </span>
+          </>
+        )}
       </PageContext>
 
       {/* Stat cards */}
@@ -246,6 +277,47 @@ export default function PMPortfolioOverviewPage() {
               }}
             >
               {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Mandate filter */}
+        <div className="flex gap-1">
+          {['All', 'Growth', 'Empowerment', 'Development'].map(m => (
+            <button
+              key={m}
+              onClick={() => setMandateFilter(m)}
+              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium transition-all"
+              style={{
+                background:  mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--surface)',
+                color:       mandateFilter === m ? 'white'               : 'var(--text-muted)',
+                borderColor: mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--border)',
+              }}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+
+        {/* B-BBEE level filter */}
+        <div className="flex gap-1">
+          {[
+            { key: 'All', label: 'All B-BBEE' },
+            { key: '1-2', label: 'L1–2 ★'    },
+            { key: '3-4', label: 'L3–4'       },
+            { key: '5+',  label: 'L5+'        },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setBbbeeFilter(key)}
+              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium transition-all"
+              style={{
+                background:  bbbeeFilter === key ? 'rgba(212,175,55,0.2)' : 'var(--surface)',
+                color:       bbbeeFilter === key ? '#B8860B'               : 'var(--text-muted)',
+                borderColor: bbbeeFilter === key ? '#B8860B'               : 'var(--border)',
+              }}
+            >
+              {label}
             </button>
           ))}
         </div>

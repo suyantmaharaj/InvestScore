@@ -17,6 +17,11 @@ interface Registration {
   status:      'pending' | 'approved' | 'rejected';
 }
 
+interface Company {
+  id:   string;
+  name: string;
+}
+
 async function apiFetch(path: string, options?: RequestInit) {
   const { auth } = await import('@/lib/firebase');
   const token    = await auth.currentUser?.getIdToken();
@@ -31,10 +36,13 @@ async function apiFetch(path: string, options?: RequestInit) {
 }
 
 export default function RegistrationsPage() {
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [loading,       setLoading]       = useState(true);
-  const [actionId,      setActionId]      = useState<string | null>(null);
-  const [filter,        setFilter]        = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [registrations,   setRegistrations]   = useState<Registration[]>([]);
+  const [loading,         setLoading]         = useState(true);
+  const [actionId,        setActionId]        = useState<string | null>(null);
+  const [filter,          setFilter]          = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [approveId,       setApproveId]       = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string>('');
+  const [companies,       setCompanies]       = useState<Company[]>([]);
 
   const load = async () => {
     try {
@@ -51,18 +59,51 @@ export default function RegistrationsPage() {
 
   useEffect(() => { load(); }, []);
 
-  const handleAction = async (id: string, action: 'approve' | 'reject') => {
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        const { db }                    = await import('@/lib/firebase');
+        const { collection, getDocs }   = await import('firebase/firestore');
+        const snap = await getDocs(collection(db, 'companies'));
+        setCompanies(snap.docs.map(d => ({ id: d.id, name: d.data().name as string }))
+          .sort((a, b) => a.name.localeCompare(b.name)));
+      } catch (err) {
+        console.error('Load companies error:', err);
+      }
+    };
+    loadCompanies();
+  }, []);
+
+  const handleApprove = async (id: string) => {
     setActionId(id);
     try {
-      await apiFetch(`/api/admin/registrations/${id}/${action}`, { method: 'POST' });
+      const res = await apiFetch(`/api/admin/registrations/${id}/approve`, {
+        method: 'POST',
+        body:   JSON.stringify({ companyId: selectedCompany || null }),
+      });
+      if (res.ok) {
+        setRegistrations(prev =>
+          prev.map(r => r.id === id ? { ...r, status: 'approved' } : r)
+        );
+        setApproveId(null);
+        setSelectedCompany('');
+      }
+    } catch (err) {
+      console.error('Approve error:', err);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setActionId(id);
+    try {
+      await apiFetch(`/api/admin/registrations/${id}/reject`, { method: 'POST' });
       setRegistrations(prev =>
-        prev.map(r => r.id === id
-          ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' }
-          : r
-        )
+        prev.map(r => r.id === id ? { ...r, status: 'rejected' } : r)
       );
     } catch (err) {
-      console.error('Registration action error:', err);
+      console.error('Reject error:', err);
     } finally {
       setActionId(null);
     }
@@ -111,7 +152,7 @@ export default function RegistrationsPage() {
             className="px-4 py-2 text-xs font-medium rounded-lg transition capitalize"
             style={{
               background: filter === f ? 'var(--sanlam-navy)' : 'transparent',
-              color:      filter === f ? 'white'              : 'var(--text-muted)',
+              color:      filter === f ? 'white'               : 'var(--text-muted)',
             }}
           >
             {f}
@@ -193,31 +234,73 @@ export default function RegistrationsPage() {
               </div>
 
               {reg.status === 'pending' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAction(reg.id, 'approve')}
-                    disabled={actionId === reg.id}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60"
-                    style={{ background: '#00A651' }}
-                  >
-                    {actionId === reg.id
-                      ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      : <Check size={13} />}
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleAction(reg.id, 'reject')}
-                    disabled={actionId === reg.id}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition disabled:opacity-60"
-                    style={{
-                      background: 'rgba(208,2,27,0.08)',
-                      color:      '#D0021B',
-                      border:     '1px solid rgba(208,2,27,0.2)',
-                    }}
-                  >
-                    <X size={13} />
-                    Reject
-                  </button>
+                <div className="space-y-3">
+                  {approveId === reg.id ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                        Link to an existing company (optional):
+                      </p>
+                      <select
+                        value={selectedCompany}
+                        onChange={e => setSelectedCompany(e.target.value)}
+                        className="w-full h-9 px-3 rounded-lg text-xs focus:outline-none"
+                        style={{
+                          background: 'var(--bg)',
+                          border:     '1.5px solid var(--border)',
+                          color:      'var(--text-primary)',
+                        }}
+                      >
+                        <option value="">No company link (assign later)</option>
+                        {companies.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApprove(reg.id)}
+                          disabled={actionId === reg.id}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60"
+                          style={{ background: '#00A651' }}
+                        >
+                          {actionId === reg.id
+                            ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            : <Check size={13} />}
+                          Confirm Approve
+                        </button>
+                        <button
+                          onClick={() => { setApproveId(null); setSelectedCompany(''); }}
+                          className="px-3 py-2 rounded-lg text-xs font-medium transition"
+                          style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setApproveId(reg.id)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition"
+                        style={{ background: '#00A651' }}
+                      >
+                        <Check size={13} />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleReject(reg.id)}
+                        disabled={actionId === reg.id}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition disabled:opacity-60"
+                        style={{
+                          background: 'rgba(208,2,27,0.08)',
+                          color:      '#D0021B',
+                          border:     '1px solid rgba(208,2,27,0.2)',
+                        }}
+                      >
+                        <X size={13} />
+                        Reject
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
