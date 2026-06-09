@@ -113,12 +113,6 @@ function NavContent({ onClose }: { onClose?: () => void }) {
         className="px-4 py-4"
         style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <div className="mb-3 px-1">
-          <p className="text-white text-sm font-medium truncate">{user?.name}</p>
-          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            {user?.email}
-          </p>
-        </div>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 text-sm transition-colors w-full px-1 py-1.5 rounded-lg hover:bg-white/5"
