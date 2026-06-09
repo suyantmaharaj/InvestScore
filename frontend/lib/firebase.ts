@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, inMemoryPersistence, initializeAuth } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -13,7 +13,19 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-export const auth = getAuth(app);
+export const auth = (() => {
+  if (typeof window === 'undefined') {
+    return getAuth(app);
+  }
+
+  try {
+    return initializeAuth(app, {
+      persistence: inMemoryPersistence,
+    });
+  } catch {
+    return getAuth(app);
+  }
+})();
 
 // Persistent local cache: serves from IndexedDB instantly, syncs in background
 export const db = initializeFirestore(app, {

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  inMemoryPersistence,
   onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
   signOut,
   User,
@@ -48,6 +50,7 @@ export function useAuth() {
   }, []);
 
   const login = async (email: string, password: string) => {
+    await setPersistence(auth, inMemoryPersistence);
     const cred = await signInWithEmailAndPassword(auth, email, password);
     return cred.user;
   };

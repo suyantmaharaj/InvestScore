@@ -52,7 +52,7 @@ export default function SMELayout({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     }
     if (!loading && user && user.role !== 'sme') {
-      if (user.role === 'pm')    router.replace('/pm/heatmap');
+      if (user.role === 'pm')    router.replace('/heatmap');
       if (user.role === 'admin') router.replace('/admin/dashboard');
     }
   }, [user, loading, router]);

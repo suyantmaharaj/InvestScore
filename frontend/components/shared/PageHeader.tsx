@@ -33,12 +33,12 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/learn':        { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
 
   // PM Portal pages
-  '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: 'SDG performance across all invested companies',      breadcrumb: ['PM Portal', 'Portfolio Overview'] },
-  '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: 'Visual matrix of all companies across all 17 goals', breadcrumb: ['PM Portal', 'Heat Map']           },
-  '/compare':       { icon: '⚖️', title: 'Head to Head',        subtitle: 'Compare any two companies side by side',             breadcrumb: ['PM Portal', 'Head to Head']       },
-  '/alerts':        { icon: '🔔', title: 'Alerts',              subtitle: 'Companies and goals that need attention',            breadcrumb: ['PM Portal', 'Alerts']            },
+  '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: '',                                                   breadcrumb: ['PM Portal', 'Portfolio Overview'] },
+  '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Heat Map']           },
+  '/compare':       { icon: '⚖️', title: 'Head to Head',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Head to Head']       },
+  '/alerts':        { icon: '🔔', title: 'Alerts',              subtitle: '',                                                   breadcrumb: ['PM Portal', 'Alerts']            },
   '/company':       { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
-  '/notifications': { icon: '🔔', title: 'Notifications',       subtitle: 'Activity and alerts across your portfolio',          breadcrumb: ['PM Portal', 'Notifications']     },
+  '/notifications': { icon: '🔔', title: 'Notifications',       subtitle: '',                                                   breadcrumb: ['PM Portal', 'Notifications']     },
   '/pm/settings':   { icon: '⚙️', title: 'Settings',            subtitle: 'Manage your profile and preferences',               breadcrumb: ['PM Portal', 'Settings']          },
 
   // Admin Portal pages
