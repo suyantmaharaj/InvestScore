@@ -15,8 +15,7 @@ const NAV_ITEMS = [
   { href: '/explorer',      label: 'Heat Map',            icon: Map             },
   { href: '/compare',       label: 'Head to Head',        icon: GitCompare      },
   { href: '/alerts',        label: 'Alerts',              icon: Bell            },
-  { href: '/notifications', label: 'Notifications',       icon: BellDot         },
-  { href: '/pm/settings',   label: 'Settings',            icon: Settings        },
+  { href: '/notifications', label: 'Notifications',       icon: BellDot         }
 ];
 
 function NavContent({ onClose }: { onClose?: () => void }) {
