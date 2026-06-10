@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { usePMData } from '@/hooks/usePMData';
 import { SDG_LIST } from '@/lib/sdg';
 import { SkeletonCard } from '@/components/shared/Skeleton';
@@ -15,12 +14,6 @@ function scoreColor(s: number) {
   if (s >= 2.4) return '#00A651';
   if (s >= 1.6) return '#E8A020';
   return '#D0021B';
-}
-
-function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
-  if (trend === 'up')   return <TrendingUp   size={12} style={{ color: '#00A651' }} />;
-  if (trend === 'down') return <TrendingDown size={12} style={{ color: '#D0021B' }} />;
-  return <Minus size={12} style={{ color: 'var(--text-muted)' }} />;
 }
 
 function formatSector(s: string) {

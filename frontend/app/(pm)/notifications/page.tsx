@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, RefreshCw, CheckCheck, Building2, AlertTriangle, Info, ArrowRight } from 'lucide-react';
+import { Bell, RefreshCw, CheckCheck, Building2, ArrowRight } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Notification, NotificationType } from '@/types/notifications';
 

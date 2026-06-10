@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Map, Star, Award, RefreshCw, ChevronRight, Zap } from 'lucide-react';
+import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap } from 'lucide-react';
 import { LEARNING_LESSONS, LEARNING_COURSES } from '@/lib/learn-content';
 import {
   getAllProgress,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Palette, Bell, Shield, LogOut, Sun, Moon, Monitor, Check } from 'lucide-react';
+import { User, Palette, Bell, Shield, LogOut, Sun, Moon, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/lib/theme';
 

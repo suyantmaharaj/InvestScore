@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  TrendingUp, TrendingDown, Minus,
+  TrendingUp,
   Award, AlertTriangle, Building2, ChevronRight,
 } from 'lucide-react';
 import { usePMData } from '@/hooks/usePMData';
@@ -26,12 +26,6 @@ function scoreColor(score: number) {
 
 function formatSector(s: string) {
   return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
-  if (trend === 'up')   return <TrendingUp   size={13} style={{ color: '#00A651' }} />;
-  if (trend === 'down') return <TrendingDown size={13} style={{ color: '#D0021B' }} />;
-  return <Minus size={13} style={{ color: 'var(--text-muted)' }} />;
 }
 
 function MandateBadge({ mandate }: { mandate?: string }) {

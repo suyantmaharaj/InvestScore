@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Building2, ClipboardList,
-  UserPlus, Brain, TrendingUp,
+  UserPlus, Brain,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';

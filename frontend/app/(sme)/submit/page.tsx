@@ -65,7 +65,7 @@ function KPIField({
             border:       `1px solid ${error ? '#D0021B' : 'var(--c-border, #DDE3EC)'}`,
             background:   error ? '#FEE2E2' : 'var(--c-input, #fff)',
             color:        'var(--c-navy, #015376)',
-            // @ts-ignore
+            // @ts-expect-error CSS custom property used by Tailwind's focus ring.
             '--tw-ring-color': '#00B5ED',
           }}
         />
@@ -78,7 +78,7 @@ function KPIField({
 
 export default function SubmitPage() {
   const router = useRouter();
-  const { company, scorecard } = useSMEContext();
+  const { company } = useSMEContext();
 
   const [step,       setStep]       = useState(0);
   const [values,     setValues]     = useState<Record<string, string>>({});

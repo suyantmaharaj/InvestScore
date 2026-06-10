@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, TrendingUp, TrendingDown, Minus,
-  Award, ChevronRight,
 } from 'lucide-react';
 import { usePMCompanyDetail } from '@/hooks/usePMData';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
@@ -12,7 +11,6 @@ import { SkeletonCard, SkeletonLine } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore from '@/components/shared/AnimatedScore';
-import Tooltip from '@/components/shared/Tooltip';
 
 type Tab = 'employment' | 'overview' | 'sdg';
 

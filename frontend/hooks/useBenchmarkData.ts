@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from './useAuth';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 
 export interface BenchmarkSDGRow {
@@ -28,7 +27,6 @@ export interface BenchmarkData {
 }
 
 export function useBenchmarkData() {
-  const { user }               = useAuth();
   const { company, scorecard } = useSMEData();
   const [data,    setData]     = useState<BenchmarkData | null>(null);
   const [loading, setLoading]  = useState(true);
