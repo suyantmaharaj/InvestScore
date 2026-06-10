@@ -14,6 +14,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
 import SectorContext from '@/components/sme/SectorContext';
 import QuarterlyReminder from '@/components/sme/QuarterlyReminder';
+import CourseBadges from '@/components/sme/CourseBadges';
 
 function ScoreDots({ score }: { score: number }) {
   const level = score >= 2.4 ? 3 : score >= 1.6 ? 2 : 1;
@@ -233,6 +234,8 @@ export default function SMEDashboardPage() {
       </div>
 
       <SectorContext />
+
+      <CourseBadges />
 
       {/* Alert banner */}
       {lowCount > 0 && (
