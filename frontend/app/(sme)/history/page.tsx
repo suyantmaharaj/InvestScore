@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
@@ -10,21 +11,42 @@ import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
 import { CLASSIFICATION_COLORS } from '@/lib/sdg';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
+import { KPI_DISPLAY_LIST } from '@/lib/kpi-data';
 
 interface HistoryEntry {
   scorecardId:      string;
+  submissionId?:    string;
   submissionPeriod: string;
   overallScore:     number;
   classification:   'Low' | 'Medium' | 'High';
   calculatedAt:     string;
   highCount:        number;
   lowCount:         number;
+  sdgScores:        Array<{
+    sdgId:          number;
+    sdgName:        string;
+    score:          number;
+    classification: 'Low' | 'Medium' | 'High';
+  }>;
+  submissionData:   Record<string, number | null>;
+  submittedAt?:     string;
 }
 
 function scoreColor(score: number) {
   if (score >= 2.4) return '#00A651';
   if (score >= 1.6) return '#E8A020';
   return '#D0021B';
+}
+
+function formatKPIValue(value: number | null, unit?: string): string {
+  if (value === null || value === undefined) return 'Not provided';
+  if (unit === 'ZAR') return `R${value.toLocaleString('en-ZA')}`;
+  if (unit === '%') return `${value}%`;
+  return unit ? `${value.toLocaleString('en-ZA')} ${unit}` : value.toLocaleString('en-ZA');
+}
+
+function categoryLabel(category: string): string {
+  return category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function TrendChart({ entries }: { entries: HistoryEntry[] }) {
@@ -98,29 +120,49 @@ export default function HistoryPage() {
   const { user }    = useAuth();
   const [entries,  setEntries]  = useState<HistoryEntry[]>([]);
   const [loading,  setLoading]  = useState(true);
+  const [openId,   setOpenId]   = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.companyId) { setLoading(false); return; }
 
     const load = async () => {
       try {
-        const snap = await getDocs(
-          query(
-            collection(db, 'scorecards'),
-            where('companyId', '==', user.companyId),
-          )
-        );
-        const data: HistoryEntry[] = snap.docs
+        const [scorecardSnap, submissionSnap] = await Promise.all([
+          getDocs(
+            query(
+              collection(db, 'scorecards'),
+              where('companyId', '==', user.companyId),
+            )
+          ),
+          getDocs(
+            query(
+              collection(db, 'submissions'),
+              where('companyId', '==', user.companyId),
+              where('status', '==', 'scored'),
+            )
+          ),
+        ]);
+
+        const submissions = submissionSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const submissionById = new Map(submissions.map((s: any) => [s.id || s.submissionId, s]));
+        const submissionByPeriod = new Map(submissions.map((s: any) => [s.period, s]));
+
+        const data: HistoryEntry[] = scorecardSnap.docs
           .map(d => {
             const sc = d.data();
+            const submission = submissionById.get(sc.submissionId) || submissionByPeriod.get(sc.submissionPeriod);
             return {
               scorecardId:      d.id,
+              submissionId:     sc.submissionId,
               submissionPeriod: sc.submissionPeriod,
               overallScore:     sc.overallScore,
               classification:   sc.classification,
               calculatedAt:     sc.calculatedAt,
               highCount:        (sc.sdgScores || []).filter((s: { classification: string }) => s.classification === 'High').length,
               lowCount:         (sc.sdgScores || []).filter((s: { classification: string }) => s.classification === 'Low').length,
+              sdgScores:        sc.sdgScores || [],
+              submissionData:   (submission as any)?.data || {},
+              submittedAt:      (submission as any)?.submittedAt,
             };
           })
           .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt));
@@ -201,6 +243,27 @@ export default function HistoryPage() {
           {[...entries].reverse().map((entry, idx) => {
             const cc       = CLASSIFICATION_COLORS[entry.classification];
             const isLatest = idx === 0;
+            const isOpen   = openId === entry.scorecardId;
+            const submittedKpis = Object.entries(entry.submissionData || {})
+              .filter(([, value]) => value !== null && value !== undefined)
+              .map(([id, value]) => ({
+                id,
+                value,
+                meta: KPI_DISPLAY_LIST.find(kpi => kpi.id === id),
+              }))
+              .sort((a, b) => {
+                const catA = a.meta?.category || 'other';
+                const catB = b.meta?.category || 'other';
+                if (catA !== catB) return catA.localeCompare(catB);
+                return (a.meta?.label || a.id).localeCompare(b.meta?.label || b.id);
+              });
+            const groupedKpis = submittedKpis.reduce<Record<string, typeof submittedKpis>>((acc, item) => {
+              const key = item.meta?.category || 'other';
+              acc[key] = acc[key] || [];
+              acc[key].push(item);
+              return acc;
+            }, {});
+
             return (
               <div
                 key={entry.scorecardId}
@@ -211,7 +274,10 @@ export default function HistoryPage() {
                   borderLeft:     isLatest ? '4px solid var(--sanlam-teal)' : '4px solid var(--border)',
                 }}
               >
-                <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => setOpenId(prev => prev === entry.scorecardId ? null : entry.scorecardId)}
+                  className="w-full flex items-center justify-between gap-4 text-left"
+                >
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -227,7 +293,7 @@ export default function HistoryPage() {
                       )}
                     </div>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(entry.calculatedAt).toLocaleDateString('en-ZA', {
+                      {new Date(entry.submittedAt || entry.calculatedAt).toLocaleDateString('en-ZA', {
                         day: 'numeric', month: 'long', year: 'numeric',
                       })}
                     </p>
@@ -258,8 +324,12 @@ export default function HistoryPage() {
                         </span>
                       )}
                     </div>
+                    {isOpen
+                      ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
+                      : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
+                    }
                   </div>
-                </div>
+                </button>
 
                 <div className="mt-3">
                   <AnimatedProgressBar
@@ -269,6 +339,84 @@ export default function HistoryPage() {
                     delay={idx * 50 + 200}
                   />
                 </div>
+
+                {isOpen && (
+                  <div className="mt-5 pt-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
+                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.7fr)] gap-5">
+                      <div>
+                        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                          Submitted KPI values
+                        </p>
+                        {submittedKpis.length === 0 ? (
+                          <div className="rounded-xl p-4 text-sm" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                            No submitted KPI values were found for this submission.
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {Object.entries(groupedKpis).map(([category, items]) => (
+                              <div key={category}>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                                  {categoryLabel(category)}
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {items.map(({ id, value, meta }) => (
+                                    <div
+                                      key={id}
+                                      className="rounded-xl p-3"
+                                      style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+                                    >
+                                      <p className="text-[11px] mb-1" style={{ color: 'var(--text-muted)' }}>
+                                        {meta?.label || id.replace(/_/g, ' ')}
+                                      </p>
+                                      <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                        {formatKPIValue(value, meta?.unit)}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                          SDG scores from this submission
+                        </p>
+                        <div className="space-y-2">
+                          {[...entry.sdgScores]
+                            .sort((a, b) => a.sdgId - b.sdgId)
+                            .map(sdg => {
+                              const sdgCc = CLASSIFICATION_COLORS[sdg.classification];
+                              return (
+                                <div
+                                  key={sdg.sdgId}
+                                  className="flex items-center justify-between gap-3 rounded-xl px-3 py-2"
+                                  style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                                      SDG {sdg.sdgId}: {sdg.sdgName}
+                                    </p>
+                                    <span
+                                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                      style={{ background: sdgCc.bg, color: sdgCc.text, border: `1px solid ${sdgCc.border}` }}
+                                    >
+                                      {sdg.classification}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm font-bold flex-shrink-0" style={{ color: scoreColor(sdg.score) }}>
+                                    {sdg.score.toFixed(1)}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
