@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, ChevronLeft, ChevronRight, Save, Send } from 'lucide-react';
+import { CheckCircle, ChevronLeft, ChevronRight, RefreshCw, Save, Send } from 'lucide-react';
 import { useSMEContext } from '@/context/SMEDataContext';
 import { FORM_CATEGORIES, FormKPI } from '@/lib/kpi-form';
 import HelpChip from '@/components/sme/HelpChip';
@@ -17,12 +17,14 @@ async function getBearerToken(): Promise<string | null> {
 }
 
 function KPIField({
-  kpi, value, onChange, error,
+  kpi, value, onChange, error, skipped, onSkip,
 }: {
   kpi:      FormKPI;
   value:    string;
   onChange: (id: string, val: string) => void;
   error?:   string;
+  skipped?: boolean;
+  onSkip?:  (id: string) => void;
 }) {
   const isZAR = kpi.unit === 'ZAR';
 
@@ -30,8 +32,10 @@ function KPIField({
     <div className="mb-5">
       {/* Label row */}
       <div className="flex items-start justify-between gap-2 mb-0.5">
-        <label className="text-sm font-medium flex items-center gap-1"
-          style={{ color: 'var(--c-navy, #015376)' }}>
+        <label
+          className="text-sm font-medium flex items-center gap-1"
+          style={{ color: skipped ? 'var(--c-muted, #4A5568)' : 'var(--c-navy, #015376)' }}
+        >
           {kpi.label}
           {kpi.required && <span className="text-red-500 text-xs">*</span>}
         </label>
@@ -40,38 +44,71 @@ function KPIField({
         </span>
       </div>
 
-      <HelpChip title={kpi.helpTitle} helpText={kpi.helpText} calculation={kpi.calculation} />
+      <HelpChip kpiId={kpi.id} description={kpi.helpText} />
 
-      {/* Input */}
-      <div className="relative mt-2">
-        {isZAR && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
-            style={{ color: 'var(--c-muted, #4A5568)' }}>R</span>
-        )}
-        {kpi.isPercentage && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
-            style={{ color: 'var(--c-muted, #4A5568)' }}>%</span>
-        )}
-        <input
-          type="text"
-          inputMode="numeric"
-          value={value}
-          onChange={e => onChange(kpi.id, e.target.value.replace(/[^0-9.]/g, ''))}
-          placeholder={kpi.placeholder}
-          className="w-full h-11 rounded-lg text-sm transition focus:outline-none focus:ring-2"
-          style={{
-            paddingLeft:  isZAR ? 28 : 12,
-            paddingRight: kpi.isPercentage ? 28 : 12,
-            border:       `1px solid ${error ? '#D0021B' : 'var(--c-border, #DDE3EC)'}`,
-            background:   error ? '#FEE2E2' : 'var(--c-input, #fff)',
-            color:        'var(--c-navy, #015376)',
-            // @ts-expect-error CSS custom property used by Tailwind's focus ring.
-            '--tw-ring-color': '#00B5ED',
-          }}
-        />
-      </div>
+      {skipped ? (
+        <div
+          className="mt-2 flex items-center justify-between rounded-lg px-3 py-2.5"
+          style={{ background: 'var(--c-bg, #F4F6F8)', border: '1px dashed var(--c-border, #DDE3EC)' }}
+        >
+          <p className="text-xs" style={{ color: 'var(--c-muted, #4A5568)' }}>
+            Marked as not yet collected
+          </p>
+          {onSkip && (
+            <button
+              type="button"
+              onClick={() => onSkip(kpi.id)}
+              className="text-xs font-medium hover:underline flex-shrink-0 ml-4"
+              style={{ color: 'var(--sanlam-teal, #00B5ED)' }}
+            >
+              I have it
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="relative mt-2">
+            {isZAR && (
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                style={{ color: 'var(--c-muted, #4A5568)' }}>R</span>
+            )}
+            {kpi.isPercentage && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                style={{ color: 'var(--c-muted, #4A5568)' }}>%</span>
+            )}
+            <input
+              type="text"
+              inputMode="numeric"
+              value={value}
+              onChange={e => onChange(kpi.id, e.target.value.replace(/[^0-9.]/g, ''))}
+              placeholder={kpi.placeholder}
+              className="w-full h-11 rounded-lg text-sm transition focus:outline-none focus:ring-2"
+              style={{
+                paddingLeft:  isZAR ? 28 : 12,
+                paddingRight: kpi.isPercentage ? 28 : 12,
+                border:       `1px solid ${error ? '#D0021B' : 'var(--c-border, #DDE3EC)'}`,
+                background:   error ? '#FEE2E2' : 'var(--c-input, #fff)',
+                color:        'var(--c-navy, #015376)',
+                // @ts-expect-error CSS custom property used by Tailwind's focus ring.
+                '--tw-ring-color': '#00B5ED',
+              }}
+            />
+          </div>
 
-      {error && <p className="text-xs mt-1" style={{ color: '#D0021B' }}>{error}</p>}
+          {error && <p className="text-xs mt-1" style={{ color: '#D0021B' }}>{error}</p>}
+
+          {onSkip && (
+            <button
+              type="button"
+              onClick={() => onSkip(kpi.id)}
+              className="text-[11px] mt-1.5 hover:underline"
+              style={{ color: 'var(--c-muted, #4A5568)' }}
+            >
+              I don&apos;t have this data yet →
+            </button>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -80,18 +117,43 @@ export default function SubmitPage() {
   const router = useRouter();
   const { company } = useSMEContext();
 
-  const [step,       setStep]       = useState(0);
-  const [values,     setValues]     = useState<Record<string, string>>({});
-  const [errors,     setErrors]     = useState<Record<string, string>>({});
-  const [saving,     setSaving]     = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted,  setSubmitted]  = useState(false);
-  const [newScore,   setNewScore]   = useState<{ score: number; classification: string } | null>(null);
+  const [step,          setStep]          = useState(0);
+  const [values,        setValues]        = useState<Record<string, string>>({});
+  const [skippedFields, setSkippedFields] = useState<Set<string>>(new Set());
+  const [draftSavedAt,  setDraftSavedAt]  = useState<string | null>(null);
+  const [errors,        setErrors]        = useState<Record<string, string>>({});
+  const [saving,        setSaving]        = useState(false);
+  const [submitting,    setSubmitting]    = useState(false);
+  const [submitted,     setSubmitted]     = useState(false);
+  const [newScore,      setNewScore]      = useState<{ score: number; classification: string } | null>(null);
 
-  // Pre-fill from existing draft or seeded scorecard data
+  const draftKey = company?.id ? `investscore_submission_draft_${company.id}` : null;
+
+  // Load draft — localStorage first, then server (server wins if populated)
   useEffect(() => {
     if (!company?.id) return;
-    const loadDraft = async () => {
+
+    const key = `investscore_submission_draft_${company.id}`;
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.data) {
+            const pre: Record<string, string> = {};
+            Object.entries(parsed.data).forEach(([k, v]) => {
+              if (v !== null && v !== undefined) pre[k] = String(v);
+            });
+            setValues(pre);
+          }
+          if (Array.isArray(parsed.skipped)) setSkippedFields(new Set(parsed.skipped));
+          if (typeof parsed.step === 'number') setStep(parsed.step);
+          if (parsed.savedAt) setDraftSavedAt(parsed.savedAt);
+        }
+      } catch {}
+    }
+
+    const loadServerDraft = async () => {
       try {
         const token = await getBearerToken();
         if (!token) return;
@@ -108,21 +170,56 @@ export default function SubmitPage() {
         }
       } catch {}
     };
-    loadDraft();
+    loadServerDraft();
   }, [company?.id]);
+
+  // Persist draft to localStorage on every change
+  useEffect(() => {
+    if (!draftKey) return;
+    const now = new Date().toISOString();
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({
+        data:    values,
+        skipped: Array.from(skippedFields),
+        step,
+        savedAt: now,
+      }));
+      setDraftSavedAt(now);
+    } catch {}
+  }, [values, skippedFields, step, draftKey]);
 
   const currentCategory = FORM_CATEGORIES[step];
   const totalSteps      = FORM_CATEGORIES.length;
+
+  // Completion stats
+  const totalFields     = FORM_CATEGORIES.reduce((sum, cat) => sum + cat.kpis.length, 0);
+  const filledFields    = FORM_CATEGORIES.reduce(
+    (sum, cat) => sum + cat.kpis.filter(k => values[k.id]?.trim()).length, 0
+  );
+  const skippedCount    = skippedFields.size;
+  const addressedFields = filledFields + skippedCount;
+  const completionPct   = Math.round((addressedFields / totalFields) * 100);
+  const barColor        = completionPct >= 80 ? '#00A651' : completionPct >= 50 ? '#E8A020' : 'var(--sanlam-teal, #00B5ED)';
 
   const handleChange = (id: string, val: string) => {
     setValues(prev => ({ ...prev, [id]: val }));
     if (errors[id]) setErrors(prev => { const e = { ...prev }; delete e[id]; return e; });
   };
 
+  const toggleSkip = (kpiId: string) => {
+    setSkippedFields(prev => {
+      const next = new Set(prev);
+      if (next.has(kpiId)) next.delete(kpiId);
+      else next.add(kpiId);
+      return next;
+    });
+  };
+
   const validateStep = (): boolean => {
     const newErrors: Record<string, string> = {};
     for (const kpi of currentCategory.kpis) {
       if (!kpi.required) continue;
+      if (skippedFields.has(kpi.id)) continue;
       const v = values[kpi.id];
       if (!v?.trim()) { newErrors[kpi.id] = 'This field is required.'; continue; }
       const num = parseFloat(v);
@@ -180,6 +277,7 @@ export default function SubmitPage() {
       });
       const json = await res.json();
       if (json.success) {
+        if (draftKey) localStorage.removeItem(draftKey);
         invalidateCache('sme_data_');
         setNewScore({ score: json.overallScore, classification: json.classification });
         setSubmitted(true);
@@ -253,6 +351,34 @@ export default function SubmitPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-page-in">
 
+      {/* Resume banner */}
+      {draftSavedAt && (
+        <div
+          className="rounded-xl px-4 py-3 flex items-center justify-between"
+          style={{ background: 'rgba(0,181,237,0.08)', border: '1px solid rgba(0,181,237,0.2)' }}
+        >
+          <p className="text-xs" style={{ color: 'var(--sanlam-teal, #00B5ED)' }}>
+            Resuming saved draft — last saved{' '}
+            {new Date(draftSavedAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (draftKey) localStorage.removeItem(draftKey);
+              setValues({});
+              setSkippedFields(new Set());
+              setStep(0);
+              setDraftSavedAt(null);
+            }}
+            className="flex items-center gap-1 text-xs font-medium ml-4 flex-shrink-0 hover:underline"
+            style={{ color: 'var(--c-muted, #4A5568)' }}
+          >
+            <RefreshCw size={11} />
+            Start fresh
+          </button>
+        </div>
+      )}
+
       {/* Progress card */}
       <div className="rounded-xl p-5"
         style={{ background: 'var(--c-card, #fff)', border: '1px solid var(--c-border, #DDE3EC)' }}>
@@ -297,6 +423,29 @@ export default function SubmitPage() {
             </span>
           ))}
         </div>
+
+        {/* Completion progress bar */}
+        <div className="mt-4 pt-3" style={{ borderTop: '1px solid var(--c-border, #DDE3EC)' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[11px]" style={{ color: 'var(--c-muted, #4A5568)' }}>
+              Data completion
+            </p>
+            <p className="text-[11px] font-semibold" style={{ color: barColor }}>
+              {completionPct}% addressed
+            </p>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--c-border, #DDE3EC)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${completionPct}%`, background: barColor }}
+            />
+          </div>
+          {skippedCount > 0 && (
+            <p className="text-[10px] mt-1" style={{ color: 'var(--c-muted, #4A5568)' }}>
+              {filledFields} filled · {skippedCount} marked as not yet collected
+            </p>
+          )}
+        </div>
       </div>
 
       {/* KPI form card */}
@@ -333,6 +482,8 @@ export default function SubmitPage() {
             value={values[kpi.id] || ''}
             onChange={handleChange}
             error={errors[kpi.id]}
+            skipped={skippedFields.has(kpi.id)}
+            onSkip={toggleSkip}
           />
         ))}
 

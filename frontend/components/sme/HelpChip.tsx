@@ -1,67 +1,86 @@
 'use client';
 
 import { useState } from 'react';
-import { HelpCircle, X } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, TrendingUp, Database, BarChart2 } from 'lucide-react';
+import { getKPIContext } from '@/lib/kpi-context';
 
 interface Props {
-  title:       string;
-  helpText:    string;
-  calculation: string;
+  kpiId:       string;
+  description: string;
 }
 
-export default function HelpChip({ title, helpText, calculation }: Props) {
+export default function HelpChip({ kpiId, description }: Props) {
   const [open, setOpen] = useState(false);
+  const ctx = getKPIContext(kpiId);
 
   return (
-    <div className="relative inline-block">
+    <div>
       <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-xs font-medium hover:underline mt-1 transition"
-        style={{ color: 'var(--sanlam-teal, #00B5ED)' }}
         type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 text-xs font-medium transition"
+        style={{ color: 'var(--sanlam-teal, #00B5ED)' }}
       >
         <HelpCircle size={13} />
-        {title}
+        {open ? 'Hide guidance' : 'Why is this asked?'}
+        {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
       </button>
 
       {open && (
-        <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-
-          {/* Tooltip card */}
-          <div
-            className="absolute left-0 top-7 z-50 w-72 rounded-xl shadow-xl p-4"
-            style={{
-              background: 'var(--c-card, #fff)',
-              border:     '1px solid var(--c-border, #DDE3EC)',
-            }}
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--c-navy, #015376)' }}>
-                {title}
-              </p>
-              <button
-                onClick={() => setOpen(false)}
-                className="flex-shrink-0 transition"
-                style={{ color: 'var(--c-muted, #4A5568)' }}
-              >
-                <X size={14} />
-              </button>
-            </div>
-            <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--c-muted, #4A5568)' }}>
-              {helpText}
+        <div
+          className="mt-2 rounded-xl overflow-hidden animate-fade-in"
+          style={{ border: '1px solid var(--border, #DDE3EC)', background: 'var(--bg, #F4F6F8)' }}
+        >
+          {/* Short description */}
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border, #DDE3EC)' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted, #4A5568)' }}>
+              {description}
             </p>
-            <div className="rounded-lg p-3" style={{ background: 'var(--c-bg, #F4F6F8)' }}>
-              <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--c-muted, #4A5568)' }}>
-                How to calculate
-              </p>
-              <p className="text-xs font-medium" style={{ color: 'var(--c-navy, #015376)' }}>
-                {calculation}
-              </p>
-            </div>
           </div>
-        </>
+
+          {ctx && (
+            <>
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border, #DDE3EC)' }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <TrendingUp size={11} style={{ color: 'var(--sanlam-teal, #00B5ED)', flexShrink: 0 }} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sanlam-teal, #00B5ED)' }}>
+                    Why Sanlam tracks this
+                  </p>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary, #015376)', lineHeight: '1.6' }}>
+                  {ctx.whySanlam}
+                </p>
+              </div>
+
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border, #DDE3EC)' }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Database size={11} style={{ color: '#E8A020', flexShrink: 0 }} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#E8A020' }}>
+                    How to find this data
+                  </p>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary, #015376)', lineHeight: '1.6' }}>
+                  {ctx.howToCollect}
+                </p>
+              </div>
+
+              <div className="px-4 py-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <BarChart2 size={11} style={{ color: '#00A651', flexShrink: 0 }} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#00A651' }}>
+                    Typical range in the portfolio
+                  </p>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary, #015376)', lineHeight: '1.6' }}>
+                  {ctx.typicalRange}
+                </p>
+                <p className="text-xs italic mt-1" style={{ color: 'var(--text-muted, #4A5568)' }}>
+                  Example: {ctx.example}
+                </p>
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
