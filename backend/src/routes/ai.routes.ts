@@ -182,6 +182,142 @@ Write in third person. Do not use bullet points. Keep under 250 words.`;
   }
 });
 
+// POST /api/ai/improvement-plan — SME improvement plan generator
+router.post('/improvement-plan', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { companyId } = req.body;
+    if (!companyId) return res.status(400).json({ error: 'companyId is required.' });
+
+    const [companySnap, scorecardSnap, submissionSnap] = await Promise.all([
+      db.collection('companies').doc(companyId).get(),
+      db.collection('scorecards').where('companyId', '==', companyId).get(),
+      db.collection('submissions')
+        .where('companyId', '==', companyId)
+        .where('status', '==', 'scored')
+        .get(),
+    ]);
+
+    if (!companySnap.exists) return res.status(404).json({ error: 'Company not found.' });
+    if (scorecardSnap.empty) return res.status(404).json({ error: 'No scorecard found.' });
+
+    const company = companySnap.data()!;
+    const scorecard = scorecardSnap.docs
+      .map(d => d.data())
+      .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt))[0];
+    const submission = submissionSnap.empty
+      ? null
+      : submissionSnap.docs
+          .map(d => d.data())
+          .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''))[0];
+
+    const lowSDGs = scorecard.sdgScores
+      .filter((s: any) => s.classification === 'Low' || s.score < 1.8)
+      .sort((a: any, b: any) => a.score - b.score);
+
+    if (lowSDGs.length === 0) {
+      const plan = {
+        actions: [],
+        summary: 'Your portfolio has no Low Impact goals. Focus on maintaining your current performance and pushing Medium goals toward High.',
+        generatedAt: new Date().toISOString(),
+      };
+      await db.collection('improvementPlans').doc(companyId).set({ ...plan, companyId });
+      return res.json({ plan });
+    }
+
+    const submittedKPIs = submission?.data
+      ? Object.entries(submission.data)
+          .filter(([, v]) => v !== null && v !== undefined)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ')
+      : 'No submission data';
+
+    const sdgDetails = lowSDGs.map((s: any) =>
+      `SDG ${s.sdgId} (${s.sdgName}): score ${Number(s.score).toFixed(1)}/3.0, sector avg ${Number(s.sectorAvg).toFixed(1)}`
+    ).join('\n');
+
+    const sector = (company.sector || '').replace(/_/g, ' ');
+    const prompt = `You are an SDG improvement advisor for South African SMEs at Sanlam Investments.
+
+COMPANY: ${company.name}
+SECTOR: ${sector}
+LOCATION: ${company.location || 'Not provided'}
+
+LOW-SCORING SDG GOALS:
+${sdgDetails}
+
+LATEST SUBMITTED KPI VALUES:
+${submittedKPIs}
+
+Generate a practical improvement plan. Respond with ONLY valid JSON - no preamble, no markdown.
+
+{
+  "summary": "2 sentences summarising the company's improvement opportunity",
+  "actions": [
+    {
+      "sdgId": 10,
+      "sdgName": "Reduced Inequalities",
+      "priority": "critical|high|medium",
+      "effort": "low|medium|high",
+      "timeframe": "e.g. '1 month' or 'Next quarter'",
+      "action": "Specific, actionable step - one sentence",
+      "why": "Why this action improves the SDG score - one sentence",
+      "kpiImpact": "Which KPI(s) this action improves",
+      "expectedGain": "e.g. 'Could move SDG 10 from Low to Medium Impact'"
+    }
+  ]
+}
+
+Rules:
+- Generate 1-2 actions per low-scoring SDG
+- Prioritise: critical = score below 1.4, high = 1.4-1.6, medium = 1.6-1.8
+- Effort: low = can be done this week, medium = 1 month, high = 3+ months
+- Actions must be specific to ${sector} sector companies in South Africa
+- Reference B-BBEE, Eskom, SETA, SANAS, or other SA-specific frameworks where relevant
+- Sort actions by priority (critical first)
+- Respond with ONLY the JSON. Nothing else.`;
+
+    const response = await claude.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const text = response.content
+      .filter(b => b.type === 'text')
+      .map(b => (b as any).text)
+      .join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    const generatedAt = new Date().toISOString();
+    const plan = { ...parsed, companyId, generatedAt };
+
+    await db.collection('improvementPlans').doc(companyId).set(plan);
+
+    return res.json({ plan });
+  } catch (err) {
+    console.error('Improvement plan error:', err);
+    return res.status(500).json({ error: 'Failed to generate improvement plan.' });
+  }
+});
+
+// GET /api/ai/improvement-plan/:companyId — cached SME improvement plan
+router.get('/improvement-plan/:companyId', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = String(req.params.companyId);
+    const snap = await db.collection('improvementPlans').doc(companyId).get();
+    if (!snap.exists) return res.json({ plan: null });
+
+    const data = snap.data()!;
+    const age = Date.now() - new Date(data.generatedAt).getTime();
+    if (age > 86400000) return res.json({ plan: null });
+
+    return res.json({ plan: data });
+  } catch (err) {
+    console.error('Load improvement plan error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 router.get('/health', (_, res) => res.json({ status: 'ok', route: 'ai' }));
 
 export default router;

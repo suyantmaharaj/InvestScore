@@ -1,14 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { TrendingUp, AlertTriangle, Award, CheckCircle } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
+import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 import { SkeletonDashboard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
+import SectorContext from '@/components/sme/SectorContext';
+import QuarterlyReminder from '@/components/sme/QuarterlyReminder';
 
 function ScoreDots({ score }: { score: number }) {
   const level = score >= 2.4 ? 3 : score >= 1.6 ? 2 : 1;
@@ -45,6 +50,35 @@ function formatDate(iso: string): string {
 export default function SMEDashboardPage() {
   const router = useRouter();
   const { company, scorecard, loading, error } = useSMEData();
+  const [lastSubmissionDate, setLastSubmissionDate] = useState<string | null>(null);
+  const [lastSubmissionData, setLastSubmissionData] = useState<Record<string, number | null> | null>(null);
+
+  useEffect(() => {
+    if (!company?.id) return;
+
+    const loadLastSubmission = async () => {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'submissions'),
+            where('companyId', '==', company.id),
+            where('status', '==', 'scored')
+          )
+        );
+        if (!snap.empty) {
+          const d = snap.docs
+            .map(docSnap => docSnap.data())
+            .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''))[0];
+          setLastSubmissionDate(d.scoredAt || d.submittedAt || null);
+          setLastSubmissionData(d.data || null);
+        }
+      } catch (err) {
+        console.error('Load last submission error:', err);
+      }
+    };
+
+    loadLastSubmission();
+  }, [company?.id]);
 
   if (loading) return <SkeletonDashboard />;
 
@@ -74,6 +108,10 @@ export default function SMEDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-7 animate-page-in">
+      <QuarterlyReminder
+        lastSubmissionDate={lastSubmissionDate}
+        lastSubmissionData={lastSubmissionData}
+      />
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
@@ -193,6 +231,8 @@ export default function SMEDashboardPage() {
           </div>
         ))}
       </div>
+
+      <SectorContext />
 
       {/* Alert banner */}
       {lowCount > 0 && (

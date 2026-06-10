@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import {
   TrendingUp, Minus, AlertTriangle, X,
-  ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, Download,
 } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import type { SDGScoreData } from '@/hooks/useSMEData';
+import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 import { SkeletonScorecard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
@@ -15,6 +17,9 @@ import Tooltip from '@/components/shared/Tooltip';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
 import { getLessonsBySDG } from '@/lib/learn-content';
+import { getKPIsForSDG } from '@/lib/kpi-data';
+import { exportScorecardPDF } from '@/lib/export-pdf';
+import ImprovementPlan from '@/components/sme/ImprovementPlan';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
 type SortType   = 'number' | 'score_desc' | 'score_asc';
@@ -55,19 +60,61 @@ function scoreColor(score: number): string {
   return '#D0021B';
 }
 
+function classifyKPI(kpiId: string, value: number): 'High' | 'Medium' | 'Low' {
+  const inverted = [
+    'scope1_co2e',
+    'scope2_co2e',
+    'total_water_consumption',
+    'electricity_consumption',
+    'bbbee_rating',
+    'average_cost_of_service',
+  ];
+
+  if (inverted.includes(kpiId)) {
+    if (value <= 50) return 'High';
+    if (value <= 200) return 'Medium';
+    return 'Low';
+  }
+
+  if (kpiId.endsWith('_pct')) {
+    if (value >= 60) return 'High';
+    if (value >= 25) return 'Medium';
+    return 'Low';
+  }
+
+  if (value >= 20) return 'High';
+  if (value >= 5) return 'Medium';
+  return 'Low';
+}
+
+function formatKPIValue(value: number, unit: string): string {
+  if (unit === 'ZAR') return `R${value.toLocaleString('en-ZA')}`;
+  if (unit === '%') return `${value}%`;
+  return `${value} ${unit}`;
+}
+
+function classificationColor(classification: string) {
+  return classification === 'High' ? '#00A651' : classification === 'Medium' ? '#E8A020' : '#D0021B';
+}
+
 // ─── Drill-down panel ──────────────────────────────────────────────────────
 
 function DrillDownPanel({
   selected,
   onClose,
+  submissionData,
 }: {
   selected: SDGScoreData;
   onClose: () => void;
+  submissionData?: Record<string, number | null>;
 }) {
   const router  = useRouter();
   const sdg     = SDG_LIST.find(s => s.id === selected.sdgId)!;
   const cc      = CLASSIFICATION_COLORS[selected.classification];
   const diff    = selected.score - selected.sectorAvg;
+  const submittedKPIs = getKPIsForSDG(sdg.id)
+    .map(kpi => ({ kpi, value: (submissionData || {})[kpi.id] }))
+    .filter(({ value }) => value !== null && value !== undefined);
 
   return (
     <>
@@ -203,6 +250,47 @@ function DrillDownPanel({
                 <p className="text-[#015376] text-base leading-7 max-w-3xl">
                   {SDG_DESCRIPTIONS[sdg.id]}
                 </p>
+
+                {submittedKPIs.length > 0 && (
+                  <div className="mt-6 pt-5" style={{ borderTop: '1px solid var(--border)' }}>
+                    <p className="text-[11px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                      What&apos;s affecting your score
+                    </p>
+                    <div className="space-y-1.5">
+                      {submittedKPIs.slice(0, 6).map(({ kpi, value }) => {
+                        const numericValue = Number(value);
+                        const kpiClass = classifyKPI(kpi.id, numericValue);
+                        const color = classificationColor(kpiClass);
+
+                        return (
+                          <div
+                            key={kpi.id}
+                            className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg"
+                            style={{ background: 'var(--bg)' }}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                              <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                                {kpi.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                {formatKPIValue(numericValue, kpi.unit)}
+                              </span>
+                              <span
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                                style={{ background: `${color}15`, color }}
+                              >
+                                {kpiClass}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action buttons */}
@@ -237,11 +325,68 @@ function DrillDownPanel({
 
 export default function ScorecardPage() {
   const router = useRouter();
-  const { scorecard, loading, error } = useSMEData();
+  const { company, scorecard, loading, error } = useSMEData();
 
   const [filter,   setFilter]   = useState<FilterType>('All');
   const [sort,     setSort]     = useState<SortType>('number');
   const [selected, setSelected] = useState<SDGScoreData | null>(null);
+  const [submissionData, setSubmissionData] = useState<Record<string, number | null>>({});
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    if (!scorecard) return;
+
+    const loadSubmission = async () => {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'submissions'),
+            where('companyId', '==', scorecard.companyId),
+            where('status', '==', 'scored')
+          )
+        );
+        if (!snap.empty) {
+          const sorted = snap.docs
+            .map(d => d.data())
+            .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''));
+          setSubmissionData(sorted[0].data || {});
+        }
+      } catch (err) {
+        console.error('Load submission error:', err);
+      }
+    };
+
+    loadSubmission();
+  }, [scorecard?.companyId]);
+
+  const handleExport = async () => {
+    if (!scorecard || !company) return;
+    setExporting(true);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/improvement-plan/${company.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const json = await res.json();
+      const actions = json.plan?.actions || [];
+
+      await exportScorecardPDF(
+        company.name,
+        company.sector,
+        scorecard.submissionPeriod,
+        scorecard.overallScore,
+        scorecard.classification,
+        scorecard.sdgScores,
+        actions
+      );
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const scoreMap = useMemo(() => {
     if (!scorecard) return new Map<number, SDGScoreData>();
@@ -317,6 +462,21 @@ export default function ScorecardPage() {
           </strong>
         </span>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            disabled={exporting || !scorecard}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+            style={{
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {exporting
+              ? <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> Exporting...</>
+              : <><Download size={12} /> Export PDF</>
+            }
+          </button>
           <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>Overall:</span>
           <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${overallScore.toFixed(1)} / 3.0`} position="left">
             <div
@@ -351,6 +511,10 @@ export default function ScorecardPage() {
           </div>
         ))}
       </div>
+
+      {company && lowCount > 0 && (
+        <ImprovementPlan companyId={company.id} />
+      )}
 
       {/* Filter + Sort bar */}
       <div className="flex items-center justify-between">
@@ -392,7 +556,7 @@ export default function ScorecardPage() {
             <button
               key={sdg.id}
               onClick={() => score && setSelected(score)}
-              className="rounded-xl border text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
+              className="card text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
               style={{
                 background:     'var(--surface, #fff)',
                 borderColor:    'var(--border, #DDE3EC)',
@@ -540,6 +704,7 @@ export default function ScorecardPage() {
       {selected && (
         <DrillDownPanel
           selected={selected}
+          submissionData={submissionData}
           onClose={() => setSelected(null)}
         />
       )}
