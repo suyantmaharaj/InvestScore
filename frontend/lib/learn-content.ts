@@ -232,7 +232,7 @@ export const LEARNING_LESSONS: LearningLesson[] = [
         question: 'Youth is defined as employees aged how many years and under?',
         options: ['25', '30', '35', '40'],
         correct: 2,
-        explanation: 'The INvestScore platform defines youth as employees aged 35 and under.',
+        explanation: 'The InvestScore platform defines youth as employees aged 35 and under.',
       },
       {
         id: 'sdg8-q3',

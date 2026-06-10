@@ -33,7 +33,7 @@ export async function exportScorecardPDF(
   doc.text('Sanlam Investments', 14, 12);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('INvestScore', 14, 24);
+  doc.text('InvestScore', 14, 24);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text('SDG Scorecard Report', 14, 32);
@@ -171,7 +171,7 @@ export async function exportScorecardPDF(
     doc.setTextColor(...white);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
-    doc.text('INvestScore | Sanlam Investments | Twin Transition Challenge 2026', 14, 293);
+    doc.text('InvestScore | Sanlam Investments | Twin Transition Challenge 2026', 14, 293);
     doc.text(`Page ${i} of ${pageCount}`, W - 25, 293);
   }
 

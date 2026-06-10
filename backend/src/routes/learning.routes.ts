@@ -58,7 +58,7 @@ High Impact goals: ${highSDGs.map((s: any) => `SDG ${s.sdgId}`).join(', ') || 'N
 All SDG scores: ${sdgLines}`;
     }
 
-    const prompt = `You are an SDG learning advisor for South African SMEs on the INvestScore platform by Sanlam Investments.
+    const prompt = `You are an SDG learning advisor for South African SMEs on the InvestScore platform by Sanlam Investments.
 
 COMPANY: ${company.name}
 SECTOR: ${(company.sector || '').replace(/_/g, ' ')}
