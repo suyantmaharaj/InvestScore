@@ -14,6 +14,17 @@ export interface LearningLesson {
   example:      string;
   coachPrompt:  string;
   kpis:         string[];
+  videoUrl?:    string;
+  videoTitle?:  string;
+  quiz:         QuizQuestion[];
+}
+
+export interface QuizQuestion {
+  id:          string;
+  question:    string;
+  options:     string[];
+  correct:     number;
+  explanation: string;
 }
 
 export interface LearningCourse {
@@ -44,6 +55,31 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'A revenue-based finance provider in Johannesburg funds 12 Black-owned SMEs, which collectively employ 87 people. That capital deployment directly scores on SDG 1.',
     coachPrompt: 'How can I improve my SDG 1 score? My company is in the financial services sector.',
     kpis: ['csi_spend', 'smes_funded', 'capital_deployed_smes', 'jobs_supported_smes', 'total_annual_revenue'],
+    videoUrl: 'https://www.youtube.com/embed/oArDpS6dyPs',
+    videoTitle: 'Understanding SDG 1 - No Poverty',
+    quiz: [
+      {
+        id: 'sdg1-q1',
+        question: 'Which KPI most directly contributes to your SDG 1 score as a financial services company?',
+        options: ['Total employees', 'Capital deployed to SMEs', 'Scope 2 emissions', 'B-BBEE level'],
+        correct: 1,
+        explanation: 'Capital deployed to SMEs drives SDG 1 by funding businesses that create jobs and economic activity in underserved communities.',
+      },
+      {
+        id: 'sdg1-q2',
+        question: 'What does CSI stand for?',
+        options: ['Corporate Sustainability Index', 'Corporate Social Investment', 'Community Service Initiative', 'Carbon Savings Indicator'],
+        correct: 1,
+        explanation: 'CSI stands for Corporate Social Investment - the rand amount spent on community development, charity, and social programmes.',
+      },
+      {
+        id: 'sdg1-q3',
+        question: 'South Africa has one of the world\'s highest levels of which measure?',
+        options: ['Carbon emissions', 'Renewable energy use', 'Income inequality', 'Youth employment'],
+        correct: 2,
+        explanation: 'South Africa has one of the highest Gini coefficients globally, making SDG 1 and SDG 10 particularly critical in the local context.',
+      },
+    ],
   },
 
   {
@@ -63,6 +99,7 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'A manufacturing company in Durban takes on 8 apprentices per year through a MERSETA learnership programme. These 8 individuals are counted in the apprentices_supported KPI.',
     coachPrompt: 'How do I start a learnership programme to improve my SDG 4 score?',
     kpis: ['apprentices_supported'],
+    quiz: [],
   },
 
   {
@@ -82,6 +119,36 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Wetility Finance employs 32 women out of 72 staff (44%) — rare in the solar energy sector. This strong gender balance significantly boosts their SDG 5 score.',
     coachPrompt: 'My female employee percentage is low. What practical steps can I take to improve SDG 5?',
     kpis: ['female_employees', 'black_female_ownership_pct', 'procurement_women_owned_pct'],
+    videoUrl: 'https://www.youtube.com/embed/OQdS0cCflLM',
+    videoTitle: 'Gender Equality in South African Business',
+    quiz: [
+      {
+        id: 'sdg5-q1',
+        question: 'What percentage of female employees does Wetility Finance have in their workforce?',
+        options: ['21%', '39%', '44%', '68%'],
+        correct: 2,
+        explanation: '44% of Wetility\'s 72 employees are female, rare in the solar energy sector and a key driver of their strong SDG 5 score.',
+      },
+      {
+        id: 'sdg5-q2',
+        question: 'Which procurement metric contributes to SDG 5?',
+        options: ['Procurement to Black-owned suppliers', 'Procurement to women-owned suppliers', 'Local supplier count', 'SMEs in supply chain'],
+        correct: 1,
+        explanation: 'Procurement spend directed to women-owned suppliers directly supports gender economic equality and feeds into your SDG 5 score.',
+      },
+      {
+        id: 'sdg5-q3',
+        question: 'Why is Black female ownership tracked separately in B-BBEE?',
+        options: [
+          'It is required by SARS',
+          'Black women face compounded disadvantage and receive additional B-BBEE recognition',
+          'It counts double in the scoring engine',
+          'It is only tracked for manufacturing companies',
+        ],
+        correct: 1,
+        explanation: 'B-BBEE specifically recognises Black female ownership because Black women face both racial and gender-based economic exclusion.',
+      },
+    ],
   },
 
   {
@@ -101,6 +168,36 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Nkosi Manufacturing installed a 28,000 kWh solar system at their Gauteng plant. This generates 28 MWh annually and is captured in renewable_energy_produced.',
     coachPrompt: 'I want to install solar at my business to improve my clean energy score. Where should I start?',
     kpis: ['renewable_energy_produced', 'renewable_energy_utilised', 'electricity_consumption', 'scope2_co2e'],
+    videoUrl: 'https://www.youtube.com/embed/EhAemz1v7dQ',
+    videoTitle: 'Solar Energy for South African SMEs',
+    quiz: [
+      {
+        id: 'sdg7-q1',
+        question: 'What is the current South African grid emission factor for Scope 2 calculations?',
+        options: ['0.00050 kgCO2e/kWh', '0.00093 kgCO2e/kWh', '0.00145 kgCO2e/kWh', '0.00210 kgCO2e/kWh'],
+        correct: 1,
+        explanation: 'The South African grid emission factor is approximately 0.00093 kgCO2e per kWh.',
+      },
+      {
+        id: 'sdg7-q2',
+        question: 'A company uses 28,000 kWh of electricity per year. What are their Scope 2 emissions?',
+        options: ['2.8 tCO2e', '26.0 tCO2e', '28.0 tCO2e', '56.0 tCO2e'],
+        correct: 1,
+        explanation: '28,000 kWh x 0.00093 = 26.04 tCO2e.',
+      },
+      {
+        id: 'sdg7-q3',
+        question: 'What does a Power Purchase Agreement (PPA) allow a business to do?',
+        options: [
+          'Buy electricity directly from Eskom at a fixed rate',
+          'Access renewable energy without owning the solar panels',
+          'Sell excess solar power back to the grid',
+          'Defer electricity payments by 30 days',
+        ],
+        correct: 1,
+        explanation: 'A PPA lets you buy renewable energy from a provider who installs and owns the solar system.',
+      },
+    ],
   },
 
   {
@@ -120,6 +217,31 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'PCB Power Transformers employs 71 permanent staff with zero contractors. This strong job stability profile maximises their SDG 8 score even at a moderate headcount.',
     coachPrompt: 'How do I improve my SDG 8 score? I have mostly contract workers.',
     kpis: ['total_employees', 'youth_employees', 'management_employees', 'staff_employees', 'contractor_employees', 'total_annual_revenue'],
+    videoUrl: 'https://www.youtube.com/embed/kvBWxIBKkCU',
+    videoTitle: 'Creating Quality Employment in South Africa',
+    quiz: [
+      {
+        id: 'sdg8-q1',
+        question: 'What percentage of South African unemployment is the official rate approximately?',
+        options: ['15%', '22%', '32%', '45%'],
+        correct: 2,
+        explanation: 'South Africa has over 32% official unemployment, one of the highest globally.',
+      },
+      {
+        id: 'sdg8-q2',
+        question: 'Youth is defined as employees aged how many years and under?',
+        options: ['25', '30', '35', '40'],
+        correct: 2,
+        explanation: 'The INvestScore platform defines youth as employees aged 35 and under.',
+      },
+      {
+        id: 'sdg8-q3',
+        question: 'Which employment type is MOST valued in terms of job quality for SDG 8?',
+        options: ['Part-time contractors', 'Fixed-term contracts', 'Permanent employment', 'Freelance workers'],
+        correct: 2,
+        explanation: 'Permanent employment provides job stability, benefits, and career development.',
+      },
+    ],
   },
 
   {
@@ -139,6 +261,36 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Khaya Capital achieved Level 4 B-BBEE with 25% Black ownership through a BEE transaction. Their procurement to Black-owned suppliers is 65%, above the 60% High threshold.',
     coachPrompt: 'How do I improve from B-BBEE Level 4 to Level 2? What are the biggest levers?',
     kpis: ['bbbee_rating', 'black_ownership_pct', 'black_female_ownership_pct', 'black_board_pct', 'procurement_black_owned_pct'],
+    videoUrl: 'https://www.youtube.com/embed/4kBQHvzLW10',
+    videoTitle: 'B-BBEE and Economic Transformation Explained',
+    quiz: [
+      {
+        id: 'sdg10-q1',
+        question: 'What does B-BBEE stand for?',
+        options: [
+          'Basic Black Business Economic Enablement',
+          'Broad-Based Black Economic Empowerment',
+          'Board-Based Black Equity Establishment',
+          'Business-Based Black Empowerment Enterprise',
+        ],
+        correct: 1,
+        explanation: 'B-BBEE stands for Broad-Based Black Economic Empowerment.',
+      },
+      {
+        id: 'sdg10-q2',
+        question: 'What B-BBEE level is considered "Excellent" and scores maximum transformation points?',
+        options: ['Level 4', 'Level 3', 'Level 2', 'Level 1'],
+        correct: 3,
+        explanation: 'Level 1 B-BBEE is the highest achievable level and signals the strongest commitment to transformation.',
+      },
+      {
+        id: 'sdg10-q3',
+        question: 'Which B-BBEE element covers how much you spend with Black-owned suppliers?',
+        options: ['Ownership', 'Management control', 'Skills development', 'Enterprise and supplier development'],
+        correct: 3,
+        explanation: 'The Enterprise and Supplier Development element covers procurement spend with Black-owned and Black-empowered suppliers.',
+      },
+    ],
   },
 
   {
@@ -158,6 +310,41 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Tshiamo Tech produces 65 tCO2e annually. By installing 12,000 kWh of solar, they displace approximately 11 tonnes of CO2e — reducing their Scope 2 footprint by 17%.',
     coachPrompt: 'How do I calculate my Scope 1 and Scope 2 emissions for the first time?',
     kpis: ['scope1_co2e', 'scope2_co2e', 'recycled_waste_pct', 'renewable_energy_utilised'],
+    videoUrl: 'https://www.youtube.com/embed/G4H1N_yXBiA',
+    videoTitle: 'Carbon Footprint Basics for South African SMEs',
+    quiz: [
+      {
+        id: 'sdg13-q1',
+        question: 'What are Scope 1 emissions?',
+        options: [
+          'Emissions from your electricity supplier',
+          'Direct emissions from sources you own or control',
+          'Emissions from your suppliers and customers',
+          'Emissions from employee commuting',
+        ],
+        correct: 1,
+        explanation: 'Scope 1 are direct emissions from fuel burned in company vehicles, generators, and on-site equipment.',
+      },
+      {
+        id: 'sdg13-q2',
+        question: 'What does a recycling rate of 35% mean?',
+        options: [
+          '35% of your products are recyclable',
+          '35% of your total waste is recycled rather than going to landfill',
+          '35% of your suppliers use recycled materials',
+          '35% reduction in waste vs last year',
+        ],
+        correct: 1,
+        explanation: 'Recycling rate = total waste recycled divided by total waste generated, multiplied by 100.',
+      },
+      {
+        id: 'sdg13-q3',
+        question: 'Which South African energy source produces the most CO2 emissions per kWh?',
+        options: ['Natural gas', 'Nuclear', 'Coal (Eskom grid)', 'Hydropower'],
+        correct: 2,
+        explanation: 'South Africa\'s Eskom grid is coal-heavy, producing approximately 0.93 kgCO2e per kWh.',
+      },
+    ],
   },
 
   {
@@ -179,6 +366,41 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'PCB Power Transformers reports 71 employees: 60 staff, 11 management, 0 contractors. 67 are Black, 4 are White. 15 are female. This data comes directly from their payroll system.',
     coachPrompt: 'Help me understand how to collect and report my employment data correctly.',
     kpis: ['total_employees', 'youth_employees', 'female_employees', 'black_employees', 'management_employees', 'contractor_employees'],
+    videoUrl: 'https://www.youtube.com/embed/3OPbNcm1HuE',
+    videoTitle: 'How to Report Employment Data',
+    quiz: [
+      {
+        id: 'empl-q1',
+        question: 'When should you count your employees for reporting purposes?',
+        options: [
+          'Monthly average across the year',
+          'As of your financial year end date',
+          'At the start of the reporting year',
+          'Highest headcount during the year',
+        ],
+        correct: 1,
+        explanation: 'Employment data should reflect your headcount as of your financial year end date.',
+      },
+      {
+        id: 'empl-q2',
+        question: 'Under B-BBEE, which groups are classified as "Black"?',
+        options: [
+          'African South Africans only',
+          'African and Coloured South Africans',
+          'African, Coloured, and Indian South African citizens',
+          'All non-white South Africans regardless of citizenship',
+        ],
+        correct: 2,
+        explanation: 'Per the B-BBEE Act, "Black" is a collective term for African, Coloured, and Indian South African citizens disadvantaged by apartheid-era policies.',
+      },
+      {
+        id: 'empl-q3',
+        question: 'Who should NOT be included in your total employee count?',
+        options: ['Part-time permanent staff', 'Contractors on fixed-term projects', 'Junior staff members', 'Night shift workers'],
+        correct: 1,
+        explanation: 'Contractors are tracked separately. Total employees means permanent staff only, including full-time and part-time staff.',
+      },
+    ],
   },
 
   {
@@ -200,6 +422,7 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Ziyanda Agri Co tracks electricity via their meter (22,000 kWh), has 3 vehicles (Scope 1), and runs a waste separation programme achieving 68% recycling. All data comes from existing records.',
     coachPrompt: 'I have never tracked my environmental data before. Where do I start?',
     kpis: ['scope1_co2e', 'scope2_co2e', 'electricity_consumption', 'renewable_energy_produced', 'total_water_consumption', 'recycled_waste_pct'],
+    quiz: [],
   },
 
   {
@@ -221,6 +444,31 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Nkosi Manufacturing is 100% HDSA female owned — this automatically qualifies for Level 1 B-BBEE status and scores maximum points on ownership and management control.',
     coachPrompt: 'Explain the five pillars of B-BBEE and which ones I should focus on first.',
     kpis: ['bbbee_rating', 'black_ownership_pct', 'black_female_ownership_pct', 'black_board_pct', 'procurement_black_owned_pct', 'procurement_women_owned_pct'],
+    videoUrl: 'https://www.youtube.com/embed/R7sFjAuUMvI',
+    videoTitle: 'Getting Your B-BBEE Certificate',
+    quiz: [
+      {
+        id: 'bbbee-q1',
+        question: 'Which body accredits B-BBEE verification agencies in South Africa?',
+        options: ['SARS', 'SANAS', 'DTI', 'FSCA'],
+        correct: 1,
+        explanation: 'SANAS accredits B-BBEE verification agencies. Use a SANAS-accredited agency for a valid certificate.',
+      },
+      {
+        id: 'bbbee-q2',
+        question: 'How often should a B-BBEE certificate be renewed?',
+        options: ['Every 6 months', 'Annually', 'Every 2 years', 'Every 3 years'],
+        correct: 1,
+        explanation: 'B-BBEE certificates are valid for 12 months and must be renewed annually.',
+      },
+      {
+        id: 'bbbee-q3',
+        question: 'An EME (Exempted Micro Enterprise) has annual turnover below what threshold?',
+        options: ['R500,000', 'R5 million', 'R10 million', 'R50 million'],
+        correct: 2,
+        explanation: 'An EME has turnover below R10 million. EMEs with 51%+ Black ownership automatically qualify for Level 1 B-BBEE.',
+      },
+    ],
   },
 
   {
@@ -241,6 +489,7 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Siyanda Retail Group spends R185,000 per year on CSI (schools and welfare programmes) and works with 24 local suppliers, 18 of which are SMEs. Both are reported in the Community section.',
     coachPrompt: 'How do I increase my local supplier count and CSI spend to improve my score?',
     kpis: ['csi_spend', 'local_suppliers', 'smes_in_supply_chain'],
+    quiz: [],
   },
 ];
 

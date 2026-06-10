@@ -35,7 +35,10 @@ export interface CompanyData {
   industry:         string;
   location:         string;
   description:      string;
+  website?:         string;
   spokespersonName: string;
+  spokespersonTitle?: string;
+  spokespersonEmail?: string;
 }
 
 export function useSMEData() {

@@ -31,6 +31,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences',             breadcrumb: ['SME Portal', 'Settings']    },
   '/history':      { icon: '📅', title: 'Submission History', subtitle: 'Your SDG data submissions and score progression',  breadcrumb: ['SME Portal', 'History']     },
   '/learn':        { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
+  '/profile':      { icon: '🏢', title: 'Company Profile',    subtitle: 'Edit your company information',                    breadcrumb: ['SME Portal', 'Company Profile'] },
 
   // PM Portal pages
   '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: '',                                                   breadcrumb: ['PM Portal', 'Portfolio Overview'] },

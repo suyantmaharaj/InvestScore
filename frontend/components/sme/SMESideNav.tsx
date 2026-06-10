@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Target, Users, ClipboardList,
   MessageSquare, LogOut, TrendingUp, Menu, X,
-  ChevronLeft, ChevronRight, Settings, BookOpen, History,
+  ChevronLeft, ChevronRight, BookOpen, History, Building2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { href: '/submit',       label: 'Submit Data',  icon: ClipboardList    },
   { href: '/history',      label: 'My History',   icon: History          },
   { href: '/learn',        label: 'Learn',        icon: BookOpen         },
+  { href: '/profile',      label: 'Company Profile', icon: Building2     },
   { href: '/coach',        label: 'AI Coach',     icon: MessageSquare    },
 ];
 

@@ -14,6 +14,7 @@ import AnimatedScore from '@/components/shared/AnimatedScore';
 import Tooltip from '@/components/shared/Tooltip';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
+import { getLessonsBySDG } from '@/lib/learn-content';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
 type SortType   = 'number' | 'score_desc' | 'score_asc';
@@ -36,6 +37,16 @@ const SDG_DESCRIPTIONS: Record<number, string> = {
   15: 'SDG 15 focuses on life on land. It measures your recycling rate and local raw material sourcing practices.',
   16: 'SDG 16 measures peace and strong institutions. It tracks your governance quality through B-BBEE compliance and Black board representation.',
   17: 'SDG 17 measures partnerships for the goals. It tracks your local supplier network, SMEs in your supply chain, and procurement with diverse suppliers.',
+};
+
+const IMPROVEMENT_ACTIONS: Record<number, string[]> = {
+  1: ['Track CSI spend', 'Document SME funding', 'Report jobs supported'],
+  4: ['Start formal apprenticeships', 'Partner with a SETA', 'Document NQF-aligned training'],
+  5: ['Set female hiring targets', 'Track women-owned procurement', 'Review ownership representation'],
+  7: ['Measure annual kWh', 'Assess solar or PPA options', 'Reduce grid electricity use'],
+  8: ['Convert stable roles to permanent', 'Hire youth employees', 'Track revenue and SME suppliers'],
+  10: ['Update B-BBEE certificate', 'Increase Black ownership', 'Shift procurement to Black-owned suppliers'],
+  13: ['Calculate Scope 1 and 2', 'Set a reduction target', 'Improve recycling and renewable energy use'],
 };
 
 function scoreColor(score: number): string {
@@ -465,6 +476,48 @@ export default function ScorecardPage() {
                       </span>
                     )}
                   </div>
+
+                  {score.classification === 'Low' && (
+                    <div
+                      className="mt-2 mb-3 rounded-lg p-3"
+                      style={{ background: 'rgba(208,2,27,0.05)', border: '1px solid rgba(208,2,27,0.16)' }}
+                    >
+                      <p className="text-[11px] font-semibold mb-2" style={{ color: '#D0021B' }}>
+                        Improvement plan
+                      </p>
+                      <div className="space-y-1.5">
+                        {(IMPROVEMENT_ACTIONS[sdg.id] || ['Review source KPI data', 'Ask AI Coach for targeted actions', 'Update your next submission']).map(action => (
+                          <div key={action} className="flex items-start gap-2">
+                            <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#D0021B' }} />
+                            <span className="text-[11px]" style={{ color: 'var(--text-muted, #4A5568)' }}>{action}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {score.classification === 'Low' && (() => {
+                    const lessons = getLessonsBySDG(sdg.id);
+                    if (lessons.length === 0) return null;
+                    return (
+                      <div
+                        className="mt-2 pt-2 flex items-center gap-2"
+                        style={{ borderTop: '1px solid var(--border)' }}
+                      >
+                        <span className="text-[10px]">📖</span>
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            router.push('/learn');
+                          }}
+                          className="text-[11px] font-medium hover:underline"
+                          style={{ color: 'var(--sanlam-teal)' }}
+                        >
+                          Learn how to improve this →
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </>
               ) : (
                 <p className="text-[#4A5568]/60 text-xs mb-3">
