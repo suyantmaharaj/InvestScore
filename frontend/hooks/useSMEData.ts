@@ -39,6 +39,8 @@ export interface CompanyData {
   spokespersonName: string;
   spokespersonTitle?: string;
   spokespersonEmail?: string;
+  mandate?:         string;
+  bbbeeLevel?:      number;
 }
 
 export function useSMEData() {

@@ -16,6 +16,8 @@ import PageContext from '@/components/shared/PageContext';
 import SectorContext from '@/components/sme/SectorContext';
 import QuarterlyReminder from '@/components/sme/QuarterlyReminder';
 import CourseBadges from '@/components/sme/CourseBadges';
+import InvestmentContext from '@/components/sme/InvestmentContext';
+import PortfolioPulse from '@/components/sme/PortfolioPulse';
 
 function ScoreDots({ score }: { score: number }) {
   const level = score >= 2.4 ? 3 : score >= 1.6 ? 2 : 1;
@@ -230,6 +232,17 @@ export default function SMEDashboardPage() {
         </div>
       </div>
 
+      {/* Investment context */}
+      {scorecard && company && (
+        <InvestmentContext
+          overallScore={scorecard.overallScore}
+          classification={scorecard.classification}
+          mandate={company.mandate}
+          bbbeeLevel={company.bbbeeLevel}
+          companyName={company.name}
+        />
+      )}
+
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -406,6 +419,8 @@ export default function SMEDashboardPage() {
           })}
         </div>
       </div>
+
+      <PortfolioPulse />
 
     </div>
   );

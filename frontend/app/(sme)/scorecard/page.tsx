@@ -18,6 +18,8 @@ import Tooltip from '@/components/shared/Tooltip';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
 import { getLessonsBySDG } from '@/lib/learn-content';
+import { getStoriesForSDG } from '@/lib/portfolio-stories';
+import StoryCard from '@/components/sme/StoryCard';
 import { getKPIsForSDG } from '@/lib/kpi-data';
 import { exportScorecardPDF } from '@/lib/export-pdf';
 import ImprovementPlan from '@/components/sme/ImprovementPlan';
@@ -316,6 +318,20 @@ function DrillDownPanel({
               </div>
             </div>
           </div>
+
+          {/* Peer story for Low SDGs */}
+          {selected.classification === 'Low' && (() => {
+            const stories = getStoriesForSDG(selected.sdgId);
+            if (stories.length === 0) return null;
+            return (
+              <div className="mt-6 max-w-6xl">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Peer story
+                </p>
+                <StoryCard story={stories[0]} compact />
+              </div>
+            );
+          })()}
         </div>
       </div>
     </>
@@ -719,6 +735,29 @@ export default function ScorecardPage() {
                           style={{ color: 'var(--sanlam-teal)' }}
                         >
                           Learn how to improve this →
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  {score && score.classification === 'Low' && (() => {
+                    const stories = getStoriesForSDG(sdg.id);
+                    if (stories.length === 0) return null;
+                    return (
+                      <div
+                        className="mt-2 pt-2 flex items-center gap-2"
+                        style={{ borderTop: '1px solid var(--border)' }}
+                      >
+                        <span className="text-[10px]">📣</span>
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            router.push('/learning?tab=stories');
+                          }}
+                          className="text-[11px] font-medium hover:underline text-left"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          See how a peer improved this →
                         </button>
                       </div>
                     );

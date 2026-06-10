@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap, Calculator } from 'lucide-react';
+import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap, Calculator, BookMarked } from 'lucide-react';
 import { LEARNING_LESSONS, LEARNING_COURSES } from '@/lib/learn-content';
 import {
   getAllProgress,
@@ -13,10 +13,12 @@ import {
 } from '@/lib/learn-progress';
 import { SDG_LIST } from '@/lib/sdg';
 import { toDisplay } from '@/lib/score';
+import { PORTFOLIO_STORIES } from '@/lib/portfolio-stories';
+import StoryCard from '@/components/sme/StoryCard';
 import { useSMEData } from '@/hooks/useSMEData';
 import { useLearningPath } from '@/hooks/useLearningPath';
 
-type Tab = 'home' | 'skillmap' | 'path' | 'courses' | 'lessons';
+type Tab = 'home' | 'skillmap' | 'path' | 'courses' | 'lessons' | 'stories';
 
 function ProgressRing({ pct, size = 64, stroke = 5, color = '#00B5ED' }: {
   pct: number;
@@ -87,6 +89,7 @@ export default function LearningHubPage() {
     { id: 'path',        label: 'My path',     icon: Zap },
     { id: 'courses',     label: 'Courses',     icon: Star },
     { id: 'lessons',     label: 'All lessons', icon: BookOpen },
+    { id: 'stories',     label: 'Stories',     icon: BookMarked },
     { id: 'calculators', label: 'Calculators', icon: Calculator, href: '/learning/calculators' },
   ];
 
@@ -449,6 +452,22 @@ export default function LearningHubPage() {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {tab === 'stories' && (
+        <div className="space-y-5 animate-fade-in">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Real outcomes from companies in the Sanlam 104+ portfolio. All names
+            are anonymised. These are the results that are possible.
+          </p>
+          <div className="space-y-4">
+            {PORTFOLIO_STORIES.map((story, idx) => (
+              <div key={story.id} className="animate-card-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                <StoryCard story={story} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
