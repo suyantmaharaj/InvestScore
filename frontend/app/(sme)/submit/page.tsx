@@ -333,7 +333,7 @@ export default function SubmitPage() {
             style={{ border: '1px solid var(--sanlam-teal, #00B5ED)', color: 'var(--sanlam-teal, #00B5ED)', background: 'transparent' }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--c-teal-tint, #C9EEFB)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-            Talk to AI Coach
+            Talk to Chase
           </button>
           <button onClick={() => router.push('/dashboard')}
             className="text-sm transition"

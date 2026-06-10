@@ -220,7 +220,7 @@ export default function ImprovementPlan({ companyId, onSimulate }: { companyId: 
                             className="text-xs font-medium hover:underline"
                             style={{ color: 'var(--sanlam-teal)' }}
                           >
-                            Ask AI Coach about this step →
+                            Ask Chase about this step →
                           </button>
                           {onSimulate && (
                             <button

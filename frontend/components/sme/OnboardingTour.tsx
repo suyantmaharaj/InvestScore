@@ -30,10 +30,10 @@ const STEPS: TourStep[] = [
     action:      { label: 'Go to submission', href: '/submit' },
   },
   {
-    title:       'AI Coach',
-    description: 'Ask your AI Coach anything about your SDG scores. It knows your company\'s data and can give personalised, actionable advice for improvement.',
+    title:       'Chase',
+    description: 'Ask Chase anything about your SDG scores. Chase knows your company\'s data and can give personalised, actionable advice for improvement.',
     icon:        '🤖',
-    action:      { label: 'Talk to AI Coach', href: '/coach' },
+    action:      { label: 'Talk to Chase', href: '/coach' },
   },
   {
     title:       'Learning Centre',

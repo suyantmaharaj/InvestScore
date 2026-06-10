@@ -294,14 +294,14 @@ export default function BenchmarkingPage() {
         <div>
           <p className="text-white font-semibold text-base mb-1">Want to improve your ranking?</p>
           <p className="text-white/70 text-sm">
-            Your AI Coach can give you a personalised action plan to move up the rankings.
+            Chase can give you a personalised action plan to move up the rankings.
           </p>
         </div>
         <button
           onClick={() => router.push('/coach')}
           className="flex-shrink-0 ml-6 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white font-semibold text-sm hover:bg-[#0099CC] transition"
         >
-          Talk to AI Coach →
+          Talk to Chase →
         </button>
       </div>
 

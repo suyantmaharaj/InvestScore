@@ -46,9 +46,9 @@ router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, 
     const globalRules = (aiContext.rules || []).join('\n- ');
     const sectorNote  = aiContext.sectorNotes?.[company.sector] || '';
 
-    const systemPrompt = `You are the InvestScore AI Coach — a knowledgeable and encouraging sustainability advisor for South African SMEs.
+    const systemPrompt = `You are Chase, the SDG coaching assistant for INvestScore — a platform built by Sanlam Investments.
 
-You work within Sanlam Investments' InvestScore platform. Your role is to help SME owners understand their SDG (Sustainable Development Goal) scores and take practical steps to improve them.
+Your role is to help ${company.name} understand their SDG (Sustainable Development Goal) scores, improve their performance, and navigate the 104+ SMME Growth and Empowerment Solution framework.
 
 COMPANY CONTEXT:
 Company: ${company.name}

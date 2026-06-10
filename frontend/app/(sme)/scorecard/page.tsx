@@ -307,7 +307,7 @@ function DrillDownPanel({
                     onClick={() => router.push(`/coach?sdg=${sdg.id}`)}
                     className="w-full min-h-11 rounded-lg bg-[#00B5ED] px-4 py-3 text-white font-semibold text-sm hover:bg-[#0099CC] transition"
                   >
-                    Ask AI Coach about this goal
+                    Ask Chase about this goal
                   </button>
                   <button
                     onClick={() => { onClose(); router.push('/submit'); }}
@@ -709,7 +709,7 @@ export default function ScorecardPage() {
                         Improvement plan
                       </p>
                       <div className="space-y-1.5">
-                        {(IMPROVEMENT_ACTIONS[sdg.id] || ['Review source KPI data', 'Ask AI Coach for targeted actions', 'Update your next submission']).map(action => (
+                        {(IMPROVEMENT_ACTIONS[sdg.id] || ['Review source KPI data', 'Ask Chase for targeted actions', 'Update your next submission']).map(action => (
                           <div key={action} className="flex items-start gap-2">
                             <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#D0021B' }} />
                             <span className="text-[11px]" style={{ color: 'var(--text-muted, #4A5568)' }}>{action}</span>

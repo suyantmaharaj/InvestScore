@@ -57,13 +57,19 @@ function MessageBubble({ msg }: { msg: Message }) {
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
-        style={{ background: isUser ? '#015376' : '#00B5ED' }}
-      >
-        {isUser
-          ? <User size={14} className="text-white" />
-          : <Bot  size={14} className="text-white" />}
+      <div className="flex flex-col items-center gap-1 flex-shrink-0 mt-1">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: isUser ? '#015376' : '#015376' }}
+        >
+          {isUser
+            ? <User size={14} className="text-white" />
+            : <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
+          }
+        </div>
+        {!isUser && (
+          <p className="text-[9px] font-semibold" style={{ color: 'var(--text-muted, #4A5568)' }}>Chase</p>
+        )}
       </div>
 
       <div
@@ -91,6 +97,7 @@ function MessageBubble({ msg }: { msg: Message }) {
           }}
         >
           {msg.timestamp.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
+          {!isUser && ' · Chase · Sanlam INvestScore · Advisory only'}
         </p>
       </div>
     </div>
@@ -100,8 +107,8 @@ function MessageBubble({ msg }: { msg: Message }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3">
-      <div className="w-8 h-8 rounded-full bg-[#00B5ED] flex items-center justify-center flex-shrink-0">
-        <Bot size={14} className="text-white" />
+      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#015376' }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
       </div>
       <div className="bg-white border border-[#DDE3EC] rounded-2xl rounded-tl-sm px-4 py-3">
         <div className="flex gap-1 items-center h-5">
@@ -167,7 +174,7 @@ function CoachInner() {
         ? `You are performing strongly — **${highSDGs.length} goals** are at High Impact. Let us talk about maintaining that and pushing your remaining goals higher.\n\n`
         : '';
 
-      greeting = `Hello! I am your InvestScore AI Coach.\n\nI have reviewed your latest scorecard for **${company.name}**. Your overall SDG score is **${scorecard.overallScore.toFixed(1)} / 3.0** — ${scorecard.classification} Impact.\n\n${focusSentence}What would you like to work on today?`;
+      greeting = `Hi, I'm Chase — your SDG coach from Sanlam.\n\nI've reviewed the latest scorecard for **${company.name}**. Your overall SDG score is **${scorecard.overallScore.toFixed(1)} / 3.0** — ${scorecard.classification} Impact.\n\n${focusSentence}What would you like to work on today?`;
     }
 
     setMessages([{ role: 'assistant', content: greeting, timestamp: new Date() }]);
@@ -226,7 +233,7 @@ function CoachInner() {
   const clearChat = () => {
     setMessages([{
       role:      'assistant',
-      content:   'Chat cleared. How can I help you with your SDG performance today?',
+      content:   'Chat cleared. How can I help you today?',
       timestamp: new Date(),
     }]);
   };
@@ -352,14 +359,14 @@ function CoachInner() {
         {/* Header */}
         <div className="px-5 py-4 border-b border-[#DDE3EC] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#00B5ED] flex items-center justify-center">
-              <Bot size={18} className="text-white" />
+            <div className="w-9 h-9 rounded-full bg-[#015376] flex items-center justify-center">
+              <span style={{ fontSize: '15px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
             </div>
             <div>
-              <p className="text-[#015376] font-semibold text-sm">InvestScore AI Coach</p>
+              <p className="text-[#015376] font-semibold text-sm">Chase</p>
               <p className="text-[#4A5568] text-xs flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] inline-block" />
-                Powered by Claude · Context-aware
+                Your SDG coach from Sanlam
               </p>
             </div>
           </div>
@@ -412,7 +419,7 @@ function CoachInner() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask your AI Coach anything about your SDG performance…"
+              placeholder="Ask Chase anything about your SDG performance…"
               rows={1}
               className="flex-1 resize-none rounded-xl border border-[#DDE3EC] bg-[#F4F6F8] px-4 py-3 text-sm text-[#015376] placeholder:text-[#4A5568]/50 focus:outline-none focus:ring-2 focus:ring-[#00B5ED] focus:border-transparent transition max-h-32"
               style={{ minHeight: '44px' }}

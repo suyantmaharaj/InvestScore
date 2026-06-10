@@ -411,7 +411,7 @@ export default function LessonPage() {
           className="w-full flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold mb-8 transition"
           style={{ background: `${lesson.color}12`, color: lesson.color, border: `1px solid ${lesson.color}30` }}
         >
-          Ask AI Coach about this topic
+          Ask Chase about this topic
           <ExternalLink size={14} />
         </button>
 
