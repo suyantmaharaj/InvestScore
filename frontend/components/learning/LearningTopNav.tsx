@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { TrendingUp, X, ChevronLeft } from 'lucide-react';
+import { TrendingUp, X, ChevronLeft, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import Tooltip from '@/components/shared/Tooltip';
 
 export default function LearningTopNav() {
   const router = useRouter();
@@ -85,14 +86,19 @@ export default function LearningTopNav() {
           )}
         </div>
 
-        <button
-          onClick={toggleTheme}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition"
-          style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? '☀️' : '🌙'}
-        </button>
+        <Tooltip content={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} position="bottom">
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark'
+              ? <Sun  size={15} style={{ color: 'var(--sanlam-teal)' }} />
+              : <Moon size={15} style={{ color: 'var(--text-secondary)' }} />
+            }
+          </button>
+        </Tooltip>
 
         {!isHub && (
           <button
