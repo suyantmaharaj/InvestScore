@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import {
   TrendingUp, Minus, AlertTriangle, X,
-  ArrowUpRight, ArrowDownRight, Download,
+  ArrowUpRight, ArrowDownRight, Download, Target,
 } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import type { SDGScoreData } from '@/hooks/useSMEData';
@@ -23,6 +23,7 @@ import StoryCard from '@/components/sme/StoryCard';
 import { getKPIsForSDG } from '@/lib/kpi-data';
 import { exportScorecardPDF } from '@/lib/export-pdf';
 import ImprovementPlan from '@/components/sme/ImprovementPlan';
+import GapAnalysisPanel from '@/components/sme/GapAnalysisPanel';
 
 type FilterType = 'All' | 'High' | 'Medium' | 'Low';
 type SortType   = 'number' | 'score_desc' | 'score_asc';
@@ -350,6 +351,7 @@ export default function ScorecardPage() {
   const [submissionData, setSubmissionData] = useState<Record<string, number | null>>({});
   const [exporting, setExporting] = useState(false);
   const [targets, setTargets] = useState<Record<string, number>>({});
+  const [gapSDG, setGapSDG] = useState<number | null>(null);
 
   useEffect(() => {
     if (!scorecard) return;
@@ -548,7 +550,7 @@ export default function ScorecardPage() {
       </div>
 
       {company && lowCount > 0 && (
-        <ImprovementPlan companyId={company.id} />
+        <ImprovementPlan companyId={company.id} onSimulate={(sdgId) => setGapSDG(sdgId)} />
       )}
 
       {/* Filter + Sort bar */}
@@ -769,6 +771,21 @@ export default function ScorecardPage() {
                 </p>
               )}
 
+              {/* Simulate target */}
+              {score && score.classification !== 'High' && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGapSDG(sdg.id);
+                  }}
+                  className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold hover:underline"
+                  style={{ color: 'var(--sanlam-teal)' }}
+                >
+                  <Target size={11} />
+                  Simulate target →
+                </button>
+              )}
+
               {/* View details */}
               {score && (
                 <p className="text-[#00B5ED] text-xs font-medium text-right">
@@ -788,6 +805,21 @@ export default function ScorecardPage() {
           onClose={() => setSelected(null)}
         />
       )}
+
+      {/* Gap analysis panel */}
+      {gapSDG !== null && (() => {
+        const sdgScore = scorecard.sdgScores.find((s: SDGScoreData) => s.sdgId === gapSDG);
+        if (!sdgScore) return null;
+        return (
+          <GapAnalysisPanel
+            sdgId={gapSDG}
+            currentScore={sdgScore.score}
+            classification={sdgScore.classification}
+            submittedData={submissionData}
+            onClose={() => setGapSDG(null)}
+          />
+        );
+      })()}
 
     </div>
   );

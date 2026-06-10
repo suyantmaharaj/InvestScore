@@ -49,7 +49,7 @@ const EFFORT_STYLE = {
   high: { label: '3+ months', color: '#4A5568' },
 };
 
-export default function ImprovementPlan({ companyId }: { companyId: string }) {
+export default function ImprovementPlan({ companyId, onSimulate }: { companyId: string; onSimulate?: (sdgId: number) => void }) {
   const router = useRouter();
   const [plan, setPlan] = useState<ImprovementPlanData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -222,6 +222,15 @@ export default function ImprovementPlan({ companyId }: { companyId: string }) {
                           >
                             Ask AI Coach about this step →
                           </button>
+                          {onSimulate && (
+                            <button
+                              onClick={() => onSimulate(action.sdgId)}
+                              className="text-xs font-medium hover:underline mt-1 block"
+                              style={{ color: 'var(--sanlam-teal)' }}
+                            >
+                              Simulate what it takes to reach {action.priority === 'critical' ? 'Medium' : 'High'} →
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
