@@ -140,7 +140,8 @@ Rules:
 
 router.get('/path/:companyId', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
-    const snap = await db.collection('learningPaths').doc(req.params.companyId).get();
+    const companyId = String(req.params.companyId);
+    const snap = await db.collection('learningPaths').doc(companyId).get();
     if (!snap.exists) return res.json({ path: null });
     return res.json({ path: snap.data() });
   } catch (err) {
@@ -154,7 +155,8 @@ router.post('/path/:companyId/complete-lesson', verifyToken, requireRole('sme'),
     const { lessonId } = req.body;
     if (!lessonId) return res.status(400).json({ error: 'lessonId is required.' });
 
-    const snap = await db.collection('learningPaths').doc(req.params.companyId).get();
+    const companyId = String(req.params.companyId);
+    const snap = await db.collection('learningPaths').doc(companyId).get();
     if (!snap.exists) return res.status(404).json({ error: 'Path not found.' });
 
     const current = snap.data()!;
