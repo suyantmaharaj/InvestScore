@@ -34,10 +34,11 @@ router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, 
         .map(d => d.data())
         .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
       const sc = sorted[0];
+      const toDisp = (raw: number) => Math.round(((raw - 1) / 2) * 100);
       const sdgLines = sc.sdgScores
-        .map((s: any) => `  SDG ${s.sdgId} (${s.sdgName}): ${s.score.toFixed(1)} — ${s.classification} (sector avg: ${s.sectorAvg.toFixed(1)})`)
+        .map((s: any) => `  SDG ${s.sdgId} (${s.sdgName}): ${toDisp(s.score)}/100 — ${s.classification} (sector avg: ${toDisp(s.sectorAvg)}/100)`)
         .join('\n');
-      scorecardContext = `Overall Score: ${sc.overallScore.toFixed(1)} (${sc.classification} Impact)\nPeriod: ${sc.submissionPeriod}\n\nSDG Scores:\n${sdgLines}`;
+      scorecardContext = `Overall Score: ${toDisp(sc.overallScore)}/100 (${sc.classification} Impact)\nPeriod: ${sc.submissionPeriod}\n\nSDG Scores:\n${sdgLines}`;
     }
 
     const aiContextSnap = await db.collection('aiContext').doc('global').get();
@@ -135,9 +136,10 @@ router.post('/narrative', verifyToken, requireRole('pm', 'admin'), async (req: A
       .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
     const sc = sorted[0];
 
+    const toDisp = (raw: number) => Math.round(((raw - 1) / 2) * 100);
     const highSDGs   = sc.sdgScores.filter((s: any) => s.classification === 'High').map((s: any) => `SDG ${s.sdgId}`).join(', ');
     const lowSDGs    = sc.sdgScores.filter((s: any) => s.classification === 'Low').map((s: any) => `SDG ${s.sdgId}`).join(', ');
-    const sdgSummary = sc.sdgScores.map((s: any) => `SDG ${s.sdgId}: ${s.score.toFixed(1)} (${s.classification})`).join(', ');
+    const sdgSummary = sc.sdgScores.map((s: any) => `SDG ${s.sdgId}: ${toDisp(s.score)}/100 (${s.classification})`).join(', ');
 
     const prompt = `You are a sustainability investment analyst at Sanlam Investments.
 
@@ -149,7 +151,7 @@ LOCATION: ${company.location}
 DESCRIPTION: ${company.description}
 
 SDG SCORECARD (${sc.submissionPeriod}):
-Overall Score: ${sc.overallScore.toFixed(1)} / 3.0 (${sc.classification} Impact)
+Overall Score: ${toDisp(sc.overallScore)}/100 (${sc.classification} Impact)
 ${sdgSummary}
 
 High performers: ${highSDGs || 'None'}
@@ -231,8 +233,9 @@ router.post('/improvement-plan', verifyToken, requireRole('sme'), async (req: Au
           .join(', ')
       : 'No submission data';
 
+    const dispScore = (raw: number) => Math.round(((raw - 1) / 2) * 100);
     const sdgDetails = lowSDGs.map((s: any) =>
-      `SDG ${s.sdgId} (${s.sdgName}): score ${Number(s.score).toFixed(1)}/3.0, sector avg ${Number(s.sectorAvg).toFixed(1)}`
+      `SDG ${s.sdgId} (${s.sdgName}): score ${dispScore(Number(s.score))}/100, sector avg ${dispScore(Number(s.sectorAvg))}/100`
     ).join('\n');
 
     const sector = (company.sector || '').replace(/_/g, ' ');

@@ -9,6 +9,7 @@ import { usePMCompanyDetail } from '@/hooks/usePMData';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
 import { SkeletonCard, SkeletonLine } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { toDisplay } from '@/lib/score';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 
@@ -79,6 +80,136 @@ function MandateBadge({ mandate }: { mandate?: string }) {
     >
       {mandate}
     </span>
+  );
+}
+
+/* ── PM Target Setting ── */
+function PMTargetPanel({
+  companyId,
+  scorecard,
+}: {
+  companyId: string;
+  scorecard: NonNullable<ReturnType<typeof usePMCompanyDetail>['scorecard']>;
+}) {
+  const [targets,  setTargets]  = useState<Record<string, number>>({});
+  const [saving,   setSaving]   = useState(false);
+  const [saved,    setSaved]    = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/targets/${companyId}`,
+          { headers: { Authorization: `Bearer ${token}` } });
+        const json = await res.json();
+        setTargets(json.targets || {});
+      } catch (err) {
+        console.error('Load targets error:', err);
+      }
+    };
+    load();
+  }, [companyId]);
+
+  const saveTargets = async () => {
+    setSaving(true);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token    = await auth.currentUser?.getIdToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/targets/${companyId}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ targets }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error('Save targets error:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sorted = [...scorecard.sdgScores].sort((a, b) => a.sdgId - b.sdgId);
+
+  return (
+    <div className="card" style={{ background: 'var(--surface)' }}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between p-5"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-base">🎯</span>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            SDG Targets
+          </p>
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}>
+            PM-set
+          </span>
+        </div>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          {expanded ? 'Collapse' : 'Set targets'}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="px-5 pb-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
+          <p className="text-xs mt-4 mb-3" style={{ color: 'var(--text-muted)' }}>
+            Set target scores (out of 100) for each SDG. These will appear as benchmarks on the SME's scorecard.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+            {sorted.map(s => {
+              const current = toDisplay(s.score);
+              const target  = targets[String(s.sdgId)] ?? 0;
+              const sdgMeta = SDG_LIST.find(d => d.id === s.sdgId);
+              return (
+                <div
+                  key={s.sdgId}
+                  className="flex items-center gap-3 p-3 rounded-xl"
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+                >
+                  <span className="text-base flex-shrink-0">{sdgMeta?.icon ?? '🎯'}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                      SDG {s.sdgId}
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                      Now: {current}/100
+                    </p>
+                  </div>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={target || ''}
+                    onChange={e => setTargets(t => ({ ...t, [String(s.sdgId)]: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) }))}
+                    placeholder="—"
+                    className="w-14 h-8 text-center text-sm font-semibold rounded-lg focus:outline-none"
+                    style={{
+                      background:  'var(--surface)',
+                      border:      '1.5px solid var(--border)',
+                      color:       target > current ? '#00A651' : target > 0 ? '#E8A020' : 'var(--text-muted)',
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            {saved && <span className="text-xs font-medium animate-fade-in" style={{ color: '#00A651' }}>Saved ✓</span>}
+            <button
+              onClick={saveTargets}
+              disabled={saving}
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60"
+              style={{ background: 'var(--sanlam-teal)' }}
+            >
+              {saving ? 'Saving...' : 'Save targets'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -216,7 +347,7 @@ function OverviewTab({
         if (!cancelled) setNarrative(json.narrative || json.error || 'Narrative unavailable.');
       } catch {
         if (!cancelled) setNarrative(
-          `${company.name} has achieved an overall SDG score of ${scorecard.overallScore.toFixed(2)}/3.0, ` +
+          `${company.name} has achieved an overall SDG score of ${toDisplay(scorecard.overallScore)}/100, ` +
           `classified as ${scorecard.classification}. Key strengths are in ` +
           `${topSDGs.map(s => `SDG ${s.sdgId}`).join(' and ')}. ` +
           (lowSDGs.length ? `Areas requiring attention include ${lowSDGs.map(s => `SDG ${s.sdgId}`).join(' and ')}.` : 'Performance is broadly consistent across all measured goals.')
@@ -285,6 +416,9 @@ function OverviewTab({
 
       {/* PM Notes */}
       <PMNotesSection companyId={companyId} />
+
+      {/* PM Targets */}
+      <PMTargetPanel companyId={companyId} scorecard={scorecard} />
     </div>
   );
 }
@@ -331,12 +465,12 @@ function SDGTab({ scorecard }: { scorecard: NonNullable<ReturnType<typeof usePMC
 
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-bold" style={{ color: scoreColor(s.score) }}>
-                    {s.score.toFixed(2)}
+                    {toDisplay(s.score)}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 3.0</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/100</span>
                   <span className="text-xs mx-1" style={{ color: 'var(--border)' }}>·</span>
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    Sector avg: {s.sectorAvg.toFixed(2)}
+                    Sector avg: {toDisplay(s.sectorAvg)}
                   </span>
                 </div>
 
@@ -403,9 +537,8 @@ function EmploymentTab({
                   value={sdg.score}
                   className="font-bold text-2xl block"
                   style={{ color: scoreColor(sdg.score) }}
-                  decimals={2}
                 />
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>/ 3.0</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>/100</p>
                 <div className="mt-2">
                   <AnimatedProgressBar
                     value={((sdg.score - 1) / 2) * 100}
@@ -550,9 +683,8 @@ export default function CompanyDetailPage() {
                 value={scorecard.overallScore}
                 className="font-bold text-3xl block leading-none"
                 style={{ color: scoreColor(scorecard.overallScore) }}
-                decimals={2}
               />
-              <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>/ 3.0 overall</p>
+              <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>/100</p>
               {(() => {
                 const cc = CLASSIFICATION_COLORS[scorecard.classification];
                 return (

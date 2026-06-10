@@ -11,6 +11,7 @@ import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import type { SDGScoreData } from '@/hooks/useSMEData';
 import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
+import { toDisplay } from '@/lib/score';
 import { SkeletonScorecard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import Tooltip from '@/components/shared/Tooltip';
@@ -169,7 +170,7 @@ function DrillDownPanel({
                     className="font-bold text-6xl leading-none"
                     style={{ color: scoreColor(selected.score) }}
                   >
-                    {selected.score.toFixed(1)}
+                    {toDisplay(selected.score)}
                   </span>
                   <span
                     className="mb-2 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -182,7 +183,7 @@ function DrillDownPanel({
                     {CLASSIFICATION_LABELS[selected.classification]}
                   </span>
                 </div>
-                <p className="text-[#4A5568] text-sm mb-4">out of 3.0</p>
+                <p className="text-[#4A5568] text-sm mb-4">out of 100</p>
                 <div className="w-full h-3 rounded-full bg-[#DDE3EC] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
@@ -203,13 +204,13 @@ function DrillDownPanel({
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-[#4A5568]">Your score</span>
                     <span className="font-bold text-base" style={{ color: scoreColor(selected.score) }}>
-                      {selected.score.toFixed(1)}
+                      {toDisplay(selected.score)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-[#4A5568]">Sector average</span>
                     <span className="font-semibold text-base text-[#015376]">
-                      {selected.sectorAvg.toFixed(1)}
+                      {toDisplay(selected.sectorAvg)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t border-[#DDE3EC]">
@@ -218,7 +219,7 @@ function DrillDownPanel({
                       className="font-bold text-base"
                       style={{ color: diff >= 0 ? '#00A651' : '#D0021B' }}
                     >
-                      {diff >= 0 ? '+' : ''}{diff.toFixed(1)}
+                      {diff >= 0 ? '+' : ''}{toDisplay(selected.score) - toDisplay(selected.sectorAvg)}
                     </span>
                   </div>
                 </div>
@@ -332,6 +333,7 @@ export default function ScorecardPage() {
   const [selected, setSelected] = useState<SDGScoreData | null>(null);
   const [submissionData, setSubmissionData] = useState<Record<string, number | null>>({});
   const [exporting, setExporting] = useState(false);
+  const [targets, setTargets] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!scorecard) return;
@@ -358,6 +360,23 @@ export default function ScorecardPage() {
 
     loadSubmission();
   }, [scorecard?.companyId]);
+
+  useEffect(() => {
+    if (!company?.id) return;
+    const load = async () => {
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/targets/${company.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const json = await res.json();
+        setTargets(json.targets || {});
+      } catch { /* targets unavailable — silent fail */ }
+    };
+    load();
+  }, [company?.id]);
 
   const handleExport = async () => {
     if (!scorecard || !company) return;
@@ -478,7 +497,7 @@ export default function ScorecardPage() {
             }
           </button>
           <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>Overall:</span>
-          <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${overallScore.toFixed(1)} / 3.0`} position="left">
+          <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${toDisplay(overallScore)} / 100`} position="left">
             <div
               className="w-10 h-10 rounded-full flex flex-col items-center justify-center flex-shrink-0"
               style={{ border: `2px solid ${scoreColor(overallScore)}` }}
@@ -488,7 +507,7 @@ export default function ScorecardPage() {
                 className="font-bold text-sm leading-none"
                 style={{ color: scoreColor(overallScore) }}
               />
-              <span className="text-[8px]" style={{ color: 'var(--text-muted, #4A5568)' }}>/ 3.0</span>
+              <span className="text-[8px]" style={{ color: 'var(--text-muted, #4A5568)' }}>/100</span>
             </div>
           </Tooltip>
         </div>
@@ -596,7 +615,7 @@ export default function ScorecardPage() {
                       className="font-bold text-lg"
                       style={{ color: scoreColor(score.score) }}
                     >
-                      {score.score.toFixed(1)}
+                      {toDisplay(score.score)}
                     </span>
                     <div className="h-1.5 rounded-full bg-[#DDE3EC] overflow-hidden w-20 flex-shrink-0">
                       <div
@@ -622,9 +641,9 @@ export default function ScorecardPage() {
                   </div>
 
                   {/* Sector comparison */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-2">
                     <span className="text-[#4A5568] text-xs">
-                      Sector avg: {score.sectorAvg.toFixed(1)}
+                      Sector avg: {toDisplay(score.sectorAvg)}
                     </span>
                     {diff > 0.05 ? (
                       <span className="flex items-center gap-0.5 text-xs font-medium text-green-600">
@@ -640,6 +659,28 @@ export default function ScorecardPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Target vs actual */}
+                  {(() => {
+                    const target = targets[String(sdg.id)];
+                    if (!target) return null;
+                    const actual = toDisplay(score.score);
+                    const gap    = target - actual;
+                    return (
+                      <div
+                        className="flex items-center gap-2 mb-2 px-2 py-1 rounded-lg"
+                        style={{ background: gap <= 0 ? 'rgba(0,166,81,0.07)' : 'rgba(232,160,32,0.08)', border: `1px solid ${gap <= 0 ? 'rgba(0,166,81,0.2)' : 'rgba(232,160,32,0.2)'}` }}
+                      >
+                        <span className="text-[10px]">🎯</span>
+                        <span className="text-[11px] font-medium" style={{ color: gap <= 0 ? '#00A651' : '#E8A020' }}>
+                          Target: {target}/100
+                        </span>
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                          {gap <= 0 ? `✓ ${Math.abs(gap)} pts ahead` : `${gap} pts to go`}
+                        </span>
+                      </div>
+                    );
+                  })()}
 
                   {score.classification === 'Low' && (
                     <div

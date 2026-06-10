@@ -10,6 +10,7 @@ import { SDG_LIST } from '@/lib/sdg';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
+import { toDisplay } from '@/lib/score';
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
 
@@ -86,8 +87,8 @@ export default function AlertsPage() {
           sector:    company.sector,
           severity:  'critical',
           type:      'low_score',
-          title:     `Overall score critically low (${scorecard.overallScore.toFixed(2)})`,
-          detail:    `${company.name}'s overall SDG score is ${scorecard.overallScore.toFixed(2)}/3.0, classified as Low. Immediate portfolio review recommended.`,
+          title:     `Overall score critically low (${toDisplay(scorecard.overallScore)}/100)`,
+          detail:    `${company.name}'s overall SDG score is ${toDisplay(scorecard.overallScore)}/100, classified as Low. Immediate portfolio review recommended.`,
         });
       } else if (scorecard.overallScore < 1.9) {
         /* Overall score warning */
@@ -98,8 +99,8 @@ export default function AlertsPage() {
           sector:    company.sector,
           severity:  'warning',
           type:      'low_score',
-          title:     `Overall score below target (${scorecard.overallScore.toFixed(2)})`,
-          detail:    `${company.name} is scoring ${scorecard.overallScore.toFixed(2)}/3.0 — below the Medium threshold. Monitor closely.`,
+          title:     `Overall score below target (${toDisplay(scorecard.overallScore)}/100)`,
+          detail:    `${company.name} is scoring ${toDisplay(scorecard.overallScore)}/100 — below the Medium threshold. Monitor closely.`,
         });
       }
 
@@ -115,8 +116,8 @@ export default function AlertsPage() {
             severity:  'critical',
             type:      'low_score',
             sdgId:     sdg.sdgId,
-            title:     `SDG ${sdg.sdgId} critically low (${sdg.score.toFixed(2)})`,
-            detail:    `${company.name} scored ${sdg.score.toFixed(2)}/3.0 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — significantly below sector average of ${sdg.sectorAvg.toFixed(2)}.`,
+            title:     `SDG ${sdg.sdgId} critically low (${toDisplay(sdg.score)}/100)`,
+            detail:    `${company.name} scored ${toDisplay(sdg.score)}/100 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — significantly below sector average of ${toDisplay(sdg.sectorAvg)}.`,
           });
         } else if (sdg.score < 1.6) {
           const sdgMeta = SDG_LIST.find(d => d.id === sdg.sdgId);
@@ -129,7 +130,7 @@ export default function AlertsPage() {
             type:      'low_score',
             sdgId:     sdg.sdgId,
             title:     `SDG ${sdg.sdgId} below sector average`,
-            detail:    `${company.name} scored ${sdg.score.toFixed(2)}/3.0 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} vs sector avg ${sdg.sectorAvg.toFixed(2)}.`,
+            detail:    `${company.name} scored ${toDisplay(sdg.score)}/100 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} vs sector avg ${toDisplay(sdg.sectorAvg)}.`,
           });
         }
 
@@ -145,7 +146,7 @@ export default function AlertsPage() {
             type:      'declining',
             sdgId:     sdg.sdgId,
             title:     `Declining trend on SDG ${sdg.sdgId}`,
-            detail:    `${company.name} shows a downward trend on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — score is ${sdg.score.toFixed(2)} vs sector avg ${sdg.sectorAvg.toFixed(2)}.`,
+            detail:    `${company.name} shows a downward trend on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — score is ${toDisplay(sdg.score)}/100 vs sector avg ${toDisplay(sdg.sectorAvg)}.`,
           });
         }
       }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SkeletonBenchmark } from '@/components/shared/Skeleton';
 import { Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { toDisplay } from '@/lib/score';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import SDGRadarChart from '@/components/sme/SDGRadarChart';
 import H2HChart from '@/components/sme/H2HChart';
@@ -74,21 +75,21 @@ export default function BenchmarkingPage() {
         <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">Your Overall Score</p>
           <p className="text-4xl font-bold mb-1" style={{ color: overallColor(data.myOverall) }}>
-            {data.myOverall.toFixed(1)}
+            {toDisplay(data.myOverall)}
           </p>
-          <p className="text-[#4A5568] text-xs">out of 3.0</p>
+          <p className="text-[#4A5568] text-xs">out of 100</p>
         </div>
 
         <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">vs Sector Average</p>
           <div className="flex items-end gap-2 mb-1">
-            <p className="text-4xl font-bold text-[#015376]">{data.sectorAvgOverall.toFixed(1)}</p>
+            <p className="text-4xl font-bold text-[#015376]">{toDisplay(data.sectorAvgOverall)}</p>
             <div
               className="flex items-center gap-1 mb-1 text-sm font-semibold"
               style={{ color: overallDiff >= 0 ? '#00A651' : '#D0021B' }}
             >
               {overallDiff >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-              {overallDiff >= 0 ? '+' : ''}{overallDiff.toFixed(2)}
+              {overallDiff >= 0 ? '+' : ''}{toDisplay(data.myOverall) - toDisplay(data.sectorAvgOverall)}
             </div>
           </div>
           <p className="text-[#4A5568] text-xs">
@@ -103,19 +104,19 @@ export default function BenchmarkingPage() {
         <div className="rounded-xl border p-5" style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}>
           <p className="text-[#4A5568] text-xs uppercase tracking-wider mb-2">vs Top Quartile</p>
           <div className="flex items-end gap-2 mb-1">
-            <p className="text-4xl font-bold text-[#015376]">{data.topQuartileOverall.toFixed(1)}</p>
+            <p className="text-4xl font-bold text-[#015376]">{toDisplay(data.topQuartileOverall)}</p>
             <div
               className="flex items-center gap-1 mb-1 text-sm font-semibold"
               style={{ color: vsTop >= 0 ? '#00A651' : '#D0021B' }}
             >
               {vsTop >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-              {vsTop >= 0 ? '+' : ''}{vsTop.toFixed(2)}
+              {vsTop >= 0 ? '+' : ''}{toDisplay(data.myOverall) - toDisplay(data.topQuartileOverall)}
             </div>
           </div>
           <p className="text-[#4A5568] text-xs">
             {vsTop >= 0
               ? 'You are in the top quartile'
-              : `${Math.abs(vsTop).toFixed(2)} points below top quartile`}
+              : `${Math.abs(toDisplay(data.myOverall) - toDisplay(data.topQuartileOverall))} pts below top quartile`}
           </p>
         </div>
 
@@ -254,17 +255,17 @@ export default function BenchmarkingPage() {
                     <td className="px-4 py-3 text-right">
                       {hasScore ? (
                         <span className="font-bold text-sm" style={{ color: overallColor(row.myScore!) }}>
-                          {row.myScore!.toFixed(1)}
+                          {toDisplay(row.myScore!)}
                         </span>
                       ) : (
                         <span className="text-[#4A5568]/50 text-xs">N/A</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right text-[#015376] text-sm">
-                      {row.sectorAvg.toFixed(1)}
+                      {toDisplay(row.sectorAvg)}
                     </td>
                     <td className="px-4 py-3 text-right text-[#4A5568] text-sm">
-                      {row.topQuartile.toFixed(1)}
+                      {toDisplay(row.topQuartile)}
                     </td>
                     <td className="px-5 py-3 text-right">
                       {hasScore ? (
@@ -274,7 +275,7 @@ export default function BenchmarkingPage() {
                             color: diff > 0.05 ? '#00A651' : diff < -0.05 ? '#D0021B' : '#4A5568',
                           }}
                         >
-                          {diff > 0.05 ? '+' : ''}{diff.toFixed(2)}
+                          {(() => { const d = toDisplay(row.myScore!) - toDisplay(row.sectorAvg); return (d > 0 ? '+' : '') + d; })()}
                         </span>
                       ) : (
                         <span className="text-[#4A5568]/40 text-xs">—</span>

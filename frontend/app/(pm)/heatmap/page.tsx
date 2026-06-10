@@ -14,6 +14,7 @@ import Tooltip from '@/components/shared/Tooltip';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import PageContext from '@/components/shared/PageContext';
+import { toDisplay } from '@/lib/score';
 
 type SortKey   = 'score_desc' | 'score_asc' | 'name' | 'sector';
 type FilterKey = 'All' | 'High' | 'Medium' | 'Low';
@@ -182,7 +183,7 @@ export default function PMPortfolioOverviewPage() {
             icon: Award,        iconColor: '#00B5ED',
             value: avg.toFixed(2),
             label: 'Portfolio Average',
-            sub: 'Overall SDG score / 3.0',   subColor: scoreColor(avg),
+            sub: 'Overall SDG score / 100',   subColor: scoreColor(avg),
             delay: 'delay-200',
             isScore: true,
           },
@@ -397,7 +398,7 @@ export default function PMPortfolioOverviewPage() {
                       {topSDGs.map(s => {
                         const sdg = SDG_LIST.find(d => d.id === s.sdgId);
                         return (
-                          <Tooltip key={s.sdgId} content={`SDG ${s.sdgId}: ${s.score.toFixed(1)}`} position="top">
+                          <Tooltip key={s.sdgId} content={`SDG ${s.sdgId}: ${toDisplay(s.score)}`} position="top">
                             <div
                               className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold"
                               style={{
@@ -431,9 +432,9 @@ export default function PMPortfolioOverviewPage() {
                             className="font-bold text-xl leading-none"
                             style={{ color: scoreColor(scorecard.overallScore) }}
                           >
-                            {scorecard.overallScore.toFixed(1)}
+                            {toDisplay(scorecard.overallScore)}
                           </span>
-                          <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>/ 3.0</span>
+                          <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>/100</span>
                         </div>
                         {cc && (
                           <span

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap } from 'lucide-react';
+import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap, Calculator } from 'lucide-react';
 import { LEARNING_LESSONS, LEARNING_COURSES } from '@/lib/learn-content';
 import {
   getAllProgress,
@@ -12,6 +12,7 @@ import {
   type LessonProgress,
 } from '@/lib/learn-progress';
 import { SDG_LIST } from '@/lib/sdg';
+import { toDisplay } from '@/lib/score';
 import { useSMEData } from '@/hooks/useSMEData';
 import { useLearningPath } from '@/hooks/useLearningPath';
 
@@ -80,12 +81,13 @@ export default function LearningHubPage() {
     router.push(`/learning/lesson/${lessonId}${suffix ? `?${suffix}` : ''}`);
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'home', label: 'Home', icon: BookOpen },
-    { id: 'skillmap', label: 'Skill map', icon: Map },
-    { id: 'path', label: 'My path', icon: Zap },
-    { id: 'courses', label: 'Courses', icon: Star },
-    { id: 'lessons', label: 'All lessons', icon: BookOpen },
+  const tabs: { id: Tab | 'calculators'; label: string; icon: React.ElementType; href?: string }[] = [
+    { id: 'home',        label: 'Home',        icon: BookOpen },
+    { id: 'skillmap',    label: 'Skill map',   icon: Map },
+    { id: 'path',        label: 'My path',     icon: Zap },
+    { id: 'courses',     label: 'Courses',     icon: Star },
+    { id: 'lessons',     label: 'All lessons', icon: BookOpen },
+    { id: 'calculators', label: 'Calculators', icon: Calculator, href: '/learning/calculators' },
   ];
 
   return (
@@ -120,10 +122,10 @@ export default function LearningHubPage() {
         className="flex gap-1 p-1 rounded-xl mb-6"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)', overflowX: 'auto' }}
       >
-        {tabs.map(({ id, label, icon: Icon }) => (
+        {tabs.map(({ id, label, icon: Icon, href }) => (
           <button
             key={id}
-            onClick={() => setTab(id)}
+            onClick={() => href ? router.push(href) : setTab(id as Tab)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 justify-center"
             style={{
               background: tab === id ? 'var(--sanlam-navy)' : 'transparent',
@@ -256,7 +258,7 @@ export default function LearningHubPage() {
                   </p>
                   {sdgScore && (
                     <span className="text-[10px] font-bold" style={{ color: sdgScoreColor }}>
-                      {sdgScore.score.toFixed(1)}
+                      {toDisplay(sdgScore.score)}
                     </span>
                   )}
                 </button>

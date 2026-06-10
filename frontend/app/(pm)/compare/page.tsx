@@ -9,6 +9,7 @@ import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import Tooltip from '@/components/shared/Tooltip';
 import PageContext from '@/components/shared/PageContext';
+import { toDisplay } from '@/lib/score';
 
 function scoreColor(s: number) {
   if (s >= 2.4) return '#00A651';
@@ -72,7 +73,7 @@ function SDGRow({
           {aScore != null ? (
             <>
               <span className="text-xs font-bold w-8 text-right" style={{ color: scoreColor(aScore) }}>
-                {aScore.toFixed(1)}
+                {toDisplay(aScore)}
               </span>
               <div className="flex-1 flex justify-end" style={{ height: 8 }}>
                 <div
@@ -117,7 +118,7 @@ function SDGRow({
                 />
               </div>
               <span className="text-xs font-bold w-8" style={{ color: scoreColor(bScore) }}>
-                {bScore.toFixed(1)}
+                {toDisplay(bScore)}
               </span>
             </>
           ) : (
@@ -217,9 +218,9 @@ export default function ComparePage() {
                   {entry.scorecard && (
                     <div className="ml-auto text-right">
                       <span className="font-bold text-xl" style={{ color: scoreColor(entry.scorecard.overallScore) }}>
-                        {entry.scorecard.overallScore.toFixed(1)}
+                        {toDisplay(entry.scorecard.overallScore)}
                       </span>
-                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>/ 3.0</p>
+                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>/100</p>
                     </div>
                   )}
                 </div>
@@ -263,9 +264,8 @@ export default function ComparePage() {
                   value={entryA.scorecard.overallScore}
                   className="font-bold text-4xl block"
                   style={{ color: scoreColor(entryA.scorecard.overallScore) }}
-                  decimals={2}
                 />
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 3.0</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/100</p>
                 <div className="mt-2">
                   <AnimatedProgressBar
                     value={((entryA.scorecard.overallScore - 1) / 2) * 100}
@@ -297,9 +297,8 @@ export default function ComparePage() {
                   value={entryB.scorecard.overallScore}
                   className="font-bold text-4xl block"
                   style={{ color: scoreColor(entryB.scorecard.overallScore) }}
-                  decimals={2}
                 />
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 3.0</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/100</p>
                 <div className="mt-2">
                   <AnimatedProgressBar
                     value={((entryB.scorecard.overallScore - 1) / 2) * 100}
@@ -318,8 +317,8 @@ export default function ComparePage() {
                 style={{ color: 'var(--sanlam-teal)' }}
               >
                 {entryA.scorecard.overallScore > entryB.scorecard.overallScore
-                  ? `${entryA.company.name} leads by ${(entryA.scorecard.overallScore - entryB.scorecard.overallScore).toFixed(2)} points`
-                  : `${entryB.company.name} leads by ${(entryB.scorecard.overallScore - entryA.scorecard.overallScore).toFixed(2)} points`
+                  ? `${entryA.company.name} leads by ${toDisplay(entryA.scorecard.overallScore) - toDisplay(entryB.scorecard.overallScore)} pts`
+                  : `${entryB.company.name} leads by ${toDisplay(entryB.scorecard.overallScore) - toDisplay(entryA.scorecard.overallScore)} pts`
                 }
               </p>
             )}
@@ -385,11 +384,11 @@ export default function ComparePage() {
                           SDG {item.sdgId} — {sdg?.shortName}
                         </p>
                         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                          {leader} leads by {item.diff.toFixed(2)} points
+                          {leader} leads by {Math.round((item.diff / 2) * 100)} pts
                         </p>
                       </div>
                       <span className="text-xs font-semibold" style={{ color: 'var(--sanlam-teal)' }}>
-                        Δ {item.diff.toFixed(2)}
+                        Δ {Math.round((item.diff / 2) * 100)}
                       </span>
                     </div>
                   );

@@ -8,10 +8,12 @@ import PageHeader from '@/components/shared/PageHeader';
 import { SMEDataProvider } from '@/context/SMEDataContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import OnboardingTour, { useOnboarding } from '@/components/sme/OnboardingTour';
 
 function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
   const [collapsed, setCollapsed] = useState(false);
+  const { show: showTour, complete: completeTour } = useOnboarding();
 
   return (
     <div
@@ -39,6 +41,7 @@ function SMEShell({ children }: { children: React.ReactNode }) {
           </ErrorBoundary>
         </main>
       </div>
+      {showTour && <OnboardingTour onComplete={completeTour} />}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import Tooltip from '@/components/shared/Tooltip';
 import PageContext from '@/components/shared/PageContext';
+import { toDisplay } from '@/lib/score';
 
 type ViewMode = 'grid' | 'score';
 
@@ -91,9 +92,9 @@ export default function HeatMapPage() {
         <div className="w-px h-4" style={{ background: 'var(--border)' }} />
         <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
           {[
-            { label: 'High ≥2.4',     color: '#00A651', bg: 'rgba(0,166,81,0.12)'    },
-            { label: 'Medium 1.6–2.3', color: '#E8A020', bg: 'rgba(232,160,32,0.10)' },
-            { label: 'Low <1.6',      color: '#D0021B', bg: 'rgba(208,2,27,0.10)'   },
+            { label: 'High ≥65',      color: '#00A651', bg: 'rgba(0,166,81,0.12)'    },
+            { label: 'Medium 25–64',  color: '#E8A020', bg: 'rgba(232,160,32,0.10)' },
+            { label: 'Low <25',       color: '#D0021B', bg: 'rgba(208,2,27,0.10)'   },
             { label: 'N/A',           color: 'var(--text-muted)', bg: 'var(--bg)'   },
           ].map(({ label, color, bg }) => (
             <span key={label} className="flex items-center gap-1">
@@ -265,7 +266,7 @@ export default function HeatMapPage() {
                         <Tooltip
                           content={
                             score
-                              ? `${company.name} · SDG ${sdg.id}: ${score.toFixed(1)} (${s?.classification})`
+                              ? `${company.name} · SDG ${sdg.id}: ${toDisplay(score)} (${s?.classification})`
                               : `${company.name} · SDG ${sdg.id}: N/A`
                           }
                           position="top"
@@ -280,7 +281,7 @@ export default function HeatMapPage() {
                           >
                             {viewMode === 'score' && score ? (
                               <span className="text-[10px] font-bold" style={{ color: scoreColor(score) }}>
-                                {score.toFixed(1)}
+                                {toDisplay(score)}
                               </span>
                             ) : score ? (
                               <div className="w-2.5 h-2.5 rounded-full" style={{ background: scoreColor(score) }} />
@@ -299,7 +300,7 @@ export default function HeatMapPage() {
                   >
                     {scorecard ? (
                       <span className="font-bold text-sm" style={{ color: scoreColor(scorecard.overallScore) }}>
-                        {scorecard.overallScore.toFixed(1)}
+                        {toDisplay(scorecard.overallScore)}
                       </span>
                     ) : (
                       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>–</span>

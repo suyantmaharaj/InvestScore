@@ -12,6 +12,7 @@ import PageContext from '@/components/shared/PageContext';
 import { CLASSIFICATION_COLORS } from '@/lib/sdg';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import { KPI_DISPLAY_LIST } from '@/lib/kpi-data';
+import { toDisplay } from '@/lib/score';
 
 interface HistoryEntry {
   scorecardId:      string;
@@ -53,20 +54,20 @@ function TrendChart({ entries }: { entries: HistoryEntry[] }) {
   if (entries.length < 2) return null;
 
   const W = 600; const H = 120; const PAD = 20;
-  const minS = 1.0; const maxS = 3.0;
+  const minS = 0; const maxS = 100;
   const toY  = (s: number) => PAD + ((maxS - s) / (maxS - minS)) * (H - PAD * 2);
   const toX  = (i: number) => PAD + (i / (entries.length - 1)) * (W - PAD * 2);
 
-  const points      = entries.map((e, i) => `${toX(i)},${toY(e.overallScore)}`).join(' ');
+  const points      = entries.map((e, i) => `${toX(i)},${toY(toDisplay(e.overallScore))}`).join(' ');
   const areaPoints  = [
     `${toX(0)},${H - PAD}`,
-    ...entries.map((e, i) => `${toX(i)},${toY(e.overallScore)}`),
+    ...entries.map((e, i) => `${toX(i)},${toY(toDisplay(e.overallScore))}`),
     `${toX(entries.length - 1)},${H - PAD}`,
   ].join(' ');
 
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
-      {[1.0, 1.5, 2.0, 2.5, 3.0].map(v => (
+      {[0, 25, 50, 75, 100].map(v => (
         <g key={v}>
           <line
             x1={PAD} y1={toY(v)} x2={W - PAD} y2={toY(v)}
@@ -76,7 +77,7 @@ function TrendChart({ entries }: { entries: HistoryEntry[] }) {
             x={PAD - 4} y={toY(v) + 4}
             fontSize="9" textAnchor="end" fill="var(--text-muted)" fontFamily="Inter, sans-serif"
           >
-            {v.toFixed(1)}
+            {v}
           </text>
         </g>
       ))}
@@ -92,15 +93,15 @@ function TrendChart({ entries }: { entries: HistoryEntry[] }) {
       {entries.map((e, i) => (
         <g key={i}>
           <circle
-            cx={toX(i)} cy={toY(e.overallScore)} r="5"
+            cx={toX(i)} cy={toY(toDisplay(e.overallScore))} r="5"
             fill={scoreColor(e.overallScore)} stroke="var(--surface)" strokeWidth="2"
           />
           <text
-            x={toX(i)} y={toY(e.overallScore) - 12}
+            x={toX(i)} y={toY(toDisplay(e.overallScore)) - 12}
             fontSize="10" textAnchor="middle"
             fill={scoreColor(e.overallScore)} fontWeight="700" fontFamily="Inter, sans-serif"
           >
-            {e.overallScore.toFixed(1)}
+            {toDisplay(e.overallScore)}
           </text>
           <text
             x={toX(i)} y={H - 4}
@@ -220,7 +221,7 @@ export default function HistoryPage() {
               className="text-xs font-medium"
               style={{ color: trend >= 0 ? '#00A651' : '#D0021B' }}
             >
-              {trend >= 0 ? '↑' : '↓'} {Math.abs(trend).toFixed(2)} vs previous period
+              {trend >= 0 ? '↑' : '↓'} {Math.abs(toDisplay(latest.overallScore) - toDisplay(previous!.overallScore))} pts vs previous period
             </span>
           </>
         )}
@@ -313,7 +314,7 @@ export default function HistoryPage() {
                         className="font-bold text-xl leading-none mb-1"
                         style={{ color: scoreColor(entry.overallScore) }}
                       >
-                        {entry.overallScore.toFixed(1)}
+                        {toDisplay(entry.overallScore)}
                       </p>
                       {cc && (
                         <span
@@ -407,7 +408,7 @@ export default function HistoryPage() {
                                     </span>
                                   </div>
                                   <p className="text-sm font-bold flex-shrink-0" style={{ color: scoreColor(sdg.score) }}>
-                                    {sdg.score.toFixed(1)}
+                                    {toDisplay(sdg.score)}
                                   </p>
                                 </div>
                               );

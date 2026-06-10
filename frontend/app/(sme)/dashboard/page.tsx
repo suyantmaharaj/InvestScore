@@ -7,6 +7,7 @@ import { TrendingUp, AlertTriangle, Award, CheckCircle } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
+import { toDisplay } from '@/lib/score';
 import { SkeletonDashboard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
@@ -53,6 +54,24 @@ export default function SMEDashboardPage() {
   const { company, scorecard, loading, error } = useSMEData();
   const [lastSubmissionDate, setLastSubmissionDate] = useState<string | null>(null);
   const [lastSubmissionData, setLastSubmissionData] = useState<Record<string, number | null> | null>(null);
+  const [targets, setTargets] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!company?.id) return;
+    const load = async () => {
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/targets/${company.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const json = await res.json();
+        setTargets(json.targets || {});
+      } catch { /* silent */ }
+    };
+    load();
+  }, [company?.id]);
 
   useEffect(() => {
     if (!company?.id) return;
@@ -157,6 +176,7 @@ export default function SMEDashboardPage() {
                 className="text-6xl font-bold leading-none"
                 style={{ color: scoreColor(overallScore) }}
               />
+              <span className="mb-1.5 text-2xl font-bold leading-none" style={{ color: 'var(--text-muted)' }}>/100</span>
               <span
                 className="mb-1.5 text-sm font-semibold px-3 py-1 rounded-full"
                 style={{
@@ -169,7 +189,7 @@ export default function SMEDashboardPage() {
               </span>
             </div>
             <p className="text-sm mb-4" style={{ color: 'var(--text-muted, #4A5568)' }}>
-              out of 3.0 maximum
+              out of 100
             </p>
             <div className="w-full max-w-xs">
               <AnimatedProgressBar
@@ -232,6 +252,76 @@ export default function SMEDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Targets progress card */}
+      {Object.keys(targets).length > 0 && (() => {
+        const targetEntries = Object.entries(targets).map(([sdgId, t]) => {
+          const score = sdgScores.find(s => String(s.sdgId) === sdgId);
+          return { sdgId: Number(sdgId), target: t, actual: score ? toDisplay(score.score) : null };
+        }).filter(e => e.actual !== null);
+        if (targetEntries.length === 0) return null;
+        const met  = targetEntries.filter(e => e.actual! >= e.target).length;
+        const pct  = Math.round((met / targetEntries.length) * 100);
+        return (
+          <div
+            className="rounded-xl border p-5 animate-card-in delay-300"
+            style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🎯</span>
+                <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+                  PM Targets Progress
+                </h2>
+                <span
+                  className="text-[11px] font-medium px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
+                >
+                  {met}/{targetEntries.length} met
+                </span>
+              </div>
+              <button
+                onClick={() => router.push('/scorecard')}
+                className="text-xs font-medium"
+                style={{ color: 'var(--sanlam-teal)' }}
+              >
+                View scorecard →
+              </button>
+            </div>
+            <AnimatedProgressBar
+              value={pct}
+              color={pct >= 80 ? '#00A651' : pct >= 50 ? '#E8A020' : '#D0021B'}
+              height={6}
+              delay={300}
+            />
+            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+              {pct}% of PM-set targets achieved across {targetEntries.length} SDG goal{targetEntries.length !== 1 ? 's' : ''}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-3">
+              {targetEntries.map(({ sdgId, target, actual }) => {
+                const sdg  = SDG_LIST.find(d => d.id === sdgId);
+                const done = actual! >= target;
+                const gap  = target - actual!;
+                return (
+                  <div
+                    key={sdgId}
+                    className="flex items-center gap-2 p-2 rounded-lg"
+                    style={{ background: 'var(--bg)', border: `1px solid ${done ? 'rgba(0,166,81,0.2)' : 'var(--border)'}` }}
+                  >
+                    <span className="text-sm flex-shrink-0">{sdg?.icon ?? '🎯'}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>SDG {sdgId}</p>
+                      <p className="text-[11px] font-bold" style={{ color: done ? '#00A651' : '#E8A020' }}>
+                        {actual}/100 {done ? '✓' : `→${target}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       <SectorContext />
 
@@ -302,7 +392,7 @@ export default function SMEDashboardPage() {
                     {s ? (
                       <>
                         <p className="font-bold text-sm leading-none" style={{ color: scoreColor(s.score) }}>
-                          {s.score.toFixed(1)}
+                          {toDisplay(s.score)}
                         </p>
                         <ScoreDots score={s.score} />
                       </>

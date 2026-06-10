@@ -13,6 +13,7 @@ import adminRoutes         from './routes/admin.routes';
 import aiRoutes            from './routes/ai.routes';
 import notificationRoutes  from './routes/notifications.routes';
 import learningRoutes      from './routes/learning.routes';
+import targetsRoutes       from './routes/targets.routes';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -29,6 +30,7 @@ app.use('/api/admin',       adminRoutes);
 app.use('/api/ai',            aiRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/learning',      learningRoutes);
+app.use('/api/targets',       targetsRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 
