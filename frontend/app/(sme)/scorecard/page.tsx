@@ -672,7 +672,7 @@ export default function ScorecardPage() {
                         <button
                           onClick={e => {
                             e.stopPropagation();
-                            router.push('/learn');
+                            router.push('/learning');
                           }}
                           className="text-[11px] font-medium hover:underline"
                           style={{ color: 'var(--sanlam-teal)' }}

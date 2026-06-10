@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { href: '/benchmarking', label: 'Benchmarking', icon: Users            },
   { href: '/submit',       label: 'Submit Data',  icon: ClipboardList    },
   { href: '/history',      label: 'My History',   icon: History          },
-  { href: '/learn',        label: 'Learn',        icon: BookOpen         },
+  { href: '/learning',     label: 'Learn',        icon: BookOpen         },
   { href: '/profile',      label: 'Company Profile', icon: Building2     },
   { href: '/coach',        label: 'AI Coach',     icon: MessageSquare    },
 ];

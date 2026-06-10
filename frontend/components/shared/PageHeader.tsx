@@ -30,7 +30,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/coach':        { icon: '🤖', title: 'AI Coach',        subtitle: '', breadcrumb: ['SME Portal', 'AI Coach']      },
   '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences',             breadcrumb: ['SME Portal', 'Settings']    },
   '/history':      { icon: '📅', title: 'Submission History', subtitle: '',                                                    breadcrumb: ['SME Portal', 'History']     },
-  '/learn':        { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
+  '/learning':     { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
   '/profile':      { icon: '🏢', title: 'Company Profile',    subtitle: '',                                                   breadcrumb: ['SME Portal', 'Company Profile'] },
 
   // PM Portal pages
