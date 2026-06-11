@@ -15,6 +15,7 @@ import notificationRoutes  from './routes/notifications.routes';
 import learningRoutes      from './routes/learning.routes';
 import targetsRoutes       from './routes/targets.routes';
 import watchlistRoutes     from './routes/watchlist.routes';
+import analyticsRoutes    from './routes/analytics.routes';
 import engagementRoutes    from './routes/engagement.routes';
 
 const app  = express();
@@ -34,6 +35,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/learning',      learningRoutes);
 app.use('/api/targets',       targetsRoutes);
 app.use('/api/watchlist',     watchlistRoutes);
+app.use('/api/analytics',    analyticsRoutes);
 app.use('/api/engagement',    engagementRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
