@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
@@ -121,7 +121,15 @@ export default function HistoryPage() {
   const { user }    = useAuth();
   const [entries,  setEntries]  = useState<HistoryEntry[]>([]);
   const [loading,  setLoading]  = useState(true);
-  const [openId,   setOpenId]   = useState<string | null>(null);
+  const [openId,             setOpenId]             = useState<string | null>(null);
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (key: string) =>
+    setOpenCategories(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   useEffect(() => {
     if (!user?.companyId) { setLoading(false); return; }
@@ -343,78 +351,108 @@ export default function HistoryPage() {
 
                 {isOpen && (
                   <div className="mt-5 pt-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
-                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.7fr)] gap-5">
+                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-8">
+
+                      {/* KPI values — clean list */}
                       <div>
-                        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-                          Submitted KPI values
+                        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+                          Submitted KPI data
                         </p>
                         {submittedKpis.length === 0 ? (
-                          <div className="rounded-xl p-4 text-sm" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-                            No submitted KPI values were found for this submission.
-                          </div>
+                          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                            No KPI values found for this submission.
+                          </p>
                         ) : (
-                          <div className="space-y-4">
-                            {Object.entries(groupedKpis).map(([category, items]) => (
-                              <div key={category}>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-                                  {categoryLabel(category)}
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  {items.map(({ id, value, meta }) => (
+                          <div>
+                            {Object.entries(groupedKpis).map(([category, items], catIdx) => {
+                              const catKey    = `${entry.scorecardId}_${category}`;
+                              const isCatOpen = openCategories.has(catKey);
+                              return (
+                                <div key={category}>
+                                  {/* Collapsible category header */}
+                                  <button
+                                    onClick={() => toggleCategory(catKey)}
+                                    className="w-full flex items-center justify-between gap-2 py-2.5 transition-colors"
+                                    style={{
+                                      borderTop:   catIdx > 0 ? '1px solid var(--border)' : 'none',
+                                      color:       'var(--text-muted)',
+                                    }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                  >
+                                    <span className="text-[10px] font-semibold uppercase tracking-widest">
+                                      {categoryLabel(category)}
+                                      <span className="ml-1.5 font-normal normal-case tracking-normal">
+                                        ({items.length})
+                                      </span>
+                                    </span>
+                                    {isCatOpen
+                                      ? <ChevronDown size={13} />
+                                      : <ChevronRight size={13} />
+                                    }
+                                  </button>
+
+                                  {/* KPI rows */}
+                                  {isCatOpen && items.map(({ id, value, meta }) => (
                                     <div
                                       key={id}
-                                      className="rounded-xl p-3"
-                                      style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+                                      className="flex items-center justify-between py-2 px-1"
+                                      style={{ borderBottom: '1px solid var(--border)' }}
                                     >
-                                      <p className="text-[11px] mb-1" style={{ color: 'var(--text-muted)' }}>
+                                      <span className="text-sm pr-4" style={{ color: 'var(--text-muted)' }}>
                                         {meta?.label || id.replace(/_/g, ' ')}
-                                      </p>
-                                      <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                      </span>
+                                      <span className="text-sm font-semibold flex-shrink-0" style={{ color: 'var(--text-primary)' }}>
                                         {formatKPIValue(value, meta?.unit)}
-                                      </p>
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>
 
+                      {/* SDG scores — compact list */}
                       <div>
-                        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-                          SDG scores from this submission
+                        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+                          SDG scores
                         </p>
-                        <div className="space-y-2">
+                        <div>
                           {[...entry.sdgScores]
                             .sort((a, b) => a.sdgId - b.sdgId)
-                            .map(sdg => {
-                              const sdgCc = CLASSIFICATION_COLORS[sdg.classification];
-                              return (
-                                <div
-                                  key={sdg.sdgId}
-                                  className="flex items-center justify-between gap-3 rounded-xl px-3 py-2"
-                                  style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
-                                >
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-                                      SDG {sdg.sdgId}: {sdg.sdgName}
-                                    </p>
-                                    <span
-                                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                                      style={{ background: sdgCc.bg, color: sdgCc.text, border: `1px solid ${sdgCc.border}` }}
-                                    >
-                                      {sdg.classification}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm font-bold flex-shrink-0" style={{ color: scoreColor(sdg.score) }}>
+                            .map(sdg => (
+                              <div
+                                key={sdg.sdgId}
+                                className="flex items-center justify-between gap-3 py-2"
+                                style={{ borderBottom: '1px solid var(--border)' }}
+                              >
+                                <span className="text-xs truncate" style={{ color: 'var(--text-muted)', maxWidth: '160px' }}>
+                                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                                    SDG {sdg.sdgId}
+                                  </span>
+                                  {' '}· {sdg.sdgName}
+                                </span>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span
+                                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                      background: CLASSIFICATION_COLORS[sdg.classification]?.bg,
+                                      color:      CLASSIFICATION_COLORS[sdg.classification]?.text,
+                                    }}
+                                  >
+                                    {sdg.classification}
+                                  </span>
+                                  <span className="text-sm font-bold w-7 text-right" style={{ color: scoreColor(sdg.score) }}>
                                     {toDisplay(sdg.score)}
-                                  </p>
+                                  </span>
                                 </div>
-                              );
-                            })}
+                              </div>
+                            ))}
                         </div>
                       </div>
+
                     </div>
                   </div>
                 )}
