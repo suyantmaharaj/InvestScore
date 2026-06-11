@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-5">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map(i => <SkeletonCard key={i} className="h-28" />)}
         </div>
@@ -127,7 +127,7 @@ export default function AnalyticsPage() {
 
   if (error || !stats) {
     return (
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="card p-8 text-center" style={{ background: 'var(--surface)' }}>
           <AlertCircle size={24} className="mx-auto mb-3" style={{ color: '#D0021B' }} />
           <p style={{ color: 'var(--text-muted)' }}>{error || 'Failed to load analytics.'}</p>
@@ -149,7 +149,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

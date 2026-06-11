@@ -167,7 +167,7 @@ export default function AlertsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <SkeletonCard className="h-20" />
         {[0, 1, 2, 3].map(i => <SkeletonCard key={i} className="h-20" />)}
       </div>
@@ -195,7 +195,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

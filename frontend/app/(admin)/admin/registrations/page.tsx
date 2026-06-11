@@ -116,14 +116,14 @@ export default function RegistrationsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto space-y-4">
+      <div className="max-w-5xl mx-auto space-y-4">
         {[0, 1, 2].map(i => <SkeletonCard key={i} className="h-32" />)}
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-5xl mx-auto space-y-5 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

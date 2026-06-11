@@ -29,7 +29,7 @@ function NavContent({
 }) {
   const pathname = usePathname();
   const router   = useRouter();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -124,21 +124,13 @@ function NavContent({
         })}
       </nav>
 
-      {/* Bottom — user info + sign out */}
+      {/* Bottom — sign out */}
       <div
         style={{
           borderTop: '1px solid rgba(255,255,255,0.08)',
           padding:   collapsed ? '1rem 0.5rem' : '1rem',
         }}
       >
-        {!collapsed && (
-          <div className="mb-3 px-1">
-            <p className="text-white text-sm font-medium truncate">{user?.name}</p>
-            <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {user?.email}
-            </p>
-          </div>
-        )}
         <button
           onClick={handleLogout}
           title={collapsed ? 'Sign out' : undefined}

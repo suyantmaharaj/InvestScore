@@ -106,7 +106,7 @@ export default function DataCompletenessPage() {
 
   if (portfolioLoading || loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         {[0, 1, 2, 3].map(i => <SkeletonCard key={i} className="h-24" />)}
       </div>
     );
@@ -116,7 +116,7 @@ export default function DataCompletenessPage() {
     n >= 70 ? '#00A651' : n >= 40 ? '#E8A020' : '#D0021B';
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

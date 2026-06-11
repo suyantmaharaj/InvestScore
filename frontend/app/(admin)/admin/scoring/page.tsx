@@ -541,7 +541,7 @@ export default function ScoringConfigPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-5">
         <SkeletonCard className="h-12" />
         <SkeletonCard className="h-64" />
         <SkeletonCard className="h-40" />
@@ -551,7 +551,7 @@ export default function ScoringConfigPage() {
 
   if (error && !edited) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="card p-8 text-center" style={{ background: 'var(--surface)' }}>
           <AlertTriangle size={24} className="mx-auto mb-3" style={{ color: '#D0021B' }} />
           <p style={{ color: 'var(--text-muted)' }}>{error}</p>
@@ -563,7 +563,7 @@ export default function ScoringConfigPage() {
   // ── Render ──
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-5 animate-page-in">
 
       {/* Context bar */}
       <PageContext>

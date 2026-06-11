@@ -182,7 +182,7 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <SkeletonCard className="h-16" />
         {[0, 1, 2, 3, 4].map(i => <SkeletonCard key={i} className="h-16" />)}
       </div>
@@ -190,7 +190,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-5 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

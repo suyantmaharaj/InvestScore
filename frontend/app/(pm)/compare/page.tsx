@@ -219,7 +219,7 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <SkeletonCard className="h-24" />
         <SkeletonCard className="h-96" />
       </div>
@@ -229,7 +229,7 @@ export default function ComparePage() {
   const BAR_H = 18;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

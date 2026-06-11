@@ -611,7 +611,7 @@ export default function CompanyDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-5">
         <SkeletonCard className="h-28" />
         <div className="grid grid-cols-3 gap-4">
           <SkeletonCard className="h-24" />
@@ -635,7 +635,7 @@ export default function CompanyDetailPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       {/* Back button */}
       <button
