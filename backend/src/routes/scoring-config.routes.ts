@@ -10,7 +10,7 @@ const router    = Router();
 const CONFIG_DOC = db.collection('config').doc('scoringConfig');
 const AUDIT_COL  = db.collection('scoringConfigAudit');
 
-// GET /api/scoring-config — current config or hardcoded defaults
+// GET /api/scoring-config - current config or hardcoded defaults
 router.get('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
   try {
     const snap = await CONFIG_DOC.get();
@@ -39,7 +39,7 @@ router.get('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res:
   }
 });
 
-// PUT /api/scoring-config — save with mandatory change reason
+// PUT /api/scoring-config - save with mandatory change reason
 router.put('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
   const { sectorWeights, kpiThresholds, reason } = req.body;
 
@@ -102,7 +102,7 @@ router.put('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res:
   }
 });
 
-// DELETE /api/scoring-config — reset to hardcoded defaults
+// DELETE /api/scoring-config - reset to hardcoded defaults
 router.delete('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
   const { reason } = req.body;
 

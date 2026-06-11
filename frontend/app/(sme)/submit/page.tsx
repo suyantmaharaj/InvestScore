@@ -129,7 +129,7 @@ export default function SubmitPage() {
 
   const draftKey = company?.id ? `investscore_submission_draft_${company.id}` : null;
 
-  // Load draft — localStorage first, then server (server wins if populated)
+  // Load draft - localStorage first, then server (server wins if populated)
   useEffect(() => {
     if (!company?.id) return;
 

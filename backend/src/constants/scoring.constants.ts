@@ -1,5 +1,5 @@
-// Sanlam Investments — Fixed Scoring Methodology
-// DO NOT MODIFY — this is the immutable scoring engine configuration
+// Sanlam Investments - Fixed Scoring Methodology
+// DO NOT MODIFY - this is the immutable scoring engine configuration
 
 export type ScoreLevel = 'Low' | 'Medium' | 'High';
 export type SectorType =
@@ -30,7 +30,7 @@ export const classifyScore = (score: number): ScoreLevel => {
   return 'High';
 };
 
-// KPI weights per sector — must sum to 1.0 within each sector
+// KPI weights per sector - must sum to 1.0 within each sector
 export const SECTOR_WEIGHTS: Record<SectorType, Record<string, number>> = {
 
   financial_services: {
@@ -214,7 +214,7 @@ export const SECTOR_WEIGHTS: Record<SectorType, Record<string, number>> = {
   },
 };
 
-// KPI scoring thresholds — what constitutes Low / Medium / High performance
+// KPI scoring thresholds - what constitutes Low / Medium / High performance
 export const KPI_THRESHOLDS: Record<string, { low: number; high: number }> = {
   // Employment (higher = better)
   total_employees:            { low: 5,       high: 50       },
@@ -229,7 +229,7 @@ export const KPI_THRESHOLDS: Record<string, { low: number; high: number }> = {
   coloured_employees:         { low: 0,       high: 5        },
   indian_employees:           { low: 0,       high: 5        },
 
-  // Environmental — inverted where noted
+  // Environmental - inverted where noted
   recycled_waste_pct:                 { low: 10,    high: 50    },
   scope1_co2e:                        { low: 500,   high: 100   }, // inverted
   scope2_co2e:                        { low: 500,   high: 100   }, // inverted

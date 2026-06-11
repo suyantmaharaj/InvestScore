@@ -5,7 +5,7 @@ import { requireRole } from '../middleware/role.middleware';
 
 const router = Router();
 
-// GET /api/engagement/:companyId — list entries sorted newest-first (JS sort, no composite index)
+// GET /api/engagement/:companyId - list entries sorted newest-first (JS sort, no composite index)
 router.get('/:companyId', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.params;
@@ -22,7 +22,7 @@ router.get('/:companyId', verifyToken, requireRole('pm', 'admin'), async (req: A
   }
 });
 
-// POST /api/engagement — create new entry
+// POST /api/engagement - create new entry
 router.post('/', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const { companyId, type, date, notes, commitments } = req.body as {
@@ -55,7 +55,7 @@ router.post('/', verifyToken, requireRole('pm', 'admin'), async (req: AuthReques
   }
 });
 
-// DELETE /api/engagement/:entryId — delete entry
+// DELETE /api/engagement/:entryId - delete entry
 router.delete('/:entryId', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     await db.collection('engagementLogs').doc(String(req.params.entryId)).delete();

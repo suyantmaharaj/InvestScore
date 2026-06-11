@@ -126,7 +126,7 @@ export default function SettingsPage() {
 
       <div className="flex gap-6">
 
-        {/* Tab sidebar — desktop */}
+        {/* Tab sidebar - desktop */}
         <div className="w-52 flex-shrink-0 hidden md:block">
           <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {TABS.map(tab => {
@@ -152,7 +152,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Tab pills — mobile */}
+        {/* Tab pills - mobile */}
         <div className="md:hidden flex gap-2 flex-wrap">
           {TABS.map(tab => (
             <button

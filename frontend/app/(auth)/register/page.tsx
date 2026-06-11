@@ -116,7 +116,7 @@ export default function RegisterPage() {
           )}
         </div>
 
-        {/* STEP 1 — Passcode */}
+        {/* STEP 1 - Passcode */}
         {step === 1 && (
           <>
             <h2 className="text-[#015376] font-semibold text-2xl mb-1">
@@ -162,7 +162,7 @@ export default function RegisterPage() {
           </>
         )}
 
-        {/* STEP 2 — Registration form */}
+        {/* STEP 2 - Registration form */}
         {step === 2 && (
           <>
             <h2 className="text-[#015376] font-semibold text-2xl mb-1">

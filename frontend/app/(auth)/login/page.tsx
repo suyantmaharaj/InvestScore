@@ -67,7 +67,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* LEFT PANEL — branded, hidden on mobile */}
+      {/* LEFT PANEL - branded, hidden on mobile */}
       <div
         className="hidden md:flex md:w-[45%] flex-col justify-between p-10 relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #015376 0%, #013d5c 100%)' }}
@@ -78,7 +78,7 @@ export default function LoginPage() {
           style={{ background: 'radial-gradient(circle, rgba(0,181,237,0.15) 0%, transparent 70%)' }}
         />
 
-        {/* Decorative circles bottom-right — Sanlam brand motif */}
+        {/* Decorative circles bottom-right - Sanlam brand motif */}
         <svg
           className="absolute bottom-0 right-0 pointer-events-none"
           width="400"
@@ -119,7 +119,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* RIGHT PANEL — form */}
+      {/* RIGHT PANEL - form */}
       <div className="relative flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg, #F4F6F8)' }}>
         <div className="w-full max-w-sm">
 

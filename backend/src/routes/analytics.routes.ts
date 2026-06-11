@@ -5,14 +5,14 @@ import { requireRole } from '../middleware/role.middleware';
 
 const router = Router();
 
-// GET /api/analytics/platform — Admin only
+// GET /api/analytics/platform - Admin only
 router.get('/platform', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
   try {
     const now    = new Date();
     const days30 = new Date(now.getTime() - 30 * 86400000).toISOString();
     const days90 = new Date(now.getTime() - 90 * 86400000).toISOString();
 
-    // All queries in parallel — no orderBy with where (sort in JS)
+    // All queries in parallel - no orderBy with where (sort in JS)
     const [
       usersSnap,
       companiesSnap,
@@ -40,7 +40,7 @@ router.get('/platform', verifyToken, requireRole('admin'), async (req: AuthReque
     const scoredCompanyIds = new Set(scored.map((s: any) => s.companyId));
     const neverSubmitted   = companies.filter((c: any) => !scoredCompanyIds.has(c.id)).length;
 
-    // Companies overdue — last scored submission > 90 days ago
+    // Companies overdue - last scored submission > 90 days ago
     const latestByCompany: Record<string, string> = {};
     scored.forEach((s: any) => {
       if (!latestByCompany[s.companyId] || s.scoredAt > latestByCompany[s.companyId]) {
@@ -72,7 +72,7 @@ router.get('/platform', verifyToken, requireRole('admin'), async (req: AuthReque
       ? Math.round((totalReported / totalPossible) * 100)
       : 0;
 
-    // Recent submissions — sort in JS (no orderBy with where)
+    // Recent submissions - sort in JS (no orderBy with where)
     const recentActivity = recentSubmissionsSnap.docs
       .map(d => ({
         type:      'submission',
@@ -93,7 +93,7 @@ router.get('/platform', verifyToken, requireRole('admin'), async (req: AuthReque
     });
     recentActivity.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
-    // Submissions by month — last 6 months
+    // Submissions by month - last 6 months
     const monthlyMap: Record<string, number> = {};
     scoredSnap.docs.forEach(d => {
       const month = (d.data().scoredAt as string)?.slice(0, 7);

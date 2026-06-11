@@ -73,7 +73,7 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
         />
       ))}
 
-      {/* Level labels — display scale 0–100 */}
+      {/* Level labels - display scale 0–100 */}
       {[1, 2, 3].map(level => (
         <text key={level}
           x={cx + 4} y={cy - (level / 3) * radius + 4}
@@ -185,7 +185,7 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
             <rect x={tip.x} y={tip.y} width={tooltipW} height={tooltipH}
               rx={8} fill="white" stroke="#DDE3EC" strokeWidth={1} />
 
-            {/* Header tint — top rounded rect */}
+            {/* Header tint - top rounded rect */}
             <rect x={tip.x} y={tip.y} width={tooltipW} height={28}
               rx={8} fill={hoveredRow.sdgColor + '20'} />
             {/* Square off the bottom corners of the header */}
@@ -197,7 +197,7 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
               fontSize={10} fontWeight={700} fill={hoveredRow.sdgColor}>
               SDG {hoveredRow.sdgId}
             </text>
-            {/* Line 2: short name — guaranteed to fit */}
+            {/* Line 2: short name - guaranteed to fit */}
             <text x={tip.x + 10} y={tip.y + 25}
               fontSize={8} fill={hoveredRow.sdgColor} opacity={0.8}>
               {name}

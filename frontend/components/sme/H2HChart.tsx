@@ -63,7 +63,7 @@ export default function H2HChart({ rows, compareMode }: Props) {
               }}
             >
 
-              {/* Left bar — my score, grows right to left */}
+              {/* Left bar - my score, grows right to left */}
               <div className="flex items-center justify-end gap-2">
                 <span
                   className="text-xs font-bold flex-shrink-0 transition-all duration-300"
@@ -96,7 +96,7 @@ export default function H2HChart({ rows, compareMode }: Props) {
                 </div>
               </div>
 
-              {/* Centre — SDG label + indicator */}
+              {/* Centre - SDG label + indicator */}
               <div className="flex flex-col items-center w-16">
                 <span className="text-[10px] font-bold" style={{ color: row.sdgColor }}>
                   {row.sdgIcon}
@@ -112,7 +112,7 @@ export default function H2HChart({ rows, compareMode }: Props) {
                 </span>
               </div>
 
-              {/* Right bar — compare score, grows left to right */}
+              {/* Right bar - compare score, grows left to right */}
               <div className="flex items-center gap-2">
                 <div
                   className="flex-1 h-5 rounded-r-full overflow-hidden max-w-[140px] transition-all duration-300"

@@ -6,7 +6,7 @@ interface SparkPoint { period: string; score: number; }
 
 function SparklineSVG({ points }: { points: SparkPoint[] }) {
   if (points.length < 2) {
-    return <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>—</span>;
+    return <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>-</span>;
   }
 
   const W = 56;

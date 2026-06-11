@@ -5,7 +5,7 @@ import { requireRole } from '../middleware/role.middleware';
 
 const router = Router();
 
-// GET /api/watchlist — load current PM's watchlist
+// GET /api/watchlist - load current PM's watchlist
 router.get('/', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const uid  = req.user!.uid;
@@ -17,7 +17,7 @@ router.get('/', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest
   }
 });
 
-// PUT /api/watchlist — replace watchlist
+// PUT /api/watchlist - replace watchlist
 router.put('/', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const uid = req.user!.uid;

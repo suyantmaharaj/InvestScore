@@ -353,7 +353,7 @@ export default function HistoryPage() {
                   <div className="mt-5 pt-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
                     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-8">
 
-                      {/* KPI values — clean list */}
+                      {/* KPI values - clean list */}
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
                           Submitted KPI data
@@ -414,7 +414,7 @@ export default function HistoryPage() {
                         )}
                       </div>
 
-                      {/* SDG scores — compact list */}
+                      {/* SDG scores - compact list */}
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
                           SDG scores

@@ -81,7 +81,7 @@ export default function ComparePage() {
     return best;
   }, [portfolio]);
 
-  // Wins per company — how many SDGs each company tops among selected
+  // Wins per company - how many SDGs each company tops among selected
   const comparedWithWins = useMemo(() => {
     return compared.map(c => {
       const wins = SDG_LIST.filter(sdg => {
@@ -136,7 +136,7 @@ export default function ComparePage() {
     doc.setTextColor(...white);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('INvestScore — Company Comparison', 14, 13);
+    doc.text('INvestScore - Company Comparison', 14, 13);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text(
@@ -347,7 +347,7 @@ export default function ComparePage() {
 
       {comparedWithWins.length >= 2 && (
         <>
-          {/* Summary cards — one per company */}
+          {/* Summary cards - one per company */}
           <div
             className="grid gap-3"
             style={{ gridTemplateColumns: `repeat(${comparedWithWins.length}, 1fr)` }}
@@ -507,7 +507,7 @@ export default function ComparePage() {
                             className="text-[11px] font-semibold flex-shrink-0"
                             style={{ width: '28px', color: score > 0 ? c.color : 'var(--text-muted)' }}
                           >
-                            {score > 0 ? score.toFixed(1) : '—'}
+                            {score > 0 ? score.toFixed(1) : '-'}
                           </span>
                           {isWin && score > 0 && (
                             <Trophy size={10} style={{ color: '#E8A020', flexShrink: 0 }} />

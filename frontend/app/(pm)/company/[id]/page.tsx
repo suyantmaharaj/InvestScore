@@ -416,7 +416,7 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* Engagement Log — replaces freeform notes */}
+      {/* Engagement Log - replaces freeform notes */}
       <EngagementLog companyId={companyId} />
 
       {/* PM Targets */}

@@ -77,7 +77,7 @@ export function useSMEData() {
           setCompany(companyData);
         }
 
-        // Load scorecards — query by companyId only (no orderBy = no composite index needed)
+        // Load scorecards - query by companyId only (no orderBy = no composite index needed)
         const snap = await getDocs(
           query(collection(db, 'scorecards'), where('companyId', '==', user.companyId))
         );

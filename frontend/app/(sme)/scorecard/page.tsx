@@ -392,7 +392,7 @@ export default function ScorecardPage() {
         );
         const json = await res.json();
         setTargets(json.targets || {});
-      } catch { /* targets unavailable — silent fail */ }
+      } catch { /* targets unavailable - silent fail */ }
     };
     load();
   }, [company?.id]);

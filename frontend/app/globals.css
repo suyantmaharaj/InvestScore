@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Sanlam brand color tokens — usable as bg-sanlam-teal, text-sanlam-navy, etc. */
+  /* Sanlam brand color tokens - usable as bg-sanlam-teal, text-sanlam-navy, etc. */
   --color-sanlam-teal:   var(--sanlam-teal);
   --color-sanlam-navy:   var(--sanlam-navy);
   --color-sanlam-tint:   var(--sanlam-tint);
@@ -84,7 +84,7 @@
   --sidebar-active-bg:   rgba(0,181,237,0.15);
   --sidebar-active-text: #00B5ED;
 
-  /* Sanlam Brand Palette — light mode */
+  /* Sanlam Brand Palette - light mode */
   --sanlam-teal:   #00B5ED;
   --sanlam-navy:   #015376;
   --sanlam-tint:   #C9EEFB;
@@ -141,7 +141,7 @@
 }
 
 .dark {
-  /* ── Semantic surface / text / shadow tokens — dark overrides ── */
+  /* ── Semantic surface / text / shadow tokens - dark overrides ── */
   --bg:             #0F172A;
   --surface:        #1E293B;
   --surface-raised: #263347;
@@ -160,7 +160,7 @@
   --sidebar-active-text: #00B5ED;
   --header-bg: rgba(38, 51, 71, 0.92);
 
-  /* Sanlam dark mode — deep navy palette */
+  /* Sanlam dark mode - deep navy palette */
   --sanlam-bg:     #0B1629;
   --sanlam-border: #1E3050;
   --sanlam-muted:  #94A3B8;
@@ -221,7 +221,7 @@
 }
 
 /* ── Dark mode surface overrides ──────────────────────────────────────────
-   Components use inline hex styles — these CSS rules override the most
+   Components use inline hex styles - these CSS rules override the most
    common patterns when .dark is active on <html>.
    ──────────────────────────────────────────────────────────────────────── */
 
@@ -401,7 +401,7 @@
 }
 .btn-primary:active { opacity: 0.95; transform: scale(0.97); transition-duration: 100ms; }
 
-/* Press feedback utility — add to any button/link that needs scale-on-press */
+/* Press feedback utility - add to any button/link that needs scale-on-press */
 .pressable {
   transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
 }

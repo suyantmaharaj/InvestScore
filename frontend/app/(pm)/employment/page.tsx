@@ -125,7 +125,7 @@ export default function PortfolioEmploymentPage() {
         </button>
       </PageContext>
 
-      {/* Hero stat cards — mirrors 104+ report structure */}
+      {/* Hero stat cards - mirrors 104+ report structure */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon="👥" label="Total employees" value={totalEmployees}
           color="#00B5ED" sub={`Across ${reportingCompanies} companies`} delay="delay-50" />
@@ -137,7 +137,7 @@ export default function PortfolioEmploymentPage() {
           color="#E8A020" sub="Aged 35 and under" delay="delay-200" />
       </div>
 
-      {/* Population group breakdown — mirrors 104+ report Section 4.2 */}
+      {/* Population group breakdown - mirrors 104+ report Section 4.2 */}
       <div className="card p-5" style={{ background: 'var(--surface)' }}>
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -154,7 +154,7 @@ export default function PortfolioEmploymentPage() {
         ]} />
       </div>
 
-      {/* Gender breakdown — mirrors 104+ report Section 4.3 */}
+      {/* Gender breakdown - mirrors 104+ report Section 4.3 */}
       <div className="card p-5" style={{ background: 'var(--surface)' }}>
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
           Gender Distribution
@@ -165,7 +165,7 @@ export default function PortfolioEmploymentPage() {
         ]} />
       </div>
 
-      {/* Employment type — mirrors 104+ report Section 4.4 */}
+      {/* Employment type - mirrors 104+ report Section 4.4 */}
       <div className="card p-5" style={{ background: 'var(--surface)' }}>
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
           Employment Type
@@ -249,7 +249,7 @@ export default function PortfolioEmploymentPage() {
             <span className="text-center text-xs" style={{ color: 'var(--text-primary)' }}>
               {row.totalEmployees != null
                 ? row.totalEmployees.toLocaleString()
-                : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                : <span style={{ color: 'var(--text-muted)' }}>-</span>}
             </span>
 
             {([
@@ -267,7 +267,7 @@ export default function PortfolioEmploymentPage() {
                     : val >= thresh ? '#00A651' : val >= thresh * 0.6 ? '#E8A020' : '#D0021B',
                 }}
               >
-                {val != null ? `${val}%` : '—'}
+                {val != null ? `${val}%` : '-'}
               </span>
             ))}
           </button>

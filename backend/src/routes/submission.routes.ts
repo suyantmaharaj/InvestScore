@@ -29,7 +29,7 @@ async function computeLiveSectorAverages(
 
     if (peerIds.length === 0) return undefined;
 
-    // Single-field `in` query — no composite index needed
+    // Single-field `in` query - no composite index needed
     const scorecardsSnap = await db.collection('scorecards')
       .where('companyId', 'in', peerIds.slice(0, 30))
       .get();
@@ -219,7 +219,7 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
         await createNotification({
           type:        'risk_alert',
           title:       `Risk alert: ${company.name}`,
-          body:        `${company.name} scored ${overallScore.toFixed(1)} on their latest submission — below the 1.8 risk threshold. Immediate portfolio review recommended.`,
+          body:        `${company.name} scored ${overallScore.toFixed(1)} on their latest submission - below the 1.8 risk threshold. Immediate portfolio review recommended.`,
           companyId,
           companyName: company.name,
           severity:    'critical',

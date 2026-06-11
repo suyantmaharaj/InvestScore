@@ -152,7 +152,7 @@ export default function PageHeader({ actions }: Props) {
         WebkitBackdropFilter: 'blur(8px)',
       }}
     >
-      {/* Left — icon + breadcrumb + title */}
+      {/* Left - icon + breadcrumb + title */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
@@ -191,7 +191,7 @@ export default function PageHeader({ actions }: Props) {
         </div>
       </div>
 
-      {/* Right — actions + theme + bell + user dropdown */}
+      {/* Right - actions + theme + bell + user dropdown */}
       <div className="flex items-center gap-2 flex-shrink-0">
 
         {actions && (
@@ -357,7 +357,7 @@ export default function PageHeader({ actions }: Props) {
 
         <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
 
-        {/* User avatar chip — click opens dropdown */}
+        {/* User avatar chip - click opens dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(prev => !prev)}

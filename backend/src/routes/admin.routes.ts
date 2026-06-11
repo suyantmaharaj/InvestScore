@@ -340,7 +340,7 @@ router.get('/audit-log', async (req: AuthRequest, res: Response) => {
       return res.json({ entries: page, lastTimestamp, hasMore: entries.length > limitN });
     }
 
-    // No filter: orderBy single field — no composite index needed
+    // No filter: orderBy single field - no composite index needed
     let q: any = db.collection('auditLog').orderBy('timestamp', 'desc');
     if (before) q = q.startAfter(before as string);
 

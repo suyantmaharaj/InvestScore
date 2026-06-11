@@ -4,7 +4,7 @@ import { db } from '../services/firebase.service';
 const router = Router();
 
 // POST /api/auth/register
-// Saves a pending registration — does NOT create a Firebase Auth user yet
+// Saves a pending registration - does NOT create a Firebase Auth user yet
 router.post('/register', async (req: Request, res: Response) => {
   try {
     const { name, email, password, companyName, industry, description } = req.body;

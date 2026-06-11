@@ -31,7 +31,7 @@ const DEMO_USERS = [
 
 const DEMO_COMPANIES = [
 
-  // ─── COMPANY 1 — Khaya Capital ───────────────────────────────────────────
+  // ─── COMPANY 1 - Khaya Capital ───────────────────────────────────────────
   // Based on: Financial services / revenue-based finance / female co-founded
   {
     id:          'company_001',
@@ -87,7 +87,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 2 — Nkosi Manufacturing ──────────────────────────────────────
+  // ─── COMPANY 2 - Nkosi Manufacturing ──────────────────────────────────────
   // Based on: Black woman-owned transformer/electrical equipment manufacturer
   // 71 employees, 94% black, 21% female, Level 1 B-BBEE per report
   {
@@ -144,7 +144,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 3 — Tshiamo Tech ─────────────────────────────────────────────
+  // ─── COMPANY 3 - Tshiamo Tech ─────────────────────────────────────────────
   // Based on: Solar energy / clean tech company
   // 72 employees, 88% black, 44% female, 70%+ youth, Level 2 per report
   {
@@ -201,7 +201,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 4 — Lungelo Housing ──────────────────────────────────────────
+  // ─── COMPANY 4 - Lungelo Housing ──────────────────────────────────────────
   // Based on: Digital mortgage platform / affordable housing fintech
   // 25 employees, 96% black, 68% female, Level 2, 63% black ownership per report
   {
@@ -257,7 +257,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 5 — Ubuntu Logistics ─────────────────────────────────────────
+  // ─── COMPANY 5 - Ubuntu Logistics ─────────────────────────────────────────
   {
     id:          'company_005',
     name:        'Ubuntu Logistics',
@@ -310,7 +310,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 6 — Siyanda Retail Group ─────────────────────────────────────
+  // ─── COMPANY 6 - Siyanda Retail Group ─────────────────────────────────────
   // Based on: Food manufacturing / Eastern Cape / solar PV / 100+ employees
   {
     id:          'company_006',
@@ -365,7 +365,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 7 — Amanzi Water Solutions ───────────────────────────────────
+  // ─── COMPANY 7 - Amanzi Water Solutions ───────────────────────────────────
   // Based on: BESS / clean energy storage / youth black-owned infrastructure
   {
     id:          'company_007',
@@ -421,7 +421,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 8 — Ziyanda Agri Co ──────────────────────────────────────────
+  // ─── COMPANY 8 - Ziyanda Agri Co ──────────────────────────────────────────
   {
     id:          'company_008',
     name:        'Ziyanda Agri Co',
@@ -476,7 +476,7 @@ const DEMO_COMPANIES = [
     },
   },
 
-  // ─── COMPANY 9 — Ithemba Digital ──────────────────────────────────────────
+  // ─── COMPANY 9 - Ithemba Digital ──────────────────────────────────────────
   // Based on: EdTech / digital inclusion / youth-led ICT
   {
     id:          'company_009',
@@ -537,9 +537,9 @@ const AI_CONTEXT = {
     'Always refer to SDG scores as being calculated by the Sanlam proprietary methodology.',
     'Never suggest that an SME change their sector classification.',
     'When coaching on B-BBEE improvement, always refer to verified B-BBEE certificates.',
-    'Tone should be encouraging and practical — never condescending.',
+    'Tone should be encouraging and practical - never condescending.',
     'Always prioritise high-impact, low-cost improvements first.',
-    'Reference South African context — use Rands, reference Eskom, B-BBEE, POPIA, SETA, NQF.',
+    'Reference South African context - use Rands, reference Eskom, B-BBEE, POPIA, SETA, NQF.',
     'Do not compare specific named companies against each other when coaching.',
     'Acknowledge the mandate context: Growth mandate companies should focus on scaling impact; Empowerment mandate companies should focus on transformation metrics.',
     'Employment transformation is the primary impact metric for the 104+ portfolio. Always reference employment outcomes when relevant.',
@@ -649,7 +649,7 @@ async function seedCompany(company: typeof DEMO_COMPANIES[number]) {
 }
 
 async function main() {
-  console.log('\n🌱 InvestScore — Seeding Firebase...\n');
+  console.log('\n🌱 InvestScore - Seeding Firebase...\n');
 
   console.log('Creating users...');
   for (const user of DEMO_USERS) {

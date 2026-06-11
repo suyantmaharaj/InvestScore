@@ -37,7 +37,7 @@ export default function DataCompletenessPage() {
       try {
         const result: Record<string, Record<string, number | null>> = {};
         await Promise.all(portfolio.map(async ({ company }) => {
-          // No orderBy with where — sort in JS to avoid composite index requirement
+          // No orderBy with where - sort in JS to avoid composite index requirement
           const snap = await getDocs(
             query(
               collection(db, 'submissions'),
@@ -137,7 +137,7 @@ export default function DataCompletenessPage() {
           Most commonly unreported KPIs
         </p>
         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-          These fields are missing from the most companies — prioritise collecting these first
+          These fields are missing from the most companies - prioritise collecting these first
         </p>
         <div className="space-y-3">
           {kpiGaps.map((gap, idx) => (
@@ -167,7 +167,7 @@ export default function DataCompletenessPage() {
           Completeness by company
         </p>
         <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-          Sorted least complete first — these need the most attention
+          Sorted least complete first - these need the most attention
         </p>
         <div className="space-y-3">
           {companyCompleteness.map(({ company, pct, categoryScores }, idx) => (

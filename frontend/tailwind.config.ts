@@ -1,4 +1,4 @@
-// Tailwind v4 — most configuration lives in globals.css via @theme
+// Tailwind v4 - most configuration lives in globals.css via @theme
 // This file registers plugins only; colors/fonts are defined in CSS.
 import type { Config } from 'tailwindcss';
 

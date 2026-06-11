@@ -49,7 +49,7 @@ export function SMEDataProvider({ children }: { children: ReactNode }) {
     const load = async () => {
       const cacheKey = `sme_data_${user.companyId}`;
 
-      // Serve from cache instantly — no loading flash on return visits
+      // Serve from cache instantly - no loading flash on return visits
       const cached = getCached<SMECoreCache>(cacheKey);
       if (cached) {
         if (!cancelled) {

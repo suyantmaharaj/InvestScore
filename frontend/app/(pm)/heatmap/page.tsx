@@ -83,7 +83,7 @@ export default function PMPortfolioOverviewPage() {
 
       await Promise.all(portfolio.map(async ({ company }) => {
         try {
-          // No orderBy with where — sort in JS to avoid composite index requirement
+          // No orderBy with where - sort in JS to avoid composite index requirement
           const snap = await getDocs(
             query(
               collection(db, 'submissions'),

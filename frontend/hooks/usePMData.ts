@@ -187,7 +187,7 @@ export function useScoreHistory(companyId: string) {
     if (!companyId) return;
     const load = async () => {
       try {
-        // No orderBy with where — sort by calculatedAt in JS
+        // No orderBy with where - sort by calculatedAt in JS
         const snap = await getDocs(
           query(collection(db, 'scorecards'), where('companyId', '==', companyId))
         );

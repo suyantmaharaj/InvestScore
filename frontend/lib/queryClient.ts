@@ -17,7 +17,7 @@ function forget(key: string): void {
 export function getCached<T>(key: string): T | null {
   const now = Date.now();
 
-  // Memory first — fastest path, no parse overhead
+  // Memory first - fastest path, no parse overhead
   const m = MEMORY.get(key);
   if (m) {
     if (now - m.ts <= TTL) return m.data as T;
@@ -26,7 +26,7 @@ export function getCached<T>(key: string): T | null {
     return null;
   }
 
-  // sessionStorage fallback — survives page refresh within the same tab session
+  // sessionStorage fallback - survives page refresh within the same tab session
   if (typeof sessionStorage === 'undefined') return null;
   try {
     const raw = sessionStorage.getItem(NS + key);

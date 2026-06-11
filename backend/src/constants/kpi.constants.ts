@@ -34,7 +34,7 @@ export const KPI_LIST: KPIDefinition[] = [
     valueType: 'numeric',
     category: 'employment',
     sdgs: [8],
-    helpText: 'Count every person on your payroll — full-time, part-time, and permanent staff. Do not include contractors here.',
+    helpText: 'Count every person on your payroll - full-time, part-time, and permanent staff. Do not include contractors here.',
     calculation: 'Count all employees on your payroll as of your financial year end date.',
   },
   {
@@ -168,7 +168,7 @@ export const KPI_LIST: KPIDefinition[] = [
     valueType: 'numeric',
     category: 'environmental',
     sdgs: [7, 13],
-    helpText: 'These are emissions from sources you own or control — fuel burned in company vehicles, generators, on-site boilers.',
+    helpText: 'These are emissions from sources you own or control - fuel burned in company vehicles, generators, on-site boilers.',
     calculation: 'Sum all direct GHG emissions in tonnes of CO2 equivalent (tCO2e).',
   },
   {
@@ -223,7 +223,7 @@ export const KPI_LIST: KPIDefinition[] = [
     valueType: 'numeric',
     category: 'environmental',
     sdgs: [7],
-    helpText: 'Total energy from renewable sources — solar, wind, hydro — consumed during the year.',
+    helpText: 'Total energy from renewable sources - solar, wind, hydro - consumed during the year.',
     calculation: 'Sum of all renewable energy consumed in kWh.',
   },
   {

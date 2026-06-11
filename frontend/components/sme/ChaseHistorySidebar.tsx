@@ -233,7 +233,7 @@ export default function ChaseHistorySidebar({
         )}
       </div>
 
-      {/* Footer — clear all */}
+      {/* Footer - clear all */}
       {conversations.length > 0 && (
         <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           {confirmDeleteAll ? (

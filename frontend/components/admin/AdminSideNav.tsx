@@ -124,7 +124,7 @@ function NavContent({
         })}
       </nav>
 
-      {/* Bottom — sign out */}
+      {/* Bottom - sign out */}
       <div
         style={{
           borderTop: '1px solid rgba(255,255,255,0.08)',

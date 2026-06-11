@@ -6,7 +6,7 @@ import { writeAuditLog } from '../services/audit.service';
 
 const router = Router();
 
-// GET /api/targets/:companyId — load targets for a company
+// GET /api/targets/:companyId - load targets for a company
 router.get('/:companyId', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
     const companyId = String(req.params.companyId);
@@ -19,7 +19,7 @@ router.get('/:companyId', verifyToken, async (req: AuthRequest, res: Response) =
   }
 });
 
-// PUT /api/targets/:companyId — PM sets targets
+// PUT /api/targets/:companyId - PM sets targets
 router.put('/:companyId', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const companyId = String(req.params.companyId);

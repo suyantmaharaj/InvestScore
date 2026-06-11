@@ -7,7 +7,7 @@ import { requireRole } from '../middleware/role.middleware';
 const router = Router();
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// POST /api/ai/coach — Chase chat with full company context
+// POST /api/ai/coach - Chase chat with full company context
 router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
     const { messages, companyId, documentText } = req.body;
@@ -16,7 +16,7 @@ router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, 
       return res.status(400).json({ error: 'companyId and messages are required.' });
     }
 
-    // Load all context in parallel — no orderBy (sort in JS)
+    // Load all context in parallel - no orderBy (sort in JS)
     const [
       companySnap,
       scorecardDocs,
@@ -110,7 +110,7 @@ LOW IMPACT goals (need attention): ${low.map((s: any) => `SDG ${s.sdgId} (${s.sc
       ? `\n\nUSER UPLOADED DOCUMENT:\n${String(documentText).slice(0, 8000)}\n\nUse this document to answer the user's question. If it contains KPI data relevant to their submission, highlight it.`
       : '';
 
-    const systemPrompt = `You are Chase, the SDG coaching assistant for InvestScore — built by Sanlam Investments for the 104+ SMME Growth and Empowerment Solution.
+    const systemPrompt = `You are Chase, the SDG coaching assistant for InvestScore - built by Sanlam Investments for the 104+ SMME Growth and Empowerment Solution.
 
 You are talking to ${company.spokespersonName || 'the owner'} of ${company.name}, a ${(company.sector || '').replace(/_/g, ' ')} company based in ${company.location}.
 
@@ -146,15 +146,15 @@ ${mandateNote}
 ${docContext}
 
 CHASE PERSONALITY AND STYLE:
-- You are Chase — friendly, direct, and encouraging. Named after the Sanlam cheetah mascot.
+- You are Chase - friendly, direct, and encouraging. Named after the Sanlam cheetah mascot.
 - You know this company's data intimately. Reference specific numbers from their scorecard.
 - Never give generic advice. Always tie recommendations to their actual scores and KPIs.
 - Use South African context: Eskom, B-BBEE, SETA, SANAS, NQF, POPIA, rand amounts.
 - Celebrate wins. If a score is High, acknowledge it before pivoting to improvements.
-- Keep responses concise — 2–4 short paragraphs. Use bullet points for action lists.
+- Keep responses concise - 2–4 short paragraphs. Use bullet points for action lists.
 - End responses with a specific question to keep the conversation moving.
 - Never make up scores or data. If you don't know something, say so.
-- Do not alter or question Sanlam's scoring methodology — it is fixed.`;
+- Do not alter or question Sanlam's scoring methodology - it is fixed.`;
 
     const response = await claude.messages.create({
       model:      'claude-sonnet-4-6',
@@ -176,7 +176,7 @@ CHASE PERSONALITY AND STYLE:
   }
 });
 
-// POST /api/ai/extract-kpis — Chase reads a document and extracts KPI values
+// POST /api/ai/extract-kpis - Chase reads a document and extracts KPI values
 router.post('/extract-kpis', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
     const { documentText, companyId } = req.body;
@@ -215,7 +215,7 @@ Respond ONLY with a JSON object. Keys are KPI IDs from the list. Values are numb
   }
 });
 
-// POST /api/ai/narrative — PM narrative generator (used in PM portal)
+// POST /api/ai/narrative - PM narrative generator (used in PM portal)
 router.post('/narrative', verifyToken, requireRole('pm', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.body;
@@ -293,7 +293,7 @@ Write in third person. Do not use bullet points. Keep under 250 words.`;
   }
 });
 
-// POST /api/ai/improvement-plan — SME improvement plan generator
+// POST /api/ai/improvement-plan - SME improvement plan generator
 router.post('/improvement-plan', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.body;
@@ -412,7 +412,7 @@ Rules:
   }
 });
 
-// GET /api/ai/improvement-plan/:companyId — cached SME improvement plan
+// GET /api/ai/improvement-plan/:companyId - cached SME improvement plan
 router.get('/improvement-plan/:companyId', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
     const companyId = String(req.params.companyId);

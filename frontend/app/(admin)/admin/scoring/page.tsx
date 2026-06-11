@@ -568,7 +568,7 @@ export default function ScoringConfigPage() {
       {/* Context bar */}
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          {config?.isDefault ? 'Using platform defaults — no custom config saved' : `Last updated by ${config?.updatedBy}`}
+          {config?.isDefault ? 'Using platform defaults - no custom config saved' : `Last updated by ${config?.updatedBy}`}
         </span>
         <div className="w-px h-4" style={{ background: 'var(--border)' }} />
         {config?.isDefault ? (
@@ -656,7 +656,7 @@ export default function ScoringConfigPage() {
         <HistoryTab history={config.history} />
       )}
 
-      {/* Save footer — hidden on history tab */}
+      {/* Save footer - hidden on history tab */}
       {tab !== 'history' && (
         <div
           className="card p-5 space-y-4 animate-card-in"
@@ -683,7 +683,7 @@ export default function ScoringConfigPage() {
           </div>
 
           <div className="flex items-center gap-3 justify-end">
-            {/* Reset button — two step */}
+            {/* Reset button - two step */}
             {resetStep === 0 ? (
               <button
                 onClick={handleReset}
