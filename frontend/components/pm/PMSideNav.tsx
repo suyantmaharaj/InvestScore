@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { href: '/employment',    label: 'Employment',          icon: Users           },
   { href: '/completeness',  label: 'Data Completeness',   icon: BarChart2       },
   { href: '/explorer',      label: 'Heat Map',            icon: Map             },
-  { href: '/compare',       label: 'Head to Head',        icon: GitCompare      },
+  { href: '/compare',       label: 'Compare',             icon: GitCompare      },
   { href: '/alerts',        label: 'Alerts',              icon: Bell            },
   { href: '/notifications', label: 'Notifications',       icon: BellDot         }
 ];

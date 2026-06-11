@@ -36,7 +36,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   // PM Portal pages
   '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: '',                                                   breadcrumb: ['PM Portal', 'Portfolio Overview'] },
   '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Heat Map']           },
-  '/compare':       { icon: '⚖️', title: 'Head to Head',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Head to Head']       },
+  '/compare':       { icon: '⚖️', title: 'Compare Companies',    subtitle: 'Side-by-side SDG performance across up to 4 companies', breadcrumb: ['PM Portal', 'Compare']       },
   '/alerts':        { icon: '🔔', title: 'Alerts',              subtitle: '',                                                   breadcrumb: ['PM Portal', 'Alerts']            },
   '/company':       { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
   '/notifications':  { icon: '🔔', title: 'Notifications',        subtitle: '',                                                              breadcrumb: ['PM Portal', 'Notifications']       },
