@@ -41,8 +41,8 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/company':       { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
   '/notifications':  { icon: '🔔', title: 'Notifications',        subtitle: '',                                                              breadcrumb: ['PM Portal', 'Notifications']       },
   '/pm/settings':    { icon: '⚙️', title: 'Settings',             subtitle: 'Manage your profile and preferences',                         breadcrumb: ['PM Portal', 'Settings']           },
-  '/employment':     { icon: '👥', title: 'Portfolio Employment',  subtitle: 'Workforce and transformation data across the 104+ portfolio', breadcrumb: ['PM Portal', 'Employment']          },
-  '/completeness':   { icon: '📊', title: 'Data Completeness',     subtitle: 'Reporting gaps and coverage across the portfolio',            breadcrumb: ['PM Portal', 'Data Completeness']  },
+  '/employment':     { icon: '👥', title: 'Portfolio Employment',  subtitle: '',                                                              breadcrumb: ['PM Portal', 'Employment']          },
+  '/completeness':   { icon: '📊', title: 'Data Completeness',     subtitle: '',                                                            breadcrumb: ['PM Portal', 'Data Completeness']  },
 
   // Admin Portal pages
   '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',  subtitle: 'Platform overview and activity',                        breadcrumb: ['Admin Portal', 'Dashboard']     },
