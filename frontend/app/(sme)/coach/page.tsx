@@ -495,7 +495,7 @@ function ChaseInner() {
               </p>
               {company && scorecard && (
                 <p className="text-xs mb-6 max-w-sm" style={{ color: 'var(--text-muted)' }}>
-                  I can see {company.name}'s scores — your overall is{' '}
+                  I can see {company.name}'s scores. Your overall is{' '}
                   <span style={{ color: scoreColor, fontWeight: 600 }}>
                     {scorecard.overallScore.toFixed(1)} ({scorecard.classification} Impact)
                   </span>.

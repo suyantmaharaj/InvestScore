@@ -11,7 +11,7 @@ export default function PortfolioPulse() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="font-semibold text-sm text-white">
-            104+ Portfolio — Live Impact
+            104+ Portfolio: Live Impact
           </p>
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
             You are one of {PORTFOLIO_PULSE.activeCompanies} companies

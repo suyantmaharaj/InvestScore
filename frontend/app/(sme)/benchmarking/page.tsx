@@ -278,7 +278,7 @@ export default function BenchmarkingPage() {
                           {(() => { const d = toDisplay(row.myScore!) - toDisplay(row.sectorAvg); return (d > 0 ? '+' : '') + d; })()}
                         </span>
                       ) : (
-                        <span className="text-[#4A5568]/40 text-xs">—</span>
+                        <span className="text-[#4A5568]/40 text-xs">-</span>
                       )}
                     </td>
                   </tr>

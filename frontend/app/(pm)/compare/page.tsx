@@ -196,7 +196,7 @@ export default function ComparePage() {
                   color:      'var(--text-primary)',
                 }}
               >
-                <option value="">— Select company —</option>
+                <option value="">Select company</option>
                 {portfolio.map(e => (
                   <option key={e.company.id} value={e.company.id}>
                     {e.company.name}
@@ -381,7 +381,7 @@ export default function ComparePage() {
                       <span className="text-base">{sdg?.icon ?? '🎯'}</span>
                       <div className="flex-1">
                         <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
-                          SDG {item.sdgId} — {sdg?.shortName}
+                          SDG {item.sdgId}: {sdg?.shortName}
                         </p>
                         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                           {leader} leads by {Math.round((item.diff / 2) * 100)} pts

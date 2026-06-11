@@ -293,7 +293,7 @@ export default function UsersPage() {
                   Link to Company {newCompanyId && <span style={{ color: '#00A651' }}>✓ pre-filled</span>}
                 </label>
                 <select value={newCompanyId} onChange={e => setNewCompanyId(e.target.value)} style={inputStyle}>
-                  <option value="">— Select company (optional) —</option>
+                  <option value="">Select company (optional)</option>
                   {orphans.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}

@@ -232,7 +232,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Platform',  value: 'InvestScore'           },
-            { label: 'Version',   value: '1.0.0 — Demo Build'    },
+            { label: 'Version',   value: '1.0.0 (Demo Build)'    },
             { label: 'Challenge', value: 'Twin Transition 2026'   },
             { label: 'Partner',   value: 'Sanlam Investments'     },
           ].map(({ label, value }) => (

@@ -45,7 +45,7 @@ export default function GapAnalysisPanel({
   const handleExport = () => {
     if (!result) return;
     const lines = [
-      `InvestScore — Gap Analysis`,
+      `InvestScore: Gap Analysis`,
       `SDG ${sdgId}: ${sdg?.name}`,
       `Current: ${classification} (${toDisplay(currentScore)})`,
       `Target: ${target} Impact`,

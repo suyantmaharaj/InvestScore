@@ -73,10 +73,10 @@ function Scope2Calculator() {
             className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none"
             style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', color: 'var(--text-primary)' }}
           >
-            <option value="0.9">0.90 — South Africa Eskom grid (default)</option>
-            <option value="0.8">0.80 — Partial renewable grid mix</option>
-            <option value="0.5">0.50 — Mixed renewable/fossil grid</option>
-            <option value="0.2">0.20 — Predominantly renewable grid</option>
+            <option value="0.9">0.90 - South Africa Eskom grid (default)</option>
+            <option value="0.8">0.80 - Partial renewable grid mix</option>
+            <option value="0.5">0.50 - Mixed renewable/fossil grid</option>
+            <option value="0.2">0.20 - Predominantly renewable grid</option>
           </select>
         </div>
       </div>
@@ -210,10 +210,10 @@ function RecyclingCalculator() {
               }}
             >
               {result.rate >= 50
-                ? '✓ High recycling rate — SDG 12 & 15 will likely score High Impact'
+                ? '✓ High recycling rate - SDG 12 & 15 will likely score High Impact'
                 : result.rate >= 20
-                ? '⚠ Moderate rate — targeting 50%+ improves SDG 12 & 15 scores significantly'
-                : '✗ Low rate — major improvement opportunity for SDG 12 & 15'}
+                ? '⚠ Moderate rate - targeting 50%+ improves SDG 12 & 15 scores significantly'
+                : '✗ Low rate - major improvement opportunity for SDG 12 & 15'}
             </div>
           </div>
         </div>

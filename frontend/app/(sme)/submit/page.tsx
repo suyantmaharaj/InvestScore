@@ -356,7 +356,7 @@ export default function SubmitPage() {
           style={{ background: 'rgba(0,181,237,0.08)', border: '1px solid rgba(0,181,237,0.2)' }}
         >
           <p className="text-xs" style={{ color: 'var(--sanlam-teal, #00B5ED)' }}>
-            Resuming saved draft — last saved{' '}
+            Resuming saved draft, last saved{' '}
             {new Date(draftSavedAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
           </p>
           <button

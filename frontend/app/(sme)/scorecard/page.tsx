@@ -516,7 +516,7 @@ export default function ScorecardPage() {
             }
           </button>
           <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>Overall:</span>
-          <Tooltip content={`${CLASSIFICATION_LABELS[classification]} — ${toDisplay(overallScore)} / 100`} position="left">
+          <Tooltip content={`${CLASSIFICATION_LABELS[classification]}: ${toDisplay(overallScore)} / 100`} position="left">
             <div
               className="w-10 h-10 rounded-full flex flex-col items-center justify-center flex-shrink-0"
               style={{ border: `2px solid ${scoreColor(overallScore)}` }}

@@ -202,7 +202,7 @@ export default function SettingsPage() {
               </SettingsSection>
 
               <SettingsSection title="Avatar" description="Your avatar is automatically generated from your name">
-                <SettingsRow label="Profile avatar" description="Generated from your initials — no upload needed">
+                <SettingsRow label="Profile avatar" description="Generated from your initials, no upload needed">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-base"
@@ -332,7 +332,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   {[
                     { label: 'Platform',  value: 'InvestScore'                    },
-                    { label: 'Version',   value: '1.0.0 — Demo Build'            },
+                    { label: 'Version',   value: '1.0.0 (Demo Build)'            },
                     { label: 'Challenge', value: 'Twin Transition Challenge 2026' },
                     { label: 'Partner',   value: 'Sanlam Investments'            },
                     { label: 'Built by',  value: 'UCT Information Systems Team'  },

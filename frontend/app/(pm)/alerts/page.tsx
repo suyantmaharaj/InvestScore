@@ -100,7 +100,7 @@ export default function AlertsPage() {
           severity:  'warning',
           type:      'low_score',
           title:     `Overall score below target (${toDisplay(scorecard.overallScore)}/100)`,
-          detail:    `${company.name} is scoring ${toDisplay(scorecard.overallScore)}/100 — below the Medium threshold. Monitor closely.`,
+          detail:    `${company.name} is scoring ${toDisplay(scorecard.overallScore)}/100, below the Medium threshold. Monitor closely.`,
         });
       }
 
@@ -117,7 +117,7 @@ export default function AlertsPage() {
             type:      'low_score',
             sdgId:     sdg.sdgId,
             title:     `SDG ${sdg.sdgId} critically low (${toDisplay(sdg.score)}/100)`,
-            detail:    `${company.name} scored ${toDisplay(sdg.score)}/100 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — significantly below sector average of ${toDisplay(sdg.sectorAvg)}.`,
+            detail:    `${company.name} scored ${toDisplay(sdg.score)}/100 on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`}, significantly below sector average of ${toDisplay(sdg.sectorAvg)}.`,
           });
         } else if (sdg.score < 1.6) {
           const sdgMeta = SDG_LIST.find(d => d.id === sdg.sdgId);
@@ -146,7 +146,7 @@ export default function AlertsPage() {
             type:      'declining',
             sdgId:     sdg.sdgId,
             title:     `Declining trend on SDG ${sdg.sdgId}`,
-            detail:    `${company.name} shows a downward trend on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`} — score is ${toDisplay(sdg.score)}/100 vs sector avg ${toDisplay(sdg.sectorAvg)}.`,
+            detail:    `${company.name} shows a downward trend on ${sdgMeta?.shortName ?? `SDG ${sdg.sdgId}`}. Score is ${toDisplay(sdg.score)}/100 vs sector avg ${toDisplay(sdg.sectorAvg)}.`,
           });
         }
       }

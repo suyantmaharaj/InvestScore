@@ -22,7 +22,7 @@ const MANDATE_CONTEXT = {
     scoreContext: {
       High:   'Your High Impact score puts you in the top tier of the Growth portfolio. This strengthens your case for continued and expanded investment.',
       Medium: 'Your Medium Impact score is solid. Maintaining consistent quarterly submissions and pushing one or two Low goals to Medium will strengthen your investment standing.',
-      Low:    'Your Low Impact score suggests areas for improvement. Your Portfolio Manager will work with you to address this — review the targets they have set and use the improvement plan.',
+      Low:    'Your Low Impact score suggests areas for improvement. Your Portfolio Manager will work with you to address this. Review the targets they have set and use the improvement plan.',
     },
   },
   Empowerment: {
@@ -33,7 +33,7 @@ const MANDATE_CONTEXT = {
     focus:    'Economic transformation and inclusive hiring. B-BBEE compliance is a core criterion.',
     scoreContext: {
       High:   'Your High Impact score is exceptional for an Empowerment mandate company. You are demonstrating exactly the transformation outcomes Sanlam seeks to support.',
-      Medium: 'Your Medium Impact score shows solid progress. Focus on your transformation metrics — B-BBEE level and Black ownership — as these carry additional weight in your mandate assessment.',
+      Medium: 'Your Medium Impact score shows solid progress. Focus on your transformation metrics (B-BBEE level and Black ownership) as these carry additional weight in your mandate assessment.',
       Low:    'Your Low Impact score needs attention. For Empowerment mandate companies, transformation metrics are a primary lens. Your Portfolio Manager has set targets to guide you.',
     },
   },
@@ -46,7 +46,7 @@ const MANDATE_CONTEXT = {
     scoreContext: {
       High:   'Exceptional performance for a Development mandate company. Your data quality and impact metrics are a model for early-stage businesses.',
       Medium: 'Good progress for an early-stage business. Continue submitting data quarterly to build a track record that strengthens your investment case.',
-      Low:    'This is early stage — a Low score at this point is normal and expected. Focus on collecting the data and submitting consistently. The score will improve as your business grows.',
+      Low:    'This is early stage. A Low score at this point is normal and expected. Focus on collecting the data and submitting consistently. The score will improve as your business grows.',
     },
   },
 };
@@ -136,10 +136,10 @@ export default function InvestmentContext({
             B-BBEE Level {bbbeeLevel}
           </span>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            {bbbeeLevel === 1 ? 'Excellent — Level 1 is the highest transformation rating'
-              : bbbeeLevel === 2 ? 'Good — Level 2 reflects strong transformation commitment'
-              : bbbeeLevel <= 4 ? 'Compliant — consider a B-BBEE improvement plan to move up'
-              : 'Below target — B-BBEE improvement is a priority for your mandate'}
+            {bbbeeLevel === 1 ? 'Excellent. Level 1 is the highest transformation rating'
+              : bbbeeLevel === 2 ? 'Good. Level 2 reflects strong transformation commitment'
+              : bbbeeLevel <= 4 ? 'Compliant. Consider a B-BBEE improvement plan to move up'
+              : 'Below target. B-BBEE improvement is a priority for your mandate'}
           </p>
         </div>
       )}

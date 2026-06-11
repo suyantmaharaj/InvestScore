@@ -184,7 +184,7 @@ function PMTargetPanel({
                     max={100}
                     value={target || ''}
                     onChange={e => setTargets(t => ({ ...t, [String(s.sdgId)]: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) }))}
-                    placeholder="—"
+                    placeholder="-"
                     className="w-14 h-8 text-center text-sm font-semibold rounded-lg focus:outline-none"
                     style={{
                       background:  'var(--surface)',
@@ -403,8 +403,8 @@ function OverviewTab({
           {[
             { label: 'Sector',   value: company.sector.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) },
             { label: 'Location', value: company.location },
-            { label: 'Mandate',  value: company.mandate ?? '—' },
-            { label: 'B-BBEE',   value: company.bbbeeLevel ? `Level ${company.bbbeeLevel}` : '—' },
+            { label: 'Mandate',  value: company.mandate ?? '-' },
+            { label: 'B-BBEE',   value: company.bbbeeLevel ? `Level ${company.bbbeeLevel}` : '-' },
           ].map(({ label, value }) => (
             <div key={label}>
               <p className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
@@ -452,7 +452,7 @@ function SDGTab({ scorecard }: { scorecard: NonNullable<ReturnType<typeof usePMC
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                    SDG {s.sdgId} — {s.sdgName}
+                    SDG {s.sdgId}: {s.sdgName}
                   </p>
                   <span
                     className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
