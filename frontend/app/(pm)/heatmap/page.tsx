@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
   Award, AlertTriangle, Building2, ChevronRight,
+  Bell, CheckCircle, Clock, AlertCircle,
 } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { usePMData } from '@/hooks/usePMData';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
 import { SkeletonCard } from '@/components/shared/Skeleton';
@@ -56,6 +59,90 @@ export default function PMPortfolioOverviewPage() {
   const [search,        setSearch]        = useState('');
   const [mandateFilter, setMandateFilter] = useState<string>('All');
   const [bbbeeFilter,   setBbbeeFilter]   = useState<string>('All');
+
+  // Submission tracker state
+  const [submissionStatus, setSubmissionStatus] = useState<Record<string, {
+    submitted: boolean; submittedAt: string | null; daysAgo: number | null;
+  }>>({});
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (portfolio.length === 0) return;
+
+    const loadStatus = async () => {
+      const quarterStart = new Date();
+      quarterStart.setMonth(Math.floor(quarterStart.getMonth() / 3) * 3, 1);
+      quarterStart.setHours(0, 0, 0, 0);
+
+      const statuses: typeof submissionStatus = {};
+
+      await Promise.all(portfolio.map(async ({ company }) => {
+        try {
+          // No orderBy with where — sort in JS to avoid composite index requirement
+          const snap = await getDocs(
+            query(
+              collection(db, 'submissions'),
+              where('companyId', '==', company.id),
+              where('status', '==', 'scored'),
+            )
+          );
+
+          if (snap.empty) {
+            statuses[company.id] = { submitted: false, submittedAt: null, daysAgo: null };
+            return;
+          }
+
+          const sorted = snap.docs
+            .map(d => d.data())
+            .sort((a, b) =>
+              (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? '')
+            );
+          const latest   = sorted[0];
+          const scoredAt = latest.scoredAt ?? latest.submittedAt;
+          const date     = new Date(scoredAt);
+          const daysAgo  = Math.floor((Date.now() - date.getTime()) / 86400000);
+
+          statuses[company.id] = {
+            submitted:   date >= quarterStart,
+            submittedAt: scoredAt,
+            daysAgo,
+          };
+        } catch {
+          statuses[company.id] = { submitted: false, submittedAt: null, daysAgo: null };
+        }
+      }));
+
+      setSubmissionStatus(statuses);
+    };
+
+    loadStatus();
+  }, [portfolio]);
+
+  const sendReminder = async (companyId: string, companyName: string) => {
+    setSendingReminder(companyId);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token    = await auth.currentUser?.getIdToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          type:       'submission',
+          title:      'Quarterly data submission reminder',
+          body:       `Your Portfolio Manager has requested your Q2 2026 SDG data submission. Please log in to INvestScore and complete your submission as soon as possible.`,
+          companyId,
+          companyName,
+          severity:   'warning',
+          forRole:    'sme',
+          metadata:   { source: 'pm_manual_reminder' },
+        }),
+      });
+    } catch (err) {
+      console.error('Reminder send error:', err);
+    } finally {
+      setSendingReminder(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -241,6 +328,82 @@ export default function PMPortfolioOverviewPage() {
               <div style={{ width: `${(stats.lowCount / stats.total) * 100}%`,    background: '#D0021B', transition: 'width 800ms cubic-bezier(0.16,1,0.3,1) 200ms' }} />
             </>
           )}
+        </div>
+      </div>
+
+      {/* Submission tracker */}
+      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Q2 2026 Submission Status
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              {Object.values(submissionStatus).filter(s => s.submitted).length} of {portfolio.length} companies submitted this quarter
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+            {[
+              { Icon: CheckCircle, label: 'Submitted',      color: '#00A651' },
+              { Icon: Clock,       label: 'Overdue',         color: '#E8A020' },
+              { Icon: AlertCircle, label: 'Never submitted', color: '#D0021B' },
+            ].map(({ Icon, label, color }) => (
+              <span key={label} className="flex items-center gap-1.5">
+                <Icon size={12} style={{ color }} />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {portfolio.map(({ company }) => {
+            const status       = submissionStatus[company.id];
+            const submitted    = status?.submitted;
+            const neverSubmitted = status && !status.submittedAt;
+            const StatusIcon   = submitted ? CheckCircle : neverSubmitted ? AlertCircle : Clock;
+            const iconColor    = submitted ? '#00A651'   : neverSubmitted ? '#D0021B'   : '#E8A020';
+            const borderColor  = submitted ? '#00A651'   : neverSubmitted ? '#D0021B'   : '#E8A020';
+
+            return (
+              <div
+                key={company.id}
+                className="flex items-center justify-between gap-3 p-3 rounded-xl"
+                style={{ background: 'var(--bg)', border: `1px solid ${borderColor}22` }}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <StatusIcon size={14} style={{ color: iconColor, flexShrink: 0 }} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                      {company.name}
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                      {submitted
+                        ? `${status.daysAgo}d ago`
+                        : status?.submittedAt
+                          ? `Last: ${status.daysAgo}d ago`
+                          : 'Never submitted'}
+                    </p>
+                  </div>
+                </div>
+                {!submitted && (
+                  <button
+                    onClick={() => sendReminder(company.id, company.name)}
+                    disabled={sendingReminder === company.id}
+                    className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 transition pressable"
+                    style={{
+                      background: sendingReminder === company.id ? 'var(--border)' : 'rgba(232,160,32,0.12)',
+                      color:      sendingReminder === company.id ? 'var(--text-muted)' : '#E8A020',
+                      opacity:    sendingReminder === company.id ? 0.6 : 1,
+                    }}
+                  >
+                    <Bell size={10} />
+                    {sendingReminder === company.id ? '...' : 'Chase'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

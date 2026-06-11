@@ -6,13 +6,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Map,
   GitCompare, Bell, BellDot, LogOut, TrendingUp, Menu, X,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Users, BarChart2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const NAV_ITEMS = [
   { href: '/heatmap',       label: 'Portfolio Overview', icon: LayoutDashboard },
+  { href: '/employment',    label: 'Employment',          icon: Users           },
+  { href: '/completeness',  label: 'Data Completeness',   icon: BarChart2       },
   { href: '/explorer',      label: 'Heat Map',            icon: Map             },
   { href: '/compare',       label: 'Head to Head',        icon: GitCompare      },
   { href: '/alerts',        label: 'Alerts',              icon: Bell            },
