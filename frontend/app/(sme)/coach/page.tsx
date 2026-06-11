@@ -659,7 +659,7 @@ function ChaseInner() {
         </div>
 
         <p className="text-[10px] text-center mt-2" style={{ color: 'var(--text-muted)' }}>
-          Chase · Powered by Sanlam INvestScore · Advisory only · Not financial advice
+          Chase · Powered by Sanlam InvestScore · Advisory only · Not financial advice
         </p>
       </div>
 

@@ -110,7 +110,7 @@ LOW IMPACT goals (need attention): ${low.map((s: any) => `SDG ${s.sdgId} (${s.sc
       ? `\n\nUSER UPLOADED DOCUMENT:\n${String(documentText).slice(0, 8000)}\n\nUse this document to answer the user's question. If it contains KPI data relevant to their submission, highlight it.`
       : '';
 
-    const systemPrompt = `You are Chase, the SDG coaching assistant for INvestScore — built by Sanlam Investments for the 104+ SMME Growth and Empowerment Solution.
+    const systemPrompt = `You are Chase, the SDG coaching assistant for InvestScore — built by Sanlam Investments for the 104+ SMME Growth and Empowerment Solution.
 
 You are talking to ${company.spokespersonName || 'the owner'} of ${company.name}, a ${(company.sector || '').replace(/_/g, ' ')} company based in ${company.location}.
 
