@@ -364,7 +364,7 @@ function OverviewTab({
   }, [company.id]);
 
   return (
-    <div className="space-y-5 animate-page-in">
+    <div className="space-y-6 animate-page-in">
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-base">🤖</span>
@@ -522,7 +522,7 @@ function EmploymentTab({
   const sdg10 = scorecard.sdgScores.find(s => s.sdgId === 10);
 
   return (
-    <div className="space-y-5 animate-page-in">
+    <div className="space-y-6 animate-page-in">
 
       {/* SDG 8 + 10 score summary */}
       <div className="grid grid-cols-2 gap-4">
@@ -611,7 +611,7 @@ export default function CompanyDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         <SkeletonCard className="h-28" />
         <div className="grid grid-cols-3 gap-4">
           <SkeletonCard className="h-24" />

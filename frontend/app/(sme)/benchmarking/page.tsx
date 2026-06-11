@@ -44,7 +44,7 @@ export default function BenchmarkingPage() {
   const vsTop       = data.myOverall - data.topQuartileOverall;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>

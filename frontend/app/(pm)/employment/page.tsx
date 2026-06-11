@@ -73,7 +73,7 @@ export default function PortfolioEmploymentPage() {
 
   if (portfolioLoading || empLoading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map(i => <SkeletonCard key={i} className="h-28" />)}
         </div>

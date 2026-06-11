@@ -187,7 +187,7 @@ export default function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         <SkeletonCard className="h-40" />
         <div className="space-y-3">
           {[0, 1, 2].map(i => <SkeletonCard key={i} className="h-24" />)}
@@ -216,7 +216,7 @@ export default function HistoryPage() {
   const trend    = previous ? latest.overallScore - previous.overallScore : 0;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

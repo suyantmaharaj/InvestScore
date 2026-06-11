@@ -92,7 +92,7 @@ export default function CompanyProfilePage() {
   const labelStyle = { color: 'var(--text-muted)' };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
           Company ID: <strong style={{ color: 'var(--text-primary)' }}>

@@ -109,7 +109,7 @@ export default function AIContextPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         <SkeletonCard className="h-12" />
         <SkeletonCard className="h-64" />
         <SkeletonCard className="h-64" />
@@ -131,7 +131,7 @@ export default function AIContextPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <div className="flex items-center gap-2">

@@ -109,7 +109,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto animate-page-in space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

@@ -541,7 +541,7 @@ export default function ScoringConfigPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         <SkeletonCard className="h-12" />
         <SkeletonCard className="h-64" />
         <SkeletonCard className="h-40" />
@@ -563,7 +563,7 @@ export default function ScoringConfigPage() {
   // ── Render ──
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
       {/* Context bar */}
       <PageContext>

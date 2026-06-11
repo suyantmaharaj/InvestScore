@@ -145,7 +145,7 @@ export default function SMEDashboardPage() {
   const classColors = CLASSIFICATION_COLORS[classification];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-7 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
       <QuarterlyReminder
         lastSubmissionDate={lastSubmissionDate}
         lastSubmissionData={lastSubmissionData}
