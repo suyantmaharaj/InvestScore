@@ -413,31 +413,14 @@ export default function PMPortfolioOverviewPage() {
         </div>
       </div>
 
-      {/* Filter / search / sort bar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => setShowWatchlistOnly(s => !s)}
-          className="h-9 flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold pressable"
-          style={{
-            background:  showWatchlistOnly ? 'rgba(212,175,55,0.15)' : 'var(--surface)',
-            color:       showWatchlistOnly ? '#B8860B'                : 'var(--text-muted)',
-            border:      `1.5px solid ${showWatchlistOnly ? '#B8860B' : 'var(--border)'}`,
-            transition:  'all 150ms var(--ease-out)',
-          }}
-        >
-          <Star size={12} fill={showWatchlistOnly ? '#B8860B' : 'none'} />
-          Watchlist
-          {showWatchlistOnly && watchlist.length > 0 && (
-            <span className="ml-0.5">({watchlist.length})</span>
-          )}
-        </button>
-
+      {/* Search + watchlist + sort row */}
+      <div className="flex items-center gap-2.5">
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search companies, sectors..."
-          className="h-9 px-3 rounded-xl text-sm flex-1 min-w-[180px] max-w-xs focus:outline-none"
+          className="h-9 px-3 rounded-xl text-sm flex-1 focus:outline-none"
           style={{
             background: 'var(--surface)',
             border:     '1.5px solid var(--border)',
@@ -445,86 +428,143 @@ export default function PMPortfolioOverviewPage() {
           }}
         />
 
-        <div className="flex gap-1">
-          {(['All', 'High', 'Medium', 'Low'] as FilterKey[]).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-3 py-1.5 text-xs rounded-lg border font-medium pressable"
+        <button
+          onClick={() => setShowWatchlistOnly(s => !s)}
+          className="h-9 flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold pressable flex-shrink-0"
+          style={{
+            background: showWatchlistOnly ? 'rgba(212,175,55,0.15)' : 'var(--surface)',
+            color:      showWatchlistOnly ? '#B8860B'               : 'var(--text-muted)',
+            border:     `1.5px solid ${showWatchlistOnly ? '#B8860B' : 'var(--border)'}`,
+            transition: 'all 150ms var(--ease-out)',
+          }}
+        >
+          <Star size={12} fill={showWatchlistOnly ? '#B8860B' : 'none'} />
+          Watchlist
+          {watchlist.length > 0 && (
+            <span
+              className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold"
               style={{
-                background:  filter === f ? 'var(--sanlam-teal)' : 'var(--surface)',
-                color:       filter === f ? 'white'               : 'var(--text-muted)',
-                borderColor: filter === f ? 'var(--sanlam-teal)' : 'var(--border)',
-                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
+                background: showWatchlistOnly ? '#B8860B' : 'var(--border)',
+                color:      showWatchlistOnly ? 'white'   : 'var(--text-muted)',
               }}
             >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Mandate filter */}
-        <div className="flex gap-1">
-          {['All', 'Growth', 'Empowerment', 'Development'].map(m => (
-            <button
-              key={m}
-              onClick={() => setMandateFilter(m)}
-              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium pressable"
-              style={{
-                background:  mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--surface)',
-                color:       mandateFilter === m ? 'white'               : 'var(--text-muted)',
-                borderColor: mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--border)',
-                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
-              }}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-
-        {/* B-BBEE level filter */}
-        <div className="flex gap-1">
-          {[
-            { key: 'All', label: 'All B-BBEE' },
-            { key: '1-2', label: 'L1–2 ★'    },
-            { key: '3-4', label: 'L3–4'       },
-            { key: '5+',  label: 'L5+'        },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setBbbeeFilter(key)}
-              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium pressable"
-              style={{
-                background:  bbbeeFilter === key ? 'rgba(212,175,55,0.2)' : 'var(--surface)',
-                color:       bbbeeFilter === key ? '#B8860B'               : 'var(--text-muted)',
-                borderColor: bbbeeFilter === key ? '#B8860B'               : 'var(--border)',
-                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+              {watchlist.length}
+            </span>
+          )}
+        </button>
 
         <select
           value={sort}
           onChange={e => setSort(e.target.value as SortKey)}
-          className="h-9 px-3 text-xs rounded-xl focus:outline-none"
+          className="h-9 px-3 text-xs rounded-xl focus:outline-none flex-shrink-0"
           style={{
             background: 'var(--surface)',
             border:     '1.5px solid var(--border)',
             color:      'var(--text-primary)',
           }}
         >
-          <option value="score_desc">Score: High to Low</option>
-          <option value="score_asc">Score: Low to High</option>
-          <option value="name">Name A–Z</option>
+          <option value="score_desc">Score: High-Low</option>
+          <option value="score_asc">Score: Low-High</option>
+          <option value="name">Name A-Z</option>
           <option value="sector">Sector</option>
         </select>
 
-        <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
-          {filtered.length} of {portfolio.length} companies
+        <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+          {filtered.length} / {portfolio.length}
         </span>
+      </div>
+
+      {/* Filter strip */}
+      <div
+        className="flex items-center gap-0 rounded-2xl overflow-hidden flex-wrap"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
+        {/* Impact */}
+        <div className="flex items-center gap-1 px-3 py-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider w-11 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+            Impact
+          </span>
+          {(['All', 'High', 'Medium', 'Low'] as FilterKey[]).map(f => {
+            const active = filter === f;
+            const activeColor = f === 'High' ? '#00A651' : f === 'Medium' ? '#E8A020' : f === 'Low' ? '#D0021B' : 'var(--sanlam-teal)';
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="px-2.5 py-1 text-xs rounded-lg font-medium pressable"
+                style={{
+                  background: active ? `${activeColor}18` : 'transparent',
+                  color:      active ? activeColor : 'var(--text-muted)',
+                  border:     `1px solid ${active ? `${activeColor}40` : 'transparent'}`,
+                  transition: 'all 150ms var(--ease-out)',
+                }}
+              >
+                {f}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div className="w-px self-stretch" style={{ background: 'var(--border)' }} />
+
+        {/* Mandate */}
+        <div className="flex items-center gap-1 px-3 py-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider w-14 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+            Mandate
+          </span>
+          {['All', 'Growth', 'Empowerment', 'Development'].map(m => {
+            const active = mandateFilter === m;
+            return (
+              <button
+                key={m}
+                onClick={() => setMandateFilter(m)}
+                className="px-2.5 py-1 text-xs rounded-lg font-medium pressable"
+                style={{
+                  background: active ? 'rgba(1,83,118,0.12)' : 'transparent',
+                  color:      active ? 'var(--sanlam-navy)'  : 'var(--text-muted)',
+                  border:     `1px solid ${active ? 'rgba(1,83,118,0.3)' : 'transparent'}`,
+                  transition: 'all 150ms var(--ease-out)',
+                }}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div className="w-px self-stretch" style={{ background: 'var(--border)' }} />
+
+        {/* B-BBEE */}
+        <div className="flex items-center gap-1 px-3 py-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider w-11 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+            B-BBEE
+          </span>
+          {[
+            { key: 'All', label: 'All'  },
+            { key: '1-2', label: 'L1-2' },
+            { key: '3-4', label: 'L3-4' },
+            { key: '5+',  label: 'L5+'  },
+          ].map(({ key, label }) => {
+            const active = bbbeeFilter === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setBbbeeFilter(key)}
+                className="px-2.5 py-1 text-xs rounded-lg font-medium pressable"
+                style={{
+                  background: active ? 'rgba(212,175,55,0.15)' : 'transparent',
+                  color:      active ? '#B8860B'               : 'var(--text-muted)',
+                  border:     `1px solid ${active ? 'rgba(184,134,11,0.3)' : 'transparent'}`,
+                  transition: 'all 150ms var(--ease-out)',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Company list */}
