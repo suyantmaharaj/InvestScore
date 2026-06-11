@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import AdminSideNav from '@/components/admin/AdminSideNav';
@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!loading && !user)                router.replace('/login');
@@ -36,10 +37,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       className="flex"
       style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}
     >
-      <AdminSideNav />
+      <AdminSideNav collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
       <div
-        className="flex flex-col lg:ml-60"
-        style={{ flex: 1, height: '100vh', overflow: 'hidden', minWidth: 0 }}
+        className={`flex flex-col ${collapsed ? 'lg:ml-16' : 'lg:ml-60'}`}
+        style={{
+          flex:       1,
+          height:     '100vh',
+          overflow:   'hidden',
+          minWidth:   0,
+          transition: 'margin-left 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
       >
         <PageHeader />
         <main
