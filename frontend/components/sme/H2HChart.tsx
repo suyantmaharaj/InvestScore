@@ -1,6 +1,7 @@
 'use client';
 
 import { BenchmarkSDGRow } from '@/hooks/useBenchmarkData';
+import { toDisplay } from '@/lib/score';
 
 interface Props {
   rows:        BenchmarkSDGRow[];
@@ -55,7 +56,7 @@ export default function H2HChart({ rows, compareMode }: Props) {
                   className="text-xs font-bold flex-shrink-0"
                   style={{ color: myC, minWidth: '28px', textAlign: 'right' }}
                 >
-                  {row.myScore!.toFixed(1)}
+                  {toDisplay(row.myScore!)}
                 </span>
                 <div
                   className="flex-1 h-5 rounded-l-full overflow-hidden flex justify-end max-w-[140px]"
@@ -99,7 +100,7 @@ export default function H2HChart({ rows, compareMode }: Props) {
                   className="text-xs font-bold flex-shrink-0 text-[#015376]"
                   style={{ minWidth: '28px' }}
                 >
-                  {compareScore(row).toFixed(1)}
+                  {toDisplay(compareScore(row))}
                 </span>
               </div>
 

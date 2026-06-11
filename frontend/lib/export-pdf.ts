@@ -1,3 +1,5 @@
+const toDisplay = (s: number) => Math.round(((s - 1) / 2) * 100);
+
 export async function exportScorecardPDF(
   companyName: string,
   sector: string,
@@ -62,10 +64,10 @@ export async function exportScorecardPDF(
   doc.setTextColor(...white);
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text(overallScore.toFixed(1), 20, y + 18);
+  doc.text(toDisplay(overallScore).toString(), 20, y + 18);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text('/ 3.0  Overall SDG Score', 20, y + 26);
+  doc.text('/ 100  Overall SDG Score', 20, y + 26);
 
   doc.setFillColor(...bg);
   doc.rect(74, y, 122, 32, 'F');
@@ -112,8 +114,8 @@ export async function exportScorecardPDF(
     doc.setFont('helvetica', 'normal');
     doc.text(`SDG ${s.sdgId}`, 17, y + 5);
     doc.text(s.sdgName.substring(0, 28), 30, y + 5);
-    doc.text(s.score.toFixed(1), 118, y + 5);
-    doc.text(s.sectorAvg.toFixed(1), 136, y + 5);
+    doc.text(toDisplay(s.score).toString(), 118, y + 5);
+    doc.text(toDisplay(s.sectorAvg).toString(), 136, y + 5);
 
     const cc = scoreColor(s.score);
     doc.setTextColor(...cc);

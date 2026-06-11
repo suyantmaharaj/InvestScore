@@ -47,7 +47,7 @@ export default function GapAnalysisPanel({
     const lines = [
       `InvestScore — Gap Analysis`,
       `SDG ${sdgId}: ${sdg?.name}`,
-      `Current: ${classification} (${currentScore.toFixed(1)})`,
+      `Current: ${classification} (${toDisplay(currentScore)})`,
       `Target: ${target} Impact`,
       ``,
       `REQUIRED CHANGES:`,

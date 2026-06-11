@@ -590,9 +590,12 @@ export default function ScorecardPage() {
           const diff = score ? score.score - score.sectorAvg : 0;
 
           return (
-            <button
+            <div
               key={sdg.id}
               onClick={() => score && setSelected(score)}
+              role={score ? 'button' : undefined}
+              tabIndex={score ? 0 : undefined}
+              onKeyDown={score ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(score); } } : undefined}
               className="card text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
               style={{
                 background:     'var(--surface, #fff)',
@@ -792,7 +795,7 @@ export default function ScorecardPage() {
                   View details →
                 </p>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

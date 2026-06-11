@@ -2,6 +2,7 @@
 
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import { SDG_LIST } from '@/lib/sdg';
+import { toDisplay } from '@/lib/score';
 
 export default function SectorContext() {
   const { data, loading } = useBenchmarkData();
@@ -49,14 +50,19 @@ export default function SectorContext() {
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                   <span style={{ color: myColor }}>
-                    You: {row.myScore!.toFixed(1)}
+                    You: {toDisplay(row.myScore!)}
                   </span>
                   <span style={{ color: 'var(--text-muted)' }}>
-                    Avg: {row.sectorAvg.toFixed(1)}
+                    Avg: {toDisplay(row.sectorAvg)}
                   </span>
-                  <span className="font-semibold" style={{ color: diff >= 0 ? '#00A651' : '#D0021B' }}>
-                    {diff >= 0 ? '+' : ''}{diff.toFixed(1)}
-                  </span>
+                  {(() => {
+                    const d = toDisplay(row.myScore!) - toDisplay(row.sectorAvg);
+                    return (
+                      <span className="font-semibold" style={{ color: d >= 0 ? '#00A651' : '#D0021B' }}>
+                        {d >= 0 ? '+' : ''}{d}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 

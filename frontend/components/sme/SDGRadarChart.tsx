@@ -61,7 +61,7 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
         />
       ))}
 
-      {/* Level labels */}
+      {/* Level labels — display scale 0–100 */}
       {[1, 2, 3].map(level => (
         <text
           key={level}
@@ -69,7 +69,7 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
           y={cy - (level / 3) * radius + 4}
           fontSize={9} fill="#4A5568" opacity={0.7}
         >
-          {level}.0
+          {Math.round((level / 3) * 100)}
         </text>
       ))}
 
