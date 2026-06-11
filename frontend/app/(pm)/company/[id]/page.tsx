@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, TrendingUp, TrendingDown, Minus,
+  ArrowLeft, TrendingUp, TrendingDown, Minus, Star,
 } from 'lucide-react';
 import { usePMCompanyDetail } from '@/hooks/usePMData';
+import { useWatchlist } from '@/hooks/useWatchlist';
+import EngagementLog from '@/components/pm/EngagementLog';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
 import { SkeletonCard, SkeletonLine } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
@@ -414,8 +416,8 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* PM Notes */}
-      <PMNotesSection companyId={companyId} />
+      {/* Engagement Log — replaces freeform notes */}
+      <EngagementLog companyId={companyId} />
 
       {/* PM Targets */}
       <PMTargetPanel companyId={companyId} scorecard={scorecard} />
@@ -599,6 +601,7 @@ export default function CompanyDetailPage() {
   const [tab, setTab] = useState<Tab>('employment');
 
   const { company, scorecard, submission, loading, error } = usePMCompanyDetail(id);
+  const { toggle: toggleWatch, isWatched } = useWatchlist();
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'employment', label: 'Employment & Transformation' },
@@ -676,28 +679,43 @@ export default function CompanyDetailPage() {
             </p>
           </div>
 
-          {/* Overall score */}
-          {scorecard && (
-            <div className="text-right flex-shrink-0">
-              <AnimatedScore
-                value={scorecard.overallScore}
-                className="font-bold text-3xl block leading-none"
-                style={{ color: scoreColor(scorecard.overallScore) }}
-              />
-              <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>/100</p>
-              {(() => {
-                const cc = CLASSIFICATION_COLORS[scorecard.classification];
-                return (
-                  <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}
-                  >
-                    {scorecard.classification}
-                  </span>
-                );
-              })()}
-            </div>
-          )}
+          {/* Watch star + score */}
+          <div className="flex items-start gap-3 flex-shrink-0">
+            <button
+              onClick={() => toggleWatch(id)}
+              className="p-2 rounded-xl pressable mt-1"
+              style={{
+                background: isWatched(id) ? 'rgba(212,175,55,0.15)' : 'var(--bg)',
+                color:      isWatched(id) ? '#B8860B'                : 'var(--text-muted)',
+                border:     `1px solid ${isWatched(id) ? '#B8860B' : 'var(--border)'}`,
+                transition: 'all 150ms var(--ease-out)',
+              }}
+            >
+              <Star size={16} fill={isWatched(id) ? '#B8860B' : 'none'} />
+            </button>
+
+            {scorecard && (
+              <div className="text-right">
+                <AnimatedScore
+                  value={scorecard.overallScore}
+                  className="font-bold text-3xl block leading-none"
+                  style={{ color: scoreColor(scorecard.overallScore) }}
+                />
+                <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>/100</p>
+                {(() => {
+                  const cc = CLASSIFICATION_COLORS[scorecard.classification];
+                  return (
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{ background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}
+                    >
+                      {scorecard.classification}
+                    </span>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -178,3 +178,31 @@ export function usePMCompanyDetail(companyId: string) {
 
   return { company, scorecard, submission, loading, error };
 }
+
+export function useScoreHistory(companyId: string) {
+  const [history, setHistory] = useState<Array<{ period: string; score: number }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!companyId) return;
+    const load = async () => {
+      try {
+        // No orderBy with where — sort by calculatedAt in JS
+        const snap = await getDocs(
+          query(collection(db, 'scorecards'), where('companyId', '==', companyId))
+        );
+        const sorted = snap.docs
+          .map(d => d.data() as PMScorecard)
+          .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt));
+        setHistory(sorted.map(s => ({ period: s.submissionPeriod, score: s.overallScore })));
+      } catch (err) {
+        console.error('useScoreHistory error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [companyId]);
+
+  return { history, loading };
+}

@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
   Award, AlertTriangle, Building2, ChevronRight,
-  Bell, CheckCircle, Clock, AlertCircle,
+  Bell, CheckCircle, Clock, AlertCircle, Star,
 } from 'lucide-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { usePMData } from '@/hooks/usePMData';
+import { useWatchlist } from '@/hooks/useWatchlist';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
+import ScoreSparkline from '@/components/pm/ScoreSparkline';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import Tooltip from '@/components/shared/Tooltip';
@@ -54,11 +56,14 @@ export default function PMPortfolioOverviewPage() {
   const router = useRouter();
   const { portfolio, stats, loading, error } = usePMData();
 
-  const [filter,        setFilter]        = useState<FilterKey>('All');
-  const [sort,          setSort]          = useState<SortKey>('score_desc');
-  const [search,        setSearch]        = useState('');
-  const [mandateFilter, setMandateFilter] = useState<string>('All');
-  const [bbbeeFilter,   setBbbeeFilter]   = useState<string>('All');
+  const { toggle: toggleWatch, isWatched, watchlist } = useWatchlist();
+
+  const [filter,            setFilter]            = useState<FilterKey>('All');
+  const [sort,              setSort]              = useState<SortKey>('score_desc');
+  const [search,            setSearch]            = useState('');
+  const [mandateFilter,     setMandateFilter]     = useState<string>('All');
+  const [bbbeeFilter,       setBbbeeFilter]       = useState<string>('All');
+  const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
 
   // Submission tracker state
   const [submissionStatus, setSubmissionStatus] = useState<Record<string, {
@@ -168,6 +173,7 @@ export default function PMPortfolioOverviewPage() {
   }
 
   let filtered = portfolio.filter(e => {
+    if (showWatchlistOnly && !isWatched(e.company.id)) return false;
     if (filter !== 'All' && e.scorecard?.classification !== filter) return false;
     if (mandateFilter !== 'All' && e.company.mandate !== mandateFilter) return false;
     if (bbbeeFilter !== 'All') {
@@ -409,6 +415,23 @@ export default function PMPortfolioOverviewPage() {
 
       {/* Filter / search / sort bar */}
       <div className="flex flex-wrap items-center gap-3">
+        <button
+          onClick={() => setShowWatchlistOnly(s => !s)}
+          className="h-9 flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold pressable"
+          style={{
+            background:  showWatchlistOnly ? 'rgba(212,175,55,0.15)' : 'var(--surface)',
+            color:       showWatchlistOnly ? '#B8860B'                : 'var(--text-muted)',
+            border:      `1.5px solid ${showWatchlistOnly ? '#B8860B' : 'var(--border)'}`,
+            transition:  'all 150ms var(--ease-out)',
+          }}
+        >
+          <Star size={12} fill={showWatchlistOnly ? '#B8860B' : 'none'} />
+          Watchlist
+          {showWatchlistOnly && watchlist.length > 0 && (
+            <span className="ml-0.5">({watchlist.length})</span>
+          )}
+        </button>
+
         <input
           type="text"
           value={search}
@@ -521,11 +544,14 @@ export default function PMPortfolioOverviewPage() {
               .slice(0, 5) ?? [];
 
             return (
-              <button
+              <div
                 key={company.id}
                 onClick={() => router.push(`/company/${company.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => e.key === 'Enter' && router.push(`/company/${company.id}`)}
                 className="card card-interactive w-full text-left p-4 animate-card-in"
-                style={{ background: 'var(--surface)', animationDelay: `${idx * 40}ms` }}
+                style={{ background: 'var(--surface)', animationDelay: `${idx * 40}ms`, cursor: 'pointer' }}
               >
                 <div className="flex items-center gap-4">
 
@@ -589,7 +615,7 @@ export default function PMPortfolioOverviewPage() {
                     </div>
                   </div>
 
-                  {/* Score */}
+                  {/* Score + sparkline */}
                   <div className="text-right flex-shrink-0 ml-4">
                     {scorecard ? (
                       <>
@@ -618,15 +644,32 @@ export default function PMPortfolioOverviewPage() {
                             delay={idx * 40 + 200}
                           />
                         </div>
+                        <div className="mt-1.5 flex justify-end">
+                          <ScoreSparkline companyId={company.id} />
+                        </div>
                       </>
                     ) : (
                       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>No data</span>
                     )}
                   </div>
 
-                  <ChevronRight size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  {/* Star + chevron */}
+                  <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={e => { e.stopPropagation(); toggleWatch(company.id); }}
+                      className="p-1.5 rounded-lg pressable"
+                      style={{
+                        color:       isWatched(company.id) ? '#B8860B' : 'var(--text-muted)',
+                        background:  isWatched(company.id) ? 'rgba(212,175,55,0.15)' : 'transparent',
+                        transition:  'all 150ms var(--ease-out)',
+                      }}
+                    >
+                      <Star size={14} fill={isWatched(company.id) ? '#B8860B' : 'none'} />
+                    </button>
+                    <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                  </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
