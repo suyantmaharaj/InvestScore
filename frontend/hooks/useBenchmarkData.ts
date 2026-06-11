@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
+import { getSectorAvg } from '@/lib/sector-averages';
 
 export interface BenchmarkSDGRow {
   sdgId:          number;
@@ -75,10 +76,14 @@ export function useBenchmarkData() {
             .filter((s): s is number => s !== undefined && s !== null);
 
           if (peerScores.length === 0) {
+            const fallbackAvg = getSectorAvg(company!.sector, sdg.id);
             return {
               sdgId: sdg.id, sdgName: sdg.name, sdgShortName: sdg.shortName,
               sdgColor: sdg.color, sdgIcon: sdg.icon,
-              myScore, sectorAvg: 2.0, topQuartile: 2.5, bottomQuartile: 1.5,
+              myScore,
+              sectorAvg:      fallbackAvg,
+              topQuartile:    Math.min(3.0, Math.round((fallbackAvg + 0.3) * 100) / 100),
+              bottomQuartile: Math.max(1.0, Math.round((fallbackAvg - 0.3) * 100) / 100),
             };
           }
 
@@ -131,9 +136,9 @@ async function buildSyntheticBenchmark(
   const { SDG_LIST } = await import('@/lib/sdg');
 
   const rows: BenchmarkSDGRow[] = SDG_LIST.map(sdg => {
-    const entry   = (scorecard as { sdgScores: Array<{ sdgId: number; score: number; sectorAvg: number }> }).sdgScores.find(s => s.sdgId === sdg.id);
-    const myScore = entry?.score ?? null;
-    const seeded  = entry?.sectorAvg ?? 2.0;
+    const entry      = (scorecard as { sdgScores: Array<{ sdgId: number; score: number; sectorAvg: number }> }).sdgScores.find(s => s.sdgId === sdg.id);
+    const myScore    = entry?.score ?? null;
+    const seeded     = getSectorAvg(sector, sdg.id);
     return {
       sdgId: sdg.id, sdgName: sdg.name, sdgShortName: sdg.shortName,
       sdgColor: sdg.color, sdgIcon: sdg.icon,
@@ -144,12 +149,13 @@ async function buildSyntheticBenchmark(
     };
   });
 
+  const avgOfAvgs = rows.reduce((sum, r) => sum + r.sectorAvg, 0) / Math.max(rows.length, 1);
   setData({
     sector,
     totalPeers:          8,
     myOverall:           (scorecard as { overallScore: number }).overallScore,
-    sectorAvgOverall:    2.1,
-    topQuartileOverall:  2.6,
+    sectorAvgOverall:    Math.round(avgOfAvgs * 100) / 100,
+    topQuartileOverall:  Math.min(3.0, Math.round((avgOfAvgs + 0.4) * 100) / 100),
     rows,
   });
 }

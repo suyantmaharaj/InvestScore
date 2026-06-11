@@ -12,6 +12,7 @@ import type { SDGScoreData } from '@/hooks/useSMEData';
 import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
 import { toDisplay } from '@/lib/score';
+import { getSectorAvg } from '@/lib/sector-averages';
 import { SkeletonScorecard } from '@/components/shared/Skeleton';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 import Tooltip from '@/components/shared/Tooltip';
@@ -587,15 +588,16 @@ export default function ScorecardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredSDGs.map(({ sdg, score }, idx) => {
           const cc   = score ? CLASSIFICATION_COLORS[score.classification] : null;
-          const diff = score ? score.score - score.sectorAvg : 0;
+          const liveSectorAvg = score ? getSectorAvg(company!.sector, sdg.id) : 0;
+          const diff = score ? score.score - liveSectorAvg : 0;
 
           return (
             <div
               key={sdg.id}
-              onClick={() => score && setSelected(score)}
+              onClick={() => score && setSelected({ ...score, sectorAvg: getSectorAvg(company!.sector, sdg.id) })}
               role={score ? 'button' : undefined}
               tabIndex={score ? 0 : undefined}
-              onKeyDown={score ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(score); } } : undefined}
+              onKeyDown={score ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected({ ...score, sectorAvg: getSectorAvg(company!.sector, sdg.id) }); } } : undefined}
               className="card text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
               style={{
                 background:     'var(--surface, #fff)',
@@ -664,7 +666,7 @@ export default function ScorecardPage() {
                   {/* Sector comparison */}
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-[#4A5568] text-xs">
-                      Sector avg: {toDisplay(score.sectorAvg)}
+                      Sector avg: {toDisplay(liveSectorAvg)}
                     </span>
                     {diff > 0.05 ? (
                       <span className="flex items-center gap-0.5 text-xs font-medium text-green-600">
