@@ -47,24 +47,51 @@ export default function H2HChart({ rows, compareMode }: Props) {
           const myC        = scoreColor(row.myScore!);
           const diff       = row.myScore! - compareScore(row);
 
+          const iWin  = diff > 0.05;
+          const theyWin = diff < -0.05;
+
           return (
-            <div key={row.sdgId} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <div
+              key={row.sdgId}
+              className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl px-1 py-0.5 transition-all duration-300"
+              style={{
+                background: iWin
+                  ? `rgba(0,166,81,0.04)`
+                  : theyWin
+                  ? `rgba(208,2,27,0.03)`
+                  : 'transparent',
+              }}
+            >
 
               {/* Left bar — my score, grows right to left */}
               <div className="flex items-center justify-end gap-2">
                 <span
-                  className="text-xs font-bold flex-shrink-0"
-                  style={{ color: myC, minWidth: '28px', textAlign: 'right' }}
+                  className="text-xs font-bold flex-shrink-0 transition-all duration-300"
+                  style={{
+                    color:      myC,
+                    minWidth:   '28px',
+                    textAlign:  'right',
+                    opacity:    theyWin ? 0.45 : 1,
+                    transform:  iWin ? 'scale(1.08)' : 'scale(1)',
+                  }}
                 >
                   {toDisplay(row.myScore!)}
                 </span>
                 <div
-                  className="flex-1 h-5 rounded-l-full overflow-hidden flex justify-end max-w-[140px]"
-                  style={{ background: 'rgba(221,227,236,0.4)' }}
+                  className="flex-1 h-5 rounded-l-full overflow-hidden flex justify-end max-w-[140px] transition-all duration-300"
+                  style={{
+                    background: 'rgba(221,227,236,0.4)',
+                    boxShadow:  iWin ? `inset -3px 0 8px ${myC}55` : 'none',
+                  }}
                 >
                   <div
                     className="h-full rounded-l-full transition-all duration-500"
-                    style={{ width: `${myPct}%`, background: myC, opacity: 0.85 }}
+                    style={{
+                      width:     `${myPct}%`,
+                      background: myC,
+                      opacity:    iWin ? 1 : theyWin ? 0.35 : 0.85,
+                      boxShadow:  iWin ? `0 0 10px 1px ${myC}80` : 'none',
+                    }}
                   />
                 </div>
               </div>
@@ -78,27 +105,40 @@ export default function H2HChart({ rows, compareMode }: Props) {
                 <span
                   className="text-[9px] font-bold mt-0.5"
                   style={{
-                    color: diff > 0.05 ? '#00A651' : diff < -0.05 ? '#D0021B' : '#4A5568',
+                    color: iWin ? '#00A651' : theyWin ? '#D0021B' : '#4A5568',
                   }}
                 >
-                  {diff > 0.05 ? '▲' : diff < -0.05 ? '▼' : '='}
+                  {iWin ? '▲' : theyWin ? '▼' : '='}
                 </span>
               </div>
 
               {/* Right bar — compare score, grows left to right */}
               <div className="flex items-center gap-2">
                 <div
-                  className="flex-1 h-5 rounded-r-full overflow-hidden max-w-[140px]"
-                  style={{ background: 'rgba(221,227,236,0.4)' }}
+                  className="flex-1 h-5 rounded-r-full overflow-hidden max-w-[140px] transition-all duration-300"
+                  style={{
+                    background: 'rgba(221,227,236,0.4)',
+                    boxShadow:  theyWin ? `inset 3px 0 8px rgba(1,83,118,0.4)` : 'none',
+                  }}
                 >
                   <div
                     className="h-full rounded-r-full transition-all duration-500"
-                    style={{ width: `${comparePct}%`, background: '#015376', opacity: 0.6 }}
+                    style={{
+                      width:      `${comparePct}%`,
+                      background: '#015376',
+                      opacity:    theyWin ? 0.9 : iWin ? 0.3 : 0.6,
+                      boxShadow:  theyWin ? `0 0 10px 1px rgba(1,83,118,0.6)` : 'none',
+                    }}
                   />
                 </div>
                 <span
-                  className="text-xs font-bold flex-shrink-0 text-[#015376]"
-                  style={{ minWidth: '28px' }}
+                  className="text-xs font-bold flex-shrink-0 transition-all duration-300"
+                  style={{
+                    color:     '#015376',
+                    minWidth:  '28px',
+                    opacity:   iWin ? 0.45 : 1,
+                    transform: theyWin ? 'scale(1.08)' : 'scale(1)',
+                  }}
                 >
                   {toDisplay(compareScore(row))}
                 </span>
