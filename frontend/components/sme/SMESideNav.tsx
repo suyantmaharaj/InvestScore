@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { href: '/history',      label: 'My History',   icon: History          },
   { href: '/learning',     label: 'Learn',        icon: BookOpen         },
   { href: '/profile',      label: 'Company Profile', icon: Building2     },
-  { href: '/coach',        label: 'AI Coach',     icon: MessageSquare    },
+  { href: '/coach',        label: 'Chase',        icon: MessageSquare    },
 ];
 
 function NavContent({

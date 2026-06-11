@@ -407,6 +407,63 @@
 .dark .badge-medium { background: rgba(232,160,32,0.15); color: #FCD34D; border-color: rgba(232,160,32,0.3); }
 .dark .badge-low    { background: rgba(208,2,27,0.15);   color: #FC8181; border-color: rgba(208,2,27,0.3);   }
 
+/* ── CHASE ANIMATIONS ────────────────────────────────────────────────────── */
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes messageInRight {
+  from { opacity: 0; transform: translateX(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+@keyframes sendPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.85); }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes sidebarItemIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes attachmentIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-6px); }
+}
+@keyframes notifPop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes chaseEntrance {
+  from { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.animate-message-in       { animation: messageIn      0.25s ease-out both; }
+.animate-message-in-right { animation: messageInRight 0.25s ease-out both; }
+.animate-breathe          { animation: breathe        3s ease-in-out infinite; }
+.animate-send-pulse       { animation: sendPulse      0.4s ease-out; }
+.animate-sidebar-item     { animation: sidebarItemIn  0.2s ease-out both; }
+.animate-attachment-in    { animation: attachmentIn   0.2s ease-out both; }
+.animate-typing-dot       { animation: typingBounce   1.2s ease-in-out infinite; }
+.animate-notif-pop        { animation: notifPop       0.35s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-chase-entrance   { animation: chaseEntrance  0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
+.chase-input-container:focus-within {
+  border-color: var(--sanlam-teal, #00B5ED) !important;
+  box-shadow:   0 0 0 3px rgba(0,181,237,0.12);
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

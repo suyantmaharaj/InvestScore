@@ -27,7 +27,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/scorecard':    { icon: '🎯', title: 'My Scorecard',    subtitle: '', breadcrumb: ['SME Portal', 'Scorecard']     },
   '/benchmarking': { icon: '📈', title: 'Peer Benchmarking', subtitle: '', breadcrumb: ['SME Portal', 'Benchmarking'] },
   '/submit':       { icon: '📋', title: 'Submit SDG Data', subtitle: '', breadcrumb: ['SME Portal', 'Submit Data']   },
-  '/coach':        { icon: '🤖', title: 'AI Coach',        subtitle: '', breadcrumb: ['SME Portal', 'AI Coach']      },
+  '/coach':        { icon: '💬', title: 'Chase',           subtitle: '', breadcrumb: ['SME Portal', 'Chase']         },
   '/settings':     { icon: '⚙️', title: 'Settings',        subtitle: 'Manage your profile and preferences',             breadcrumb: ['SME Portal', 'Settings']    },
   '/history':      { icon: '📅', title: 'Submission History', subtitle: '',                                                    breadcrumb: ['SME Portal', 'History']     },
   '/learning':     { icon: '📖', title: 'Learning Centre',    subtitle: 'Master SDGs, KPIs, and impact reporting',          breadcrumb: ['SME Portal', 'Learn']       },
