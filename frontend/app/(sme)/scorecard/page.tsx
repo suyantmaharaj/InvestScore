@@ -128,7 +128,7 @@ function DrillDownPanel({
         className="fixed inset-0 z-50 overflow-y-auto"
         style={{
           background: 'var(--surface, #fff)',
-          animation:  'slideInRight 250ms ease-out forwards',
+          animation:  'slideInRight 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
         }}
       >
         {/* SDG color strip */}
@@ -138,7 +138,7 @@ function DrillDownPanel({
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 text-[#4A5568] hover:text-[#015376] p-2 rounded-lg hover:bg-[#F4F6F8] transition"
+            className="absolute top-5 right-5 sm:top-8 sm:right-8 text-[#4A5568] hover:text-[#015376] p-2 rounded-lg hover:bg-[#F4F6F8] pressable"
             aria-label="Close detailed view"
           >
             <X size={20} />
@@ -306,7 +306,7 @@ function DrillDownPanel({
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => router.push(`/coach?sdg=${sdg.id}`)}
-                    className="w-full min-h-11 rounded-lg bg-[#00B5ED] px-4 py-3 text-white font-semibold text-sm hover:bg-[#0099CC] transition"
+                    className="w-full min-h-11 rounded-lg bg-[#00B5ED] px-4 py-3 text-white font-semibold text-sm hover:bg-[#0099CC] pressable"
                   >
                     Ask Chase about this goal
                   </button>
@@ -461,7 +461,7 @@ export default function ScorecardPage() {
         description="Submit your SDG data to generate your scorecard."
         action={
           <button
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white text-sm font-semibold hover:bg-[#0099CC] transition mx-auto"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white text-sm font-semibold hover:bg-[#0099CC] pressable mx-auto"
             onClick={() => router.push('/submit')}
           >
             Submit data
@@ -503,7 +503,7 @@ export default function ScorecardPage() {
           <button
             onClick={handleExport}
             disabled={exporting || !scorecard}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg pressable disabled:opacity-50"
             style={{
               background: 'var(--bg)',
               border: '1px solid var(--border)',
@@ -561,7 +561,7 @@ export default function ScorecardPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="px-3 py-1.5 text-xs rounded-lg border font-medium transition"
+              className="px-3 py-1.5 text-xs rounded-lg border font-medium pressable"
               style={{
                 background:  filter === f ? '#00B5ED' : 'var(--surface, white)',
                 color:       filter === f ? 'white'   : 'var(--text-muted, #4A5568)',
@@ -598,13 +598,12 @@ export default function ScorecardPage() {
               role={score ? 'button' : undefined}
               tabIndex={score ? 0 : undefined}
               onKeyDown={score ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected({ ...score, sectorAvg: getSectorAvg(company!.sector, sdg.id) }); } } : undefined}
-              className="card text-left p-5 hover:shadow-md transition-all duration-150 overflow-hidden animate-card-in"
+              className={`card text-left p-5 overflow-hidden animate-card-in${score ? ' card-interactive' : ''}`}
               style={{
                 background:     'var(--surface, #fff)',
                 borderColor:    'var(--border, #DDE3EC)',
                 borderLeft:     `4px solid ${sdg.color}`,
                 opacity:        score ? 1 : 0.45,
-                cursor:         score ? 'pointer' : 'default',
                 animationDelay: `${idx * 40}ms`,
               }}
             >

@@ -78,13 +78,14 @@ function NavContent({
               href={href}
               onClick={onClose}
               title={collapsed ? label : undefined}
-              className="group flex items-center rounded-xl text-sm font-medium transition-all duration-200"
+              className="group flex items-center rounded-xl text-sm font-medium"
               style={{
                 gap:            collapsed ? 0 : '0.75rem',
                 padding:        collapsed ? '0.625rem' : '0.625rem 0.75rem',
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                background: active ? 'rgba(0,181,237,0.18)' : 'transparent',
-                color:      active ? '#00B5ED' : 'rgba(255,255,255,0.65)',
+                background:     active ? 'rgba(0,181,237,0.18)' : 'transparent',
+                color:          active ? '#00B5ED' : 'rgba(255,255,255,0.65)',
+                transition:     'background 150ms cubic-bezier(0.23,1,0.32,1), color 150ms cubic-bezier(0.23,1,0.32,1), transform 160ms cubic-bezier(0.23,1,0.32,1)',
               }}
               onMouseEnter={e => {
                 if (!active) {
@@ -212,7 +213,7 @@ export default function SMESideNav({
             className="lg:hidden fixed left-0 top-0 h-full w-64 z-50 flex flex-col"
             style={{
               background: 'var(--sidebar-bg, #015376)',
-              animation:  'slideInLeft 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              animation:  'slideInLeft 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
             }}
           >
             <NavContent onClose={() => setMobileOpen(false)} />

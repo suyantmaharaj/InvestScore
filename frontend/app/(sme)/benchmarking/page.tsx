@@ -149,7 +149,7 @@ export default function BenchmarkingPage() {
               <button
                 key={key}
                 onClick={() => setViewMode(key)}
-                className="px-4 py-2 text-sm font-medium rounded-md transition"
+                className="px-4 py-2 text-sm font-medium rounded-md pressable"
                 style={{
                   background: viewMode === key ? '#015376' : 'transparent',
                   color:      viewMode === key ? 'white'   : '#4A5568',
@@ -171,7 +171,7 @@ export default function BenchmarkingPage() {
                 <button
                   key={key}
                   onClick={() => setCompareMode(key)}
-                  className="px-3 py-1.5 text-xs rounded-lg border font-medium transition"
+                  className="px-3 py-1.5 text-xs rounded-lg border font-medium pressable"
                   style={{
                     background:  compareMode === key ? '#00B5ED' : 'white',
                     color:       compareMode === key ? 'white'   : '#4A5568',
@@ -299,7 +299,7 @@ export default function BenchmarkingPage() {
         </div>
         <button
           onClick={() => router.push('/coach')}
-          className="flex-shrink-0 ml-6 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white font-semibold text-sm hover:bg-[#0099CC] transition"
+          className="flex-shrink-0 ml-6 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white font-semibold text-sm hover:bg-[#0099CC] pressable"
         >
           Talk to Chase →
         </button>

@@ -28,7 +28,8 @@ export default function Tooltip({ content, children, position = 'top', delay = 3
       {children}
       {visible && (
         <div
-          className={`absolute ${posClasses} z-50 pointer-events-none`}
+          className={`absolute ${posClasses} z-50 pointer-events-none animate-tooltip-in`}
+          data-position={position}
           style={{ minWidth: '120px', maxWidth: '220px' }}
         >
           <div

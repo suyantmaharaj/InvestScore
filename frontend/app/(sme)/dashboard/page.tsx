@@ -112,7 +112,7 @@ export default function SMEDashboardPage() {
         description="Your SDG scores will appear here once your first submission has been processed."
         action={
           <button
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white text-sm font-semibold hover:bg-[#0099CC] transition mx-auto"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00B5ED] text-white text-sm font-semibold hover:bg-[#0099CC] pressable mx-auto"
             onClick={() => router.push('/submit')}
           >
             Submit your data
