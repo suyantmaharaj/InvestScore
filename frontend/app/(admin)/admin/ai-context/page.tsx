@@ -168,7 +168,7 @@ export default function AIContextPage() {
           )}
           <button
             onClick={load}
-            className="p-2 rounded-lg transition"
+            className="pressable p-2 rounded-lg transition"
             style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
           >
             <RefreshCw size={14} />
@@ -176,7 +176,7 @@ export default function AIContextPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60"
+            className="pressable flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60"
             style={{ background: 'var(--sanlam-teal)' }}
           >
             {saving ? (
@@ -189,7 +189,7 @@ export default function AIContextPage() {
       </div>
 
       {/* Global rules */}
-      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+      <div className="card p-5 animate-card-in" style={{ background: 'var(--surface)', animationDelay: '60ms' }}>
         <div className="flex items-center gap-2 mb-1">
           <Brain size={15} style={{ color: 'var(--sanlam-teal)' }} />
           <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -214,7 +214,7 @@ export default function AIContextPage() {
               />
               <button
                 onClick={() => removeRule(idx)}
-                className="mt-2 p-1.5 rounded-lg flex-shrink-0 transition"
+                className="pressable mt-2 p-1.5 rounded-lg flex-shrink-0 transition"
                 style={{ background: 'rgba(208,2,27,0.08)', color: '#D0021B' }}
               >
                 <Trash2 size={13} />
@@ -244,7 +244,7 @@ export default function AIContextPage() {
           />
           <button
             onClick={addRule}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition"
+            className="pressable flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition"
             style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)', border: '1px solid rgba(0,181,237,0.2)' }}
           >
             <Plus size={14} />
@@ -254,7 +254,7 @@ export default function AIContextPage() {
       </div>
 
       {/* Sector notes */}
-      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+      <div className="card p-5 animate-card-in" style={{ background: 'var(--surface)', animationDelay: '120ms' }}>
         <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
           Sector-Specific Guidance
         </p>
@@ -280,7 +280,7 @@ export default function AIContextPage() {
       </div>
 
       {/* Mandate context */}
-      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+      <div className="card p-5 animate-card-in" style={{ background: 'var(--surface)', animationDelay: '180ms' }}>
         <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
           Mandate Context
         </p>

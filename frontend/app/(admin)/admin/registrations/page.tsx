@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, X, Clock, Building2 } from 'lucide-react';
+import { Check, X, Clock, Building2, Trash2 } from 'lucide-react';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
@@ -43,6 +43,7 @@ export default function RegistrationsPage() {
   const [approveId,       setApproveId]       = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [companies,       setCompanies]       = useState<Company[]>([]);
+  const [deleteId,        setDeleteId]        = useState<string | null>(null);
 
   const load = async () => {
     try {
@@ -109,6 +110,21 @@ export default function RegistrationsPage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    setActionId(id);
+    try {
+      const res = await apiFetch(`/api/admin/registrations/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setRegistrations(prev => prev.filter(r => r.id !== id));
+        setDeleteId(null);
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+    } finally {
+      setActionId(null);
+    }
+  };
+
   const filtered      = registrations.filter(r => filter === 'all' || r.status === filter);
   const pendingCount  = registrations.filter(r => r.status === 'pending').length;
   const approvedCount = registrations.filter(r => r.status === 'approved').length;
@@ -116,14 +132,14 @@ export default function RegistrationsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         {[0, 1, 2].map(i => <SkeletonCard key={i} className="h-32" />)}
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-5 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -232,6 +248,43 @@ export default function RegistrationsPage() {
                   })}
                 </p>
               </div>
+
+              {reg.status !== 'pending' && (
+                <div className="flex justify-end pt-1">
+                  {deleteId === reg.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Remove this record?</span>
+                      <button
+                        onClick={() => handleDelete(reg.id)}
+                        disabled={actionId === reg.id}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60"
+                        style={{ background: '#D0021B' }}
+                      >
+                        {actionId === reg.id
+                          ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          : <Trash2 size={11} />}
+                        Remove
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs transition"
+                        style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteId(reg.id)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition"
+                      style={{ color: 'var(--text-muted)', background: 'var(--bg)', border: '1px solid var(--border)' }}
+                    >
+                      <Trash2 size={11} />
+                      Remove record
+                    </button>
+                  )}
+                </div>
+              )}
 
               {reg.status === 'pending' && (
                 <div className="space-y-3">

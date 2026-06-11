@@ -273,6 +273,30 @@ router.post('/registrations/:id/reject', async (req: AuthRequest, res: Response)
   }
 });
 
+// ── DELETE /api/admin/registrations/:id ──────────────────────────────────────
+router.delete('/registrations/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    const snap = await db.collection('pendingRegistrations').doc(req.params.id as string).get();
+    if (!snap.exists) return res.status(404).json({ error: 'Registration not found.' });
+    const reg = snap.data()!;
+    if (reg.status === 'pending') {
+      return res.status(400).json({ error: 'Cannot delete a pending registration. Reject it first.' });
+    }
+    await snap.ref.delete();
+    await writeAuditLog({
+      action:    'registration_rejected',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      detail:    `Registration record removed for ${reg.email} (was ${reg.status})`,
+      metadata:  { registrationId: req.params.id, email: reg.email, previousStatus: reg.status },
+    });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /admin/registrations error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 // ── GET /api/admin/ai-context ─────────────────────────────────────────────────
 router.get('/ai-context', async (req: AuthRequest, res: Response) => {
   try {

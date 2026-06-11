@@ -206,8 +206,8 @@ export default function AdminDashboardPage() {
             <button
               key={title}
               onClick={() => router.push(href)}
-              className={`card card-interactive p-5 text-left animate-card-in delay-${(i + 1) * 100}`}
-              style={{ background: 'var(--surface)' }}
+              className="card card-interactive p-5 text-left animate-card-in"
+              style={{ background: 'var(--surface)', animationDelay: `${(i + 1) * 100}ms` }}
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
