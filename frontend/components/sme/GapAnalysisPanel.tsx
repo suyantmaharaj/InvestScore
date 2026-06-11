@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, TrendingUp, Clock, ArrowRight, Download } from 'lucide-react';
+import { X, TrendingUp, Clock, ArrowRight, Download, Target } from 'lucide-react';
 import { SDG_LIST } from '@/lib/sdg';
 import { calculateGaps, GapAnalysisResult, TargetClassification } from '@/lib/gap-analysis';
 
@@ -23,6 +23,9 @@ const IMPACT_STYLE = {
   primary:   { label: 'High impact', color: 'var(--sanlam-teal)' },
   secondary: { label: 'Also helps',  color: 'var(--text-muted)'  },
 };
+
+const scoreColor = (s: number) => s >= 2.4 ? '#00A651' : s >= 1.6 ? '#E8A020' : '#D0021B';
+const toDisplay  = (s: number) => Math.round(((s - 1) / 2) * 100);
 
 export default function GapAnalysisPanel({
   sdgId, currentScore, classification, submittedData, onClose,
@@ -65,195 +68,275 @@ export default function GapAnalysisPanel({
 
   if (!result) return null;
 
-  const scoreColor = (s: number) => s >= 2.4 ? '#00A651' : s >= 1.6 ? '#E8A020' : '#D0021B';
-
   const availableTargets = (['Medium', 'High'] as TargetClassification[]).filter(t => {
     if (classification === 'Low')    return true;
     if (classification === 'Medium') return t === 'High';
     return false;
   });
 
+  const targetColor = target === 'High' ? '#00A651' : '#E8A020';
+
   return (
-    <>
-      <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
-      <div
-        className="fixed right-0 top-0 h-full z-50 flex flex-col"
-        style={{
-          width:      '380px',
-          maxWidth:   '100vw',
-          background: 'var(--surface)',
-          borderLeft: '1px solid var(--border)',
-          animation:  'slideInRight 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
-          overflowY:  'auto',
-        }}
-      >
-        <div className="h-1.5 w-full flex-shrink-0" style={{ background: sdg?.color }} />
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      style={{
+        background: 'var(--surface)',
+        animation:  'slideInRight 250ms ease-out forwards',
+      }}
+    >
+      {/* SDG color strip */}
+      <div className="h-1.5 w-full" style={{ background: sdg?.color }} />
 
-        <div className="flex-1 p-5">
+      <div className="p-5 sm:p-8 lg:p-10 relative min-h-full">
 
-          {/* Header */}
-          <div className="flex items-start justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{sdg?.icon}</span>
-              <div>
-                <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 sm:top-8 sm:right-8 p-2 rounded-lg transition"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'var(--bg)';
+            e.currentTarget.style.color      = 'var(--text-primary)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color      = 'var(--text-muted)';
+          }}
+          aria-label="Close gap analysis"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-8 pr-12 max-w-6xl">
+          <span className="text-4xl leading-none">{sdg?.icon}</span>
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <p className="font-bold text-2xl sm:text-3xl leading-tight" style={{ color: 'var(--text-primary)' }}>
+                {sdg?.name}
+              </p>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(0,181,237,0.1)', border: '1px solid rgba(0,181,237,0.2)' }}>
+                <Target size={12} style={{ color: 'var(--sanlam-teal)' }} />
+                <span className="text-xs font-semibold" style={{ color: 'var(--sanlam-teal)' }}>
                   Gap Analysis
-                </p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  SDG {sdgId} — {sdg?.shortName}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg transition"
-              style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Current → Target selector */}
-          <div className="rounded-2xl p-4 mb-5" style={{ background: 'var(--bg)' }}>
-            <div className="flex items-center gap-3 mb-4">
-
-              <div className="text-center flex-1">
-                <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
-                  Current
-                </p>
-                <p className="font-bold text-xl" style={{ color: scoreColor(currentScore) }}>
-                  {currentScore.toFixed(1)}
-                </p>
-                <span
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: `${scoreColor(currentScore)}15`, color: scoreColor(currentScore) }}
-                >
-                  {classification}
                 </span>
               </div>
+            </div>
+            <span
+              className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={{
+                background: `${sdg?.color}20`,
+                color:       sdg?.color,
+                border:      `1px solid ${sdg?.color}40`,
+              }}
+            >
+              SDG {sdgId}
+            </span>
+          </div>
+        </div>
 
-              <ArrowRight size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+        {/* Two-column grid */}
+        <div className="grid gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)] xl:grid-cols-[minmax(320px,420px)_minmax(0,1fr)] max-w-7xl">
 
-              <div className="text-center flex-1">
-                <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
-                  Target
-                </p>
-                <div className="flex gap-1.5 justify-center">
-                  {availableTargets.map(t => {
-                    const tc = t === 'High' ? '#00A651' : '#E8A020';
-                    return (
-                      <button
-                        key={t}
-                        onClick={() => setTarget(t)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                        style={{
-                          background: target === t ? `${tc}15`         : 'var(--surface)',
-                          color:      target === t ? tc                 : 'var(--text-muted)',
-                          border:     `1.5px solid ${target === t ? tc + '40' : 'var(--border)'}`,
-                        }}
-                      >
-                        {t}
-                      </button>
-                    );
-                  })}
+          {/* ── LEFT COLUMN ── */}
+          <div className="space-y-6">
+
+            {/* Current score card */}
+            <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+                Current position
+              </p>
+              <div className="flex items-end gap-3 mb-3">
+                <span className="font-bold text-6xl leading-none" style={{ color: scoreColor(currentScore) }}>
+                  {toDisplay(currentScore)}
+                </span>
+                <span
+                  className="mb-2 text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: `${scoreColor(currentScore)}15`,
+                    color:       scoreColor(currentScore),
+                    border:      `1px solid ${scoreColor(currentScore)}30`,
+                  }}
+                >
+                  {classification} Impact
+                </span>
+              </div>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>out of 100</p>
+              <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width:      `${toDisplay(currentScore)}%`,
+                    background: scoreColor(currentScore),
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Target selector */}
+            <div className="rounded-2xl p-6" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+                Set your target
+              </p>
+
+              <div className="flex items-center gap-4 mb-5">
+                <div className="text-center flex-1 rounded-xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
+                    Now
+                  </p>
+                  <p className="font-bold text-2xl" style={{ color: scoreColor(currentScore) }}>
+                    {toDisplay(currentScore)}
+                  </p>
+                  <p className="text-[10px] font-medium mt-0.5" style={{ color: scoreColor(currentScore) }}>
+                    {classification}
+                  </p>
+                </div>
+
+                <ArrowRight size={20} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+
+                <div className="text-center flex-1 rounded-xl p-3" style={{ background: `${targetColor}10`, border: `1.5px solid ${targetColor}30` }}>
+                  <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
+                    Goal
+                  </p>
+                  <p className="font-bold text-2xl" style={{ color: targetColor }}>
+                    {target === 'High' ? '65+' : '25+'}
+                  </p>
+                  <p className="text-[10px] font-medium mt-0.5" style={{ color: targetColor }}>
+                    {target}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <div
-              className="flex items-center justify-center gap-2 py-2 rounded-xl"
-              style={{ background: result.feasibleThisQuarter ? 'rgba(0,166,81,0.08)' : 'rgba(232,160,32,0.08)' }}
-            >
-              {result.feasibleThisQuarter
-                ? <TrendingUp size={13} style={{ color: '#00A651' }} />
-                : <Clock      size={13} style={{ color: '#E8A020' }} />
-              }
-              <p className="text-xs font-semibold" style={{ color: result.feasibleThisQuarter ? '#00A651' : '#E8A020' }}>
-                {result.feasibleThisQuarter ? 'Achievable this quarter' : 'Multi-quarter effort'}
-              </p>
+              {/* Target buttons */}
+              <div className="flex gap-2 mb-4">
+                {availableTargets.map(t => {
+                  const tc = t === 'High' ? '#00A651' : '#E8A020';
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTarget(t)}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                      style={{
+                        background: target === t ? `${tc}15`     : 'var(--surface)',
+                        color:      target === t ? tc             : 'var(--text-muted)',
+                        border:     `1.5px solid ${target === t ? tc + '40' : 'var(--border)'}`,
+                      }}
+                    >
+                      {t} Impact
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Feasibility pill */}
+              <div
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
+                style={{ background: result.feasibleThisQuarter ? 'rgba(0,166,81,0.08)' : 'rgba(232,160,32,0.08)', border: `1px solid ${result.feasibleThisQuarter ? 'rgba(0,166,81,0.2)' : 'rgba(232,160,32,0.2)'}` }}
+              >
+                {result.feasibleThisQuarter
+                  ? <TrendingUp size={14} style={{ color: '#00A651' }} />
+                  : <Clock      size={14} style={{ color: '#E8A020' }} />
+                }
+                <p className="text-sm font-semibold" style={{ color: result.feasibleThisQuarter ? '#00A651' : '#E8A020' }}>
+                  {result.feasibleThisQuarter ? 'Achievable this quarter' : 'Multi-quarter effort'}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Summary */}
-          <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
-            {result.summary}
-          </p>
+          {/* ── RIGHT COLUMN ── */}
+          <div className="space-y-6">
 
-          {/* Gap list */}
-          {result.gaps.length === 0 ? (
-            <div
-              className="text-center py-6 rounded-2xl"
-              style={{ background: 'rgba(0,166,81,0.06)', border: '1px solid rgba(0,166,81,0.2)' }}
-            >
-              <p className="text-2xl mb-2">✓</p>
-              <p className="text-sm font-semibold" style={{ color: '#00A651' }}>
-                Already at {target} Impact
+            {/* Summary */}
+            <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+                What needs to change
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                All KPIs for this SDG meet the {target} threshold
+              <p className="text-base leading-7" style={{ color: 'var(--text-primary)', lineHeight: '1.75' }}>
+                {result.summary}
               </p>
             </div>
-          ) : (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Required changes
+
+            {/* Required changes */}
+            {result.gaps.length === 0 ? (
+              <div
+                className="rounded-2xl p-8 text-center"
+                style={{ background: 'rgba(0,166,81,0.06)', border: '1px solid rgba(0,166,81,0.2)' }}
+              >
+                <p className="text-3xl mb-3">✓</p>
+                <p className="text-base font-semibold" style={{ color: '#00A651' }}>
+                  Already at {target} Impact
                 </p>
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {result.totalEffortLabel}
-                </span>
+                <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+                  All KPIs for this SDG meet the {target} threshold
+                </p>
               </div>
+            ) : (
+              <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>
+                    Required changes
+                  </p>
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+                  >
+                    {result.totalEffortLabel}
+                  </span>
+                </div>
 
-              <div className="space-y-2">
-                {result.gaps.map((gap, idx) => {
-                  const es = EFFORT_STYLE[gap.effort];
-                  const is = IMPACT_STYLE[gap.impact];
+                <div className="space-y-3">
+                  {result.gaps.map((gap, idx) => {
+                    const es = EFFORT_STYLE[gap.effort];
+                    const is = IMPACT_STYLE[gap.impact];
 
-                  return (
-                    <div
-                      key={gap.kpiId}
-                      className="rounded-xl p-3.5 animate-card-in"
-                      style={{
-                        background:     'var(--bg)',
-                        border:         '1px solid var(--border)',
-                        animationDelay: `${idx * 40}ms`,
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            {gap.label}
-                          </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span
-                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
-                              style={{
-                                background: is.color === 'var(--text-muted)' ? 'var(--border)' : `${is.color}15`,
-                                color: is.color,
-                              }}
-                            >
-                              {is.label}
-                            </span>
-                            <span
-                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
-                              style={{ background: es.bg, color: es.color }}
-                            >
-                              {es.label}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
+                    return (
                       <div
-                        className="flex items-center justify-between py-2 px-3 rounded-lg"
-                        style={{ background: 'var(--surface)' }}
+                        key={gap.kpiId}
+                        className="rounded-xl p-4 animate-card-in"
+                        style={{
+                          background:     'var(--bg)',
+                          border:         '1px solid var(--border)',
+                          animationDelay: `${idx * 40}ms`,
+                        }}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="text-center">
-                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Current</p>
-                            <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                              {gap.label}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                style={{
+                                  background: is.color === 'var(--text-muted)' ? 'var(--border)' : `${is.color}15`,
+                                  color:      is.color,
+                                }}
+                              >
+                                {is.label}
+                              </span>
+                              <span
+                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                style={{ background: es.bg, color: es.color }}
+                              >
+                                {es.label}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-sm font-bold flex-shrink-0" style={{ color: es.color }}>
+                            {gap.changeLabel}
+                          </span>
+                        </div>
+
+                        <div
+                          className="flex items-center gap-4 py-2.5 px-4 rounded-lg"
+                          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                        >
+                          <div className="text-center flex-1">
+                            <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>
+                              Current
+                            </p>
+                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                               {gap.currentValue !== null
                                 ? gap.unit === 'ZAR'
                                   ? `R${gap.currentValue.toLocaleString('en-ZA')}`
@@ -261,44 +344,52 @@ export default function GapAnalysisPanel({
                                 : 'Not reported'}
                             </p>
                           </div>
-                          <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />
-                          <div className="text-center">
-                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Need</p>
-                            <p className="text-xs font-bold" style={{ color: '#00A651' }}>
+                          <ArrowRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                          <div className="text-center flex-1">
+                            <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>
+                              Target
+                            </p>
+                            <p className="text-sm font-bold" style={{ color: '#00A651' }}>
                               {gap.unit === 'ZAR'
                                 ? `R${gap.targetValue.toLocaleString('en-ZA')}`
                                 : `${gap.targetValue} ${gap.unit}`}
                             </p>
                           </div>
                         </div>
-                        <p className="text-[11px] font-semibold" style={{ color: es.color }}>
-                          {gap.changeLabel}
-                        </p>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <button
-            onClick={handleExport}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold mt-5 transition"
-            style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg)')}
-          >
-            <Download size={14} />
-            Download action checklist
-          </button>
+            {/* Export */}
+            <button
+              onClick={handleExport}
+              className="w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-semibold transition"
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background   = 'var(--surface)';
+                e.currentTarget.style.borderColor  = 'var(--sanlam-teal, #00B5ED)';
+                e.currentTarget.style.color        = 'var(--sanlam-teal, #00B5ED)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background   = 'var(--bg)';
+                e.currentTarget.style.borderColor  = 'var(--border)';
+                e.currentTarget.style.color        = 'var(--text-muted)';
+              }}
+            >
+              <Download size={15} />
+              Download action checklist
+            </button>
 
-          <p className="text-[10px] text-center mt-3" style={{ color: 'var(--text-muted)' }}>
-            Calculations are based on Sanlam's proprietary KPI thresholds.
-            Exact score movements depend on all KPIs together, not individual metrics.
-          </p>
+            <p className="text-xs text-center pb-8" style={{ color: 'var(--text-muted)' }}>
+              Calculations are based on Sanlam's proprietary KPI thresholds.
+              Exact score movements depend on all KPIs together, not individual metrics.
+            </p>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
