@@ -19,9 +19,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const stored    = localStorage.getItem('investscore-theme') as Theme | null;
     const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initial   = stored || preferred;
+    // Suppress transition on initial mount so first paint is instant.
+    document.documentElement.classList.add('no-theme-transition');
     applyTheme(initial);
     setTheme(initial);
     setMounted(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('no-theme-transition');
+      });
+    });
   }, []);
 
   const toggleTheme = () => {
