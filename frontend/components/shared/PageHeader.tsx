@@ -49,7 +49,8 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/admin/analytics':     { icon: '📈', title: 'Platform Analytics', subtitle: 'Usage, engagement, and platform health',              breadcrumb: ['Admin Portal', 'Analytics']     },
   '/admin/users':         { icon: '👥', title: 'User Management',   subtitle: 'Manage PM and SME accounts',                            breadcrumb: ['Admin Portal', 'Users']         },
   '/admin/registrations': { icon: '📝', title: 'Registrations',     subtitle: 'Review and approve pending SME requests',               breadcrumb: ['Admin Portal', 'Registrations'] },
-  '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor', subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
+  '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor',      subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
+  '/admin/scoring':       { icon: '⚙️', title: 'Scoring Methodology',   subtitle: 'Edit KPI thresholds and sector weights',                 breadcrumb: ['Admin Portal', 'Scoring Config'] },
 };
 
 function getInitials(name: string): string {

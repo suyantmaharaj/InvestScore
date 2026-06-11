@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserPlus,
-  Brain, LogOut, TrendingUp, Menu, X, Shield, BarChart2,
+  Brain, LogOut, TrendingUp, Menu, X, Shield, BarChart2, Sliders,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard',     label: 'Dashboard',       icon: LayoutDashboard },
   { href: '/admin/analytics',     label: 'Analytics',       icon: BarChart2       },
+  { href: '/admin/scoring',       label: 'Scoring Config',  icon: Sliders         },
   { href: '/admin/users',         label: 'User Management', icon: Users           },
   { href: '/admin/registrations', label: 'Registrations',   icon: UserPlus        },
   { href: '/admin/ai-context',    label: 'AI Context',      icon: Brain           },

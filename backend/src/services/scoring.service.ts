@@ -2,6 +2,42 @@ import { SECTOR_WEIGHTS, KPI_THRESHOLDS, INVERTED_KPIS, SECTOR_SDG_AVERAGES, cla
 import { SDG_LIST } from '../constants/sdg.constants';
 import { KPI_LIST } from '../constants/kpi.constants';
 import { CompanyScorecard, SDGScore } from '../types';
+import { db } from './firebase.service';
+
+// 5-minute in-memory cache for Firestore scoring config overrides
+let configCache: { sectorWeights?: any; kpiThresholds?: any } | null = null;
+let configCacheTime = 0;
+const CONFIG_TTL_MS = 5 * 60 * 1000;
+
+async function refreshConfigCache(): Promise<void> {
+  const now = Date.now();
+  if (configCache !== null && now - configCacheTime < CONFIG_TTL_MS) return;
+  try {
+    const snap = await db.collection('config').doc('scoringConfig').get();
+    if (snap.exists) {
+      configCache    = snap.data() as any;
+      configCacheTime = now;
+    } else {
+      configCache    = {};
+      configCacheTime = now;
+    }
+  } catch { /* fallback to hardcoded constants */ }
+}
+
+export async function getActiveSectorWeights(): Promise<typeof SECTOR_WEIGHTS> {
+  await refreshConfigCache();
+  return (configCache?.sectorWeights as any) || SECTOR_WEIGHTS;
+}
+
+export async function getActiveKPIThresholds(): Promise<typeof KPI_THRESHOLDS> {
+  await refreshConfigCache();
+  return (configCache?.kpiThresholds as any) || KPI_THRESHOLDS;
+}
+
+export function invalidateConfigCache(): void {
+  configCache    = null;
+  configCacheTime = 0;
+}
 
 // IMMUTABLE SCORING ENGINE
 // Implements Sanlam's fixed methodology.

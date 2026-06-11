@@ -14,9 +14,10 @@ import aiRoutes            from './routes/ai.routes';
 import notificationRoutes  from './routes/notifications.routes';
 import learningRoutes      from './routes/learning.routes';
 import targetsRoutes       from './routes/targets.routes';
-import watchlistRoutes     from './routes/watchlist.routes';
-import analyticsRoutes    from './routes/analytics.routes';
+import watchlistRoutes      from './routes/watchlist.routes';
+import analyticsRoutes     from './routes/analytics.routes';
 import engagementRoutes    from './routes/engagement.routes';
+import scoringConfigRoutes from './routes/scoring-config.routes';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -35,8 +36,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/learning',      learningRoutes);
 app.use('/api/targets',       targetsRoutes);
 app.use('/api/watchlist',     watchlistRoutes);
-app.use('/api/analytics',    analyticsRoutes);
-app.use('/api/engagement',    engagementRoutes);
+app.use('/api/analytics',      analyticsRoutes);
+app.use('/api/engagement',     engagementRoutes);
+app.use('/api/scoring-config', scoringConfigRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 
