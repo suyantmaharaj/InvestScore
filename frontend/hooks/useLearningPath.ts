@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './useAuth';
+import { getCached, setCached, invalidateCache } from '@/lib/queryClient';
 
 export interface PathLesson {
   lessonId: string;
@@ -59,11 +60,15 @@ export function useLearningPath() {
     }
 
     const load = async () => {
+      const cacheKey = `learning_path_${user.companyId}`;
+      const cached = getCached<LearningPath>(cacheKey);
+      if (cached) { setPath(cached); setLoading(false); return; }
       try {
         setLoading(true);
         const res = await apiFetch(`/api/learning/path/${user.companyId}`);
         if (!res) return;
         const json = await res.json();
+        if (json.path) setCached(cacheKey, json.path);
         setPath(json.path);
       } catch (err) {
         console.error('Load learning path error:', err);
@@ -88,6 +93,7 @@ export function useLearningPath() {
 
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error || 'Failed to generate path.');
+      if (json.path) setCached(`learning_path_${user.companyId}`, json.path);
       setPath(json.path);
     } catch (err: any) {
       setError(err.message || 'Failed to generate path.');
@@ -105,7 +111,11 @@ export function useLearningPath() {
       });
       if (!res) return;
       const json = await res.json();
-      setPath(prev => prev ? { ...prev, completedLessons: json.completedLessons } : prev);
+      setPath(prev => {
+        const next = prev ? { ...prev, completedLessons: json.completedLessons } : prev;
+        if (next && user.companyId) setCached(`learning_path_${user.companyId}`, next);
+        return next;
+      });
     } catch (err) {
       console.error('Mark complete error:', err);
     }

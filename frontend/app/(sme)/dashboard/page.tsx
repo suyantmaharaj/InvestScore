@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { getCached, setCached } from '@/lib/queryClient';
 import { TrendingUp, AlertTriangle, Award, CheckCircle } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { db } from '@/lib/firebase';
@@ -61,6 +62,9 @@ export default function SMEDashboardPage() {
   useEffect(() => {
     if (!company?.id) return;
     const load = async () => {
+      const cacheKey = `targets_${company.id}`;
+      const cached = getCached<Record<string, number>>(cacheKey);
+      if (cached) { setTargets(cached); return; }
       try {
         const { auth } = await import('@/lib/firebase');
         const token    = await auth.currentUser?.getIdToken();
@@ -69,7 +73,9 @@ export default function SMEDashboardPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const json = await res.json();
-        setTargets(json.targets || {});
+        const targets = json.targets || {};
+        setCached(cacheKey, targets);
+        setTargets(targets);
       } catch { /* silent */ }
     };
     load();
@@ -79,6 +85,13 @@ export default function SMEDashboardPage() {
     if (!company?.id) return;
 
     const loadLastSubmission = async () => {
+      const cacheKey = `last_submission_${company.id}`;
+      const cached = getCached<{ date: string | null; data: Record<string, number | null> | null }>(cacheKey);
+      if (cached) {
+        setLastSubmissionDate(cached.date);
+        setLastSubmissionData(cached.data);
+        return;
+      }
       try {
         const snap = await getDocs(
           query(
@@ -91,8 +104,11 @@ export default function SMEDashboardPage() {
           const d = snap.docs
             .map(docSnap => docSnap.data())
             .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''))[0];
-          setLastSubmissionDate(d.scoredAt || d.submittedAt || null);
-          setLastSubmissionData(d.data || null);
+          const date = d.scoredAt || d.submittedAt || null;
+          const data = d.data || null;
+          setCached(cacheKey, { date, data });
+          setLastSubmissionDate(date);
+          setLastSubmissionData(data);
         }
       } catch (err) {
         console.error('Load last submission error:', err);

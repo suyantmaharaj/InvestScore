@@ -279,6 +279,9 @@ export default function SubmitPage() {
       if (json.success) {
         if (draftKey) localStorage.removeItem(draftKey);
         invalidateCache('sme_data_');
+        invalidateCache('benchmark_');
+        invalidateCache('last_submission_');
+        invalidateCache('targets_');
         setNewScore({ score: json.overallScore, classification: json.classification });
         setSubmitted(true);
       }

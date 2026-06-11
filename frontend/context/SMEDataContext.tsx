@@ -4,7 +4,10 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { getCached, setCached, invalidateCache } from '@/lib/queryClient';
 import type { CompanyData, ScorecardData } from '@/hooks/useSMEData';
+
+interface SMECoreCache { company: CompanyData; scorecard: ScorecardData | null; }
 
 interface SMEDataContextValue {
   company:   CompanyData | null;
@@ -30,7 +33,10 @@ export function SMEDataProvider({ children }: { children: ReactNode }) {
   const [error,     setError]     = useState<string | null>(null);
   const [tick,      setTick]      = useState(0);
 
-  const refresh = () => setTick(t => t + 1);
+  const refresh = () => {
+    invalidateCache('sme_data_');
+    setTick(t => t + 1);
+  };
 
   useEffect(() => {
     if (!user?.companyId) {
@@ -41,6 +47,19 @@ export function SMEDataProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const load = async () => {
+      const cacheKey = `sme_data_${user.companyId}`;
+
+      // Serve from cache instantly — no loading flash on return visits
+      const cached = getCached<SMECoreCache>(cacheKey);
+      if (cached) {
+        if (!cancelled) {
+          setCompany(cached.company);
+          setScorecard(cached.scorecard);
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -51,17 +70,22 @@ export function SMEDataProvider({ children }: { children: ReactNode }) {
 
         if (cancelled) return;
 
+        let company: CompanyData | null = null;
         if (companySnap.exists()) {
-          setCompany({ id: companySnap.id, ...companySnap.data() } as CompanyData);
+          company = { id: companySnap.id, ...companySnap.data() } as CompanyData;
+          setCompany(company);
         }
 
+        let scorecard: ScorecardData | null = null;
         if (!scorecardSnap.empty) {
           const sorted = scorecardSnap.docs
             .map(d => d.data() as ScorecardData)
             .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
-          setScorecard(sorted[0]);
+          scorecard = sorted[0];
+          setScorecard(scorecard);
         }
 
+        if (company) setCached<SMECoreCache>(cacheKey, { company, scorecard });
         setError(null);
       } catch (err) {
         if (!cancelled) {

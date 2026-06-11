@@ -5,6 +5,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { getSectorAvg } from '@/lib/sector-averages';
+import { getCached, setCached } from '@/lib/queryClient';
 
 export interface BenchmarkSDGRow {
   sdgId:          number;
@@ -37,6 +38,15 @@ export function useBenchmarkData() {
     if (!company || !scorecard) return;
 
     const load = async () => {
+      const cacheKey = `benchmark_${company.id}_${scorecard.submissionId || 'v0'}`;
+
+      const cached = getCached<BenchmarkData>(cacheKey);
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -62,7 +72,10 @@ export function useBenchmarkData() {
         }
 
         if (peerScorecards.length === 0) {
-          await buildSyntheticBenchmark(company.sector, scorecard, setData);
+          await buildSyntheticBenchmark(company.sector, scorecard, (result) => {
+            setCached(cacheKey, result);
+            setData(result);
+          });
           return;
         }
 
@@ -106,14 +119,16 @@ export function useBenchmarkData() {
         const overallAvg     = overallScores.reduce((a, b) => a + b, 0) / overallScores.length;
         const topQOverall    = overallScores[Math.floor(overallScores.length * 0.25)] ?? overallAvg + 0.3;
 
-        setData({
+        const result: BenchmarkData = {
           sector:             company.sector,
           totalPeers:         peerScorecards.length,
           myOverall:          scorecard.overallScore,
           sectorAvgOverall:   Math.round(overallAvg  * 100) / 100,
           topQuartileOverall: Math.round(topQOverall * 100) / 100,
           rows,
-        });
+        };
+        setCached(cacheKey, result);
+        setData(result);
       } catch (err) {
         console.error('useBenchmarkData error:', err);
         setError('Failed to load benchmarking data.');
