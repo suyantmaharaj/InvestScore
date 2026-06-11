@@ -357,7 +357,7 @@ export default function PMPortfolioOverviewPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {portfolio.map(({ company }) => {
+          {portfolio.map(({ company }, idx) => {
             const status       = submissionStatus[company.id];
             const submitted    = status?.submitted;
             const neverSubmitted = status && !status.submittedAt;
@@ -368,8 +368,8 @@ export default function PMPortfolioOverviewPage() {
             return (
               <div
                 key={company.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl"
-                style={{ background: 'var(--bg)', border: `1px solid ${borderColor}22` }}
+                className="flex items-center justify-between gap-3 p-3 rounded-xl animate-card-in"
+                style={{ background: 'var(--bg)', border: `1px solid ${borderColor}22`, animationDelay: `${idx * 30}ms` }}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <StatusIcon size={14} style={{ color: iconColor, flexShrink: 0 }} />
@@ -390,7 +390,7 @@ export default function PMPortfolioOverviewPage() {
                   <button
                     onClick={() => sendReminder(company.id, company.name)}
                     disabled={sendingReminder === company.id}
-                    className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 transition pressable"
+                    className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 pressable"
                     style={{
                       background: sendingReminder === company.id ? 'var(--border)' : 'rgba(232,160,32,0.12)',
                       color:      sendingReminder === company.id ? 'var(--text-muted)' : '#E8A020',
@@ -427,11 +427,12 @@ export default function PMPortfolioOverviewPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="px-3 py-1.5 text-xs rounded-lg border font-medium transition-all"
+              className="px-3 py-1.5 text-xs rounded-lg border font-medium pressable"
               style={{
                 background:  filter === f ? 'var(--sanlam-teal)' : 'var(--surface)',
                 color:       filter === f ? 'white'               : 'var(--text-muted)',
                 borderColor: filter === f ? 'var(--sanlam-teal)' : 'var(--border)',
+                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
               }}
             >
               {f}
@@ -445,11 +446,12 @@ export default function PMPortfolioOverviewPage() {
             <button
               key={m}
               onClick={() => setMandateFilter(m)}
-              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium transition-all"
+              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium pressable"
               style={{
                 background:  mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--surface)',
                 color:       mandateFilter === m ? 'white'               : 'var(--text-muted)',
                 borderColor: mandateFilter === m ? 'var(--sanlam-navy)' : 'var(--border)',
+                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
               }}
             >
               {m}
@@ -468,11 +470,12 @@ export default function PMPortfolioOverviewPage() {
             <button
               key={key}
               onClick={() => setBbbeeFilter(key)}
-              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium transition-all"
+              className="px-2.5 py-1.5 text-xs rounded-lg border font-medium pressable"
               style={{
                 background:  bbbeeFilter === key ? 'rgba(212,175,55,0.2)' : 'var(--surface)',
                 color:       bbbeeFilter === key ? '#B8860B'               : 'var(--text-muted)',
                 borderColor: bbbeeFilter === key ? '#B8860B'               : 'var(--border)',
+                transition:  'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
               }}
             >
               {label}

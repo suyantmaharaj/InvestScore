@@ -40,8 +40,8 @@ function StackedBar({ segments }: {
           return pct > 0 ? (
             <Tooltip key={i} content={`${s.label}: ${s.value.toLocaleString()} (${Math.round(pct)}%)`} position="top">
               <div
-                className="h-full transition-all duration-700"
-                style={{ width: `${pct}%`, background: s.color }}
+                className="h-full"
+                style={{ width: `${pct}%`, background: s.color, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }}
               />
             </Tooltip>
           ) : null;
@@ -225,7 +225,7 @@ export default function PortfolioEmploymentPage() {
           <button
             key={row.companyId}
             onClick={() => router.push(`/company/${row.companyId}`)}
-            className="w-full grid px-5 py-3 text-sm text-left transition-all animate-card-in pressable"
+            className="w-full grid px-5 py-3 text-sm text-left animate-card-in pressable"
             style={{
               gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
               borderBottom: idx < byCompany.length - 1 ? '1px solid var(--border)' : 'none',

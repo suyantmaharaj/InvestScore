@@ -77,12 +77,13 @@ function SDGRow({
               </span>
               <div className="flex-1 flex justify-end" style={{ height: 8 }}>
                 <div
-                  className="rounded-l-full transition-all duration-700"
+                  className="rounded-l-full"
                   style={{
                     width: `${aPct}%`,
                     height: '100%',
                     background: scoreColor(aScore),
                     opacity: 0.85,
+                    transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)',
                   }}
                 />
               </div>
@@ -108,12 +109,13 @@ function SDGRow({
             <>
               <div className="flex-1" style={{ height: 8 }}>
                 <div
-                  className="rounded-r-full transition-all duration-700"
+                  className="rounded-r-full"
                   style={{
                     width: `${bPct}%`,
                     height: '100%',
                     background: scoreColor(bScore),
                     opacity: 0.85,
+                    transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)',
                   }}
                 />
               </div>
@@ -246,7 +248,7 @@ export default function ComparePage() {
 
       {/* Comparison panel */}
       {canCompare && entryA && entryB && entryA.scorecard && entryB.scorecard && (
-        <div className="space-y-5 animate-fade-in">
+        <div className="space-y-5 animate-page-in">
 
           {/* Overall score banner */}
           <div className="card p-5">

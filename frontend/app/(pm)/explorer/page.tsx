@@ -144,10 +144,11 @@ export default function HeatMapPage() {
             <button
               key={key}
               onClick={() => setViewMode(key)}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg transition"
+              className="px-3 py-1.5 text-xs font-medium rounded-lg pressable"
               style={{
                 background: viewMode === key ? 'var(--sanlam-navy)' : 'transparent',
                 color:      viewMode === key ? 'white'              : 'var(--text-muted)',
+                transition: 'background 150ms var(--ease-out), color 150ms var(--ease-out)',
               }}
             >
               {label}
@@ -223,8 +224,8 @@ export default function HeatMapPage() {
               return (
                 <tr
                   key={company.id}
-                  className="transition-all duration-150 cursor-pointer"
-                  style={{ borderBottom: '1px solid var(--border)' }}
+                  className="cursor-pointer"
+                  style={{ borderBottom: '1px solid var(--border)', transition: 'background 150ms var(--ease-out)' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   onClick={() => router.push(`/company/${company.id}`)}
@@ -272,11 +273,12 @@ export default function HeatMapPage() {
                           position="top"
                         >
                           <div
-                            className="w-9 h-7 mx-auto rounded-md flex items-center justify-center transition-all duration-150"
+                            className="w-9 h-7 mx-auto rounded-md flex items-center justify-center"
                             style={{
                               background: scoreBg(score),
                               border:     `1px solid ${score ? scoreColor(score) + '40' : 'var(--border)'}`,
                               transform:  isHovered ? 'scale(1.2)' : 'scale(1)',
+                              transition: 'transform 150ms var(--ease-out)',
                             }}
                           >
                             {viewMode === 'score' && score ? (

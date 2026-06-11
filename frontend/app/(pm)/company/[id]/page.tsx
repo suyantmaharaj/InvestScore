@@ -137,7 +137,7 @@ function PMTargetPanel({
     <div className="card" style={{ background: 'var(--surface)' }}>
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between p-5"
+        className="w-full flex items-center justify-between p-5 pressable"
       >
         <div className="flex items-center gap-2">
           <span className="text-base">🎯</span>
@@ -154,7 +154,7 @@ function PMTargetPanel({
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="px-5 pb-5 animate-card-in" style={{ borderTop: '1px solid var(--border)' }}>
           <p className="text-xs mt-4 mb-3" style={{ color: 'var(--text-muted)' }}>
             Set target scores (out of 100) for each SDG. These will appear as benchmarks on the SME's scorecard.
           </p>
@@ -197,11 +197,11 @@ function PMTargetPanel({
             })}
           </div>
           <div className="flex items-center justify-end gap-3">
-            {saved && <span className="text-xs font-medium animate-fade-in" style={{ color: '#00A651' }}>Saved ✓</span>}
+            {saved && <span className="text-xs font-medium animate-card-in" style={{ color: '#00A651' }}>Saved ✓</span>}
             <button
               onClick={saveTargets}
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60"
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white pressable disabled:opacity-60"
               style={{ background: 'var(--sanlam-teal)' }}
             >
               {saving ? 'Saving...' : 'Save targets'}
@@ -264,14 +264,14 @@ function PMNotesSection({ companyId }: { companyId: string }) {
         </p>
         <div className="flex items-center gap-2">
           {notesSaved && (
-            <span className="text-xs font-medium animate-fade-in" style={{ color: '#00A651' }}>
+            <span className="text-xs font-medium animate-card-in" style={{ color: '#00A651' }}>
               Saved
             </span>
           )}
           <button
             onClick={saveNotes}
             disabled={notesSaving}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white pressable disabled:opacity-60"
             style={{ background: 'var(--sanlam-teal)' }}
           >
             {notesSaving ? 'Saving...' : 'Save'}
@@ -362,7 +362,7 @@ function OverviewTab({
   }, [company.id]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-page-in">
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-base">🤖</span>
@@ -428,7 +428,7 @@ function SDGTab({ scorecard }: { scorecard: NonNullable<ReturnType<typeof usePMC
   const sorted = [...scorecard.sdgScores].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="space-y-3 animate-fade-in">
+    <div className="space-y-3 animate-page-in">
       {sorted.map((s, i) => {
         const sdg = SDG_LIST.find(d => d.id === s.sdgId);
         const cc  = CLASSIFICATION_COLORS[s.classification];
@@ -520,7 +520,7 @@ function EmploymentTab({
   const sdg10 = scorecard.sdgScores.find(s => s.sdgId === 10);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-page-in">
 
       {/* SDG 8 + 10 score summary */}
       <div className="grid grid-cols-2 gap-4">
@@ -637,8 +637,8 @@ export default function CompanyDetailPage() {
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1.5 text-sm transition"
-        style={{ color: 'var(--text-muted)' }}
+        className="flex items-center gap-1.5 text-sm pressable"
+        style={{ color: 'var(--text-muted)', transition: 'color 150ms var(--ease-out), opacity 160ms var(--ease-out)' }}
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
       >
@@ -710,10 +710,11 @@ export default function CompanyDetailPage() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className="px-4 py-2 text-sm font-medium rounded-lg transition"
+            className="px-4 py-2 text-sm font-medium rounded-lg pressable"
             style={{
               background: tab === t.key ? 'var(--sanlam-navy)' : 'transparent',
               color:      tab === t.key ? 'white'               : 'var(--text-muted)',
+              transition: 'background 150ms var(--ease-out), color 150ms var(--ease-out)',
             }}
           >
             {t.label}

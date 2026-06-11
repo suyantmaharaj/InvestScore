@@ -212,7 +212,7 @@ export default function DataCompletenessPage() {
                     <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${cs.pct}%`, background: CAT_COLORS[cs.category] }}
+                        style={{ width: `${cs.pct}%`, background: CAT_COLORS[cs.category], transition: 'width 600ms cubic-bezier(0.16,1,0.3,1)' }}
                       />
                     </div>
                     <p className="text-[10px] mt-0.5" style={{ color: CAT_COLORS[cs.category] }}>

@@ -97,13 +97,14 @@ function NavContent({
               href={href}
               onClick={onClose}
               title={collapsed ? label : undefined}
-              className="relative flex items-center rounded-xl text-sm font-medium transition-all duration-150"
+              className="relative flex items-center rounded-xl text-sm font-medium"
               style={{
                 gap:            collapsed ? 0 : '0.75rem',
                 padding:        collapsed ? '0.625rem' : '0.625rem 0.75rem',
                 justifyContent: collapsed ? 'center' : 'flex-start',
                 background:     active ? 'var(--sidebar-active-bg)'   : 'transparent',
                 color:          active ? 'var(--sidebar-active-text)'  : 'var(--sidebar-text)',
+                transition:     'background 150ms cubic-bezier(0.23,1,0.32,1), color 150ms cubic-bezier(0.23,1,0.32,1)',
               }}
             >
               <Icon

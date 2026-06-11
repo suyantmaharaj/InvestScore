@@ -217,13 +217,13 @@ export default function AlertsPage() {
           { severity: 'critical' as AlertSeverity, count: counts.critical, label: 'Critical' },
           { severity: 'warning'  as AlertSeverity, count: counts.warning,  label: 'Warnings' },
           { severity: 'info'     as AlertSeverity, count: counts.info,     label: 'Info'     },
-        ]).map(({ severity, count, label }) => {
+        ]).map(({ severity, count, label }, idx) => {
           const m = SEVERITY_META[severity];
           return (
             <div
               key={severity}
-              className="card px-4 py-3 flex items-center gap-2"
-              style={{ background: m.bg, border: `1px solid ${m.border}` }}
+              className="card px-4 py-3 flex items-center gap-2 animate-card-in"
+              style={{ background: m.bg, border: `1px solid ${m.border}`, animationDelay: `${idx * 50}ms` }}
             >
               <m.icon size={16} style={{ color: m.color }} />
               <span className="text-sm font-bold" style={{ color: m.color }}>{count}</span>

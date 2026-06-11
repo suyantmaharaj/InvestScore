@@ -112,7 +112,8 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
-                className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl transition-all duration-150"
+                className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl pressable"
+                style={{ transition: 'background 150ms var(--ease-out), border-color 150ms var(--ease-out), opacity 160ms var(--ease-out)', transform: 'none' }}
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--sanlam-teal)' }}
               >
                 <CheckCheck size={15} />
@@ -121,7 +122,7 @@ export default function NotificationsPage() {
             )}
             <button
               onClick={handleRefresh}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150"
+              className="w-9 h-9 rounded-xl flex items-center justify-center pressable"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             >
               <RefreshCw
@@ -141,11 +142,12 @@ export default function NotificationsPage() {
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all duration-150"
+                className="text-xs font-semibold px-3 py-1.5 rounded-full pressable"
                 style={{
                   background: active ? 'var(--sanlam-teal)' : 'var(--surface)',
                   color:      active ? '#fff'                : 'var(--text-muted)',
                   border:     `1px solid ${active ? 'var(--sanlam-teal)' : 'var(--border)'}`,
+                  transition: 'background 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out)',
                 }}
               >
                 {tab.label}
@@ -195,15 +197,18 @@ export default function NotificationsPage() {
                   {group.items.map((n, idx) => (
                     <div
                       key={n.id}
+                      className="animate-card-in"
                       style={{
-                        borderBottom: idx < group.items.length - 1 ? '1px solid var(--border)' : 'none',
-                        borderLeft:   `4px solid ${SEVERITY_BORDER[n.severity] || 'var(--sanlam-teal)'}`,
-                        background:   n.read ? 'var(--surface)' : SEVERITY_BG[n.severity] || 'var(--surface)',
+                        borderBottom:   idx < group.items.length - 1 ? '1px solid var(--border)' : 'none',
+                        borderLeft:     `4px solid ${SEVERITY_BORDER[n.severity] || 'var(--sanlam-teal)'}`,
+                        background:     n.read ? 'var(--surface)' : SEVERITY_BG[n.severity] || 'var(--surface)',
+                        animationDelay: `${idx * 40}ms`,
                       }}
                     >
                       <button
                         onClick={() => handleNotifClick(n)}
-                        className="w-full flex items-start gap-3 px-4 py-4 text-left transition-colors duration-150"
+                        className="w-full flex items-start gap-3 px-4 py-4 text-left pressable"
+                        style={{ transition: 'background 150ms var(--ease-out)' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
                         onMouseLeave={e => (e.currentTarget.style.background = n.read ? 'var(--surface)' : (SEVERITY_BG[n.severity] || 'var(--surface)'))}
                       >
