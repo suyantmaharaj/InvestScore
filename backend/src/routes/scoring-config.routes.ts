@@ -4,6 +4,7 @@ import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { SECTOR_WEIGHTS, KPI_THRESHOLDS } from '../constants/scoring.constants';
 import { invalidateConfigCache } from '../services/scoring.service';
+import { writeAuditLog } from '../services/audit.service';
 
 const router    = Router();
 const CONFIG_DOC = db.collection('config').doc('scoringConfig');
@@ -85,6 +86,15 @@ router.put('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res:
     });
 
     invalidateConfigCache();
+
+    await writeAuditLog({
+      action:    'scoring_config_updated',
+      actor:     by,
+      actorRole: 'admin',
+      detail:    `Scoring config updated: ${reason.trim()}`,
+      metadata:  { reason: reason.trim(), updatedAt: now },
+    });
+
     return res.json({ success: true, updatedAt: now });
   } catch (err) {
     console.error('Scoring config PUT error:', err);
@@ -122,6 +132,15 @@ router.delete('/', verifyToken, requireRole('admin'), async (req: AuthRequest, r
     }
     await CONFIG_DOC.delete();
     invalidateConfigCache();
+
+    await writeAuditLog({
+      action:    'scoring_config_reset',
+      actor:     by,
+      actorRole: 'admin',
+      detail:    `Scoring config reset to defaults: ${reason.trim()}`,
+      metadata:  { reason: reason.trim(), resetAt: now },
+    });
+
     return res.json({ success: true, resetAt: now });
   } catch (err) {
     console.error('Scoring config DELETE error:', err);

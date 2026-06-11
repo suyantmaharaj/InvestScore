@@ -51,6 +51,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/admin/registrations': { icon: '📝', title: 'Registrations',     subtitle: 'Review and approve pending SME requests',               breadcrumb: ['Admin Portal', 'Registrations'] },
   '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor',      subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
   '/admin/scoring':       { icon: '⚙️', title: 'Scoring Methodology',   subtitle: 'Edit KPI thresholds and sector weights',                 breadcrumb: ['Admin Portal', 'Scoring Config'] },
+  '/audit':               { icon: '📋', title: 'Audit Log',             subtitle: 'Complete record of all platform actions and changes',      breadcrumb: ['Admin Portal', 'Audit Log']      },
 };
 
 function getInitials(name: string): string {

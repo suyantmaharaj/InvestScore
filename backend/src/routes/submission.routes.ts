@@ -4,6 +4,7 @@ import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { calculateScore, calculateSDGScores } from '../services/scoring.service';
 import { createNotification } from './notifications.routes';
+import { writeAuditLog } from '../services/audit.service';
 
 const router = Router();
 
@@ -188,6 +189,16 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
       sdgScores,
       calculatedAt:     now,
       submissionPeriod: period || 'Q2 2026',
+    });
+
+    await writeAuditLog({
+      action:     'submission_scored',
+      actor:      req.user!.email,
+      actorRole:  'sme',
+      companyId,
+      companyName: companySnap.data()!.name,
+      detail:     `Score calculated: ${overallScore.toFixed(2)} (${classification}) for ${period || 'Q2 2026'}`,
+      metadata:   { overallScore, classification, period: period || 'Q2 2026', submissionId, scorecardId },
     });
 
     // Notifications

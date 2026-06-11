@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { db } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
+import { writeAuditLog } from '../services/audit.service';
 
 const router = Router();
 
@@ -34,6 +35,15 @@ router.put('/:companyId', verifyToken, requireRole('pm', 'admin'), async (req: A
       updatedAt: new Date().toISOString(),
       updatedBy: req.user?.uid,
     }, { merge: true });
+
+    await writeAuditLog({
+      action:    'target_set',
+      actor:     req.user!.email,
+      actorRole: req.user!.role,
+      companyId,
+      detail:    `PM set ${Object.keys(targets).length} SDG targets for company ${companyId}`,
+      metadata:  { targets },
+    });
 
     return res.json({ ok: true, targets });
   } catch (err) {

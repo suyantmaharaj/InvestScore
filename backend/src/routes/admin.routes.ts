@@ -3,6 +3,7 @@ import { db, adminAuth } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { createNotification } from './notifications.routes';
+import { writeAuditLog } from '../services/audit.service';
 
 const router = Router();
 
@@ -67,8 +68,19 @@ router.delete('/users/:uid', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'You cannot delete your own account.' });
     }
 
+    const deletedSnap = await db.collection('users').doc(uid).get();
+    const deletedEmail = deletedSnap.exists ? deletedSnap.data()!.email : uid;
+
     await adminAuth.deleteUser(uid);
     await db.collection('users').doc(uid).delete();
+
+    await writeAuditLog({
+      action:    'user_deleted',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      detail:    `Admin deleted user ${deletedEmail}`,
+      metadata:  { uid, deletedEmail },
+    });
 
     return res.json({ success: true, message: 'User deleted.' });
   } catch (err) {
@@ -106,6 +118,14 @@ router.post('/users', async (req: AuthRequest, res: Response) => {
       role,
       companyId: companyId || null,
       createdAt: new Date().toISOString(),
+    });
+
+    await writeAuditLog({
+      action:    'user_created',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      detail:    `Admin created ${role} user ${email}`,
+      metadata:  { uid: fbUser.uid, email, role, companyId: companyId || null },
     });
 
     return res.status(201).json({ success: true, uid: fbUser.uid });
@@ -194,6 +214,15 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
 
     await snap.ref.update({ status: 'approved', approvedAt: new Date().toISOString() });
 
+    await writeAuditLog({
+      action:    'registration_approved',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      companyId: companyId || undefined,
+      detail:    `Registration approved for ${reg.email} (${reg.companyName || reg.name})`,
+      metadata:  { registrationId: req.params.id, email: reg.email, companyId },
+    });
+
     try {
       await createNotification({
         type:        'registration_approved',
@@ -221,10 +250,22 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
 // ── POST /api/admin/registrations/:id/reject ──────────────────────────────────
 router.post('/registrations/:id/reject', async (req: AuthRequest, res: Response) => {
   try {
+    const rejSnap = await db.collection('pendingRegistrations').doc(req.params.id as string).get();
+    const rejEmail = rejSnap.exists ? rejSnap.data()!.email : req.params.id;
+
     await db.collection('pendingRegistrations').doc(req.params.id as string).update({
       status:     'rejected',
       rejectedAt: new Date().toISOString(),
     });
+
+    await writeAuditLog({
+      action:    'registration_rejected',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      detail:    `Registration rejected for ${rejEmail}`,
+      metadata:  { registrationId: req.params.id, email: rejEmail },
+    });
+
     return res.json({ success: true });
   } catch (err) {
     console.error('POST /admin/registrations/reject error:', err);
@@ -257,9 +298,59 @@ router.put('/ai-context', async (req: AuthRequest, res: Response) => {
       updatedBy:      req.user!.email,
     });
 
+    await writeAuditLog({
+      action:    'ai_context_updated',
+      actor:     req.user!.email,
+      actorRole: 'admin',
+      detail:    'AI coaching context updated',
+      metadata:  { rulesCount: (rules || []).length, sectorsUpdated: Object.keys(sectorNotes || {}).length },
+    });
+
     return res.json({ success: true });
   } catch (err) {
     console.error('PUT /admin/ai-context error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/audit-log ──────────────────────────────────────────────────
+router.get('/audit-log', async (req: AuthRequest, res: Response) => {
+  try {
+    const { limit: lim = '50', before, action, actor } = req.query;
+    const limitN = Math.min(parseInt(lim as string) || 50, 200);
+
+    if (action || actor) {
+      // Filtered: single-field where only, sort in JS (no composite index)
+      let query = db.collection('auditLog') as any;
+      if (action) query = query.where('action', '==', action as string);
+      if (actor)  query = query.where('actor',  '==', actor  as string);
+
+      const snap    = await query.get();
+      let entries   = snap.docs
+        .map((d: any) => ({ id: d.id, ...d.data() }))
+        .sort((a: any, b: any) => b.timestamp.localeCompare(a.timestamp));
+
+      if (before) {
+        const idx = entries.findIndex((e: any) => e.timestamp <= (before as string));
+        entries   = idx >= 0 ? entries.slice(idx) : [];
+      }
+
+      const page           = entries.slice(0, limitN);
+      const lastTimestamp  = page.length > 0 ? (page[page.length - 1] as any).timestamp : null;
+      return res.json({ entries: page, lastTimestamp, hasMore: entries.length > limitN });
+    }
+
+    // No filter: orderBy single field — no composite index needed
+    let q: any = db.collection('auditLog').orderBy('timestamp', 'desc');
+    if (before) q = q.startAfter(before as string);
+
+    const snap     = await q.limit(limitN).get();
+    const entries  = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+    const lastTimestamp = entries.length > 0 ? (entries[entries.length - 1] as any).timestamp : null;
+
+    return res.json({ entries, lastTimestamp, hasMore: entries.length === limitN });
+  } catch (err) {
+    console.error('Audit log fetch error:', err);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 });
