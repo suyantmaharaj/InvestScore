@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Building2, ClipboardList,
-  UserPlus, Brain,
+  UserPlus, Brain, AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
@@ -19,6 +19,7 @@ interface AdminStats {
   activeCompanies:      number;
   totalSubmissions:     number;
   pendingRegistrations: number;
+  companiesWithoutUsers: number;
 }
 
 export default function AdminDashboardPage() {
@@ -167,6 +168,33 @@ export default function AdminDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Companies-without-users warning */}
+      {(stats?.companiesWithoutUsers ?? 0) > 0 && (
+        <button
+          onClick={() => router.push('/admin/users')}
+          className="w-full card card-interactive p-4 flex items-center gap-4 text-left animate-card-in"
+          style={{ background: 'rgba(232,160,32,0.08)', border: '1px solid rgba(232,160,32,0.3)' }}
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(232,160,32,0.15)' }}
+          >
+            <AlertTriangle size={20} style={{ color: '#E8A020' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: '#E8A020' }}>
+              {stats!.companiesWithoutUsers} compan{stats!.companiesWithoutUsers === 1 ? 'y' : 'ies'} without login accounts
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              These active portfolio companies have no linked user account. Create accounts in User Management.
+            </p>
+          </div>
+          <span className="text-xs font-semibold flex-shrink-0" style={{ color: '#E8A020' }}>
+            Fix now →
+          </span>
+        </button>
+      )}
 
       {/* Quick actions */}
       <div>

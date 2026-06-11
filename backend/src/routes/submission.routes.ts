@@ -7,6 +7,71 @@ import { createNotification } from './notifications.routes';
 
 const router = Router();
 
+/**
+ * Computes live per-SDG sector averages from the latest scorecard of each
+ * same-sector company (excluding the submitting company to avoid circularity).
+ * Falls back to static constants when fewer than 2 peers have scorecards.
+ */
+async function computeLiveSectorAverages(
+  sector: string,
+  excludeCompanyId: string,
+): Promise<Record<number, number> | undefined> {
+  try {
+    const companiesSnap = await db.collection('companies')
+      .where('sector', '==', sector)
+      .where('status', '==', 'active')
+      .get();
+
+    const peerIds = companiesSnap.docs
+      .map(d => d.id)
+      .filter(id => id !== excludeCompanyId);
+
+    if (peerIds.length === 0) return undefined;
+
+    // Single-field `in` query — no composite index needed
+    const scorecardsSnap = await db.collection('scorecards')
+      .where('companyId', 'in', peerIds.slice(0, 30))
+      .get();
+
+    if (scorecardsSnap.empty) return undefined;
+
+    // Take latest scorecard per company
+    const latestPerCompany = new Map<string, any>();
+    for (const doc of scorecardsSnap.docs) {
+      const sc = doc.data();
+      const existing = latestPerCompany.get(sc.companyId);
+      if (!existing || sc.calculatedAt > existing.calculatedAt) {
+        latestPerCompany.set(sc.companyId, sc);
+      }
+    }
+
+    const scorecards = Array.from(latestPerCompany.values());
+    if (scorecards.length < 2) return undefined; // not enough peers for a meaningful average
+
+    // Compute per-SDG mean
+    const sdgTotals = new Map<number, { sum: number; count: number }>();
+    for (const sc of scorecards) {
+      if (!Array.isArray(sc.sdgScores)) continue;
+      for (const sdgScore of sc.sdgScores) {
+        const entry = sdgTotals.get(sdgScore.sdgId) ?? { sum: 0, count: 0 };
+        entry.sum   += sdgScore.score;
+        entry.count += 1;
+        sdgTotals.set(sdgScore.sdgId, entry);
+      }
+    }
+
+    const averages: Record<number, number> = {};
+    for (const [sdgId, { sum, count }] of sdgTotals) {
+      averages[sdgId] = Math.round((sum / count) * 100) / 100;
+    }
+
+    return Object.keys(averages).length > 0 ? averages : undefined;
+  } catch (err) {
+    console.error('computeLiveSectorAverages error (non-fatal):', err);
+    return undefined;
+  }
+}
+
 // GET /api/submissions/draft?companyId=xxx
 router.get('/draft', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
@@ -97,7 +162,8 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
     }));
 
     const { overallScore, classification, kpiResults } = calculateScore(sector as any, kpiInputs);
-    const sdgScores = calculateSDGScores(kpiResults, sector);
+    const liveSectorAvg = await computeLiveSectorAverages(sector, companyId);
+    const sdgScores = calculateSDGScores(kpiResults, sector, liveSectorAvg);
 
     const now          = new Date().toISOString();
     const submissionId = `sub_${companyId}_${Date.now()}`;

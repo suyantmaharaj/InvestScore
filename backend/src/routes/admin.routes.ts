@@ -23,6 +23,11 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
     const pmCount    = users.filter(u => u.role === 'pm').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
 
+    const linkedCompanyIds = new Set(
+      users.filter(u => u.role === 'sme' && u.companyId).map(u => u.companyId)
+    );
+    const companiesWithoutUsers = companiesSnap.docs.filter(d => !linkedCompanyIds.has(d.id)).length;
+
     return res.json({
       totalUsers:           users.length,
       smeCount,
@@ -31,6 +36,7 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
       activeCompanies:      companiesSnap.size,
       totalSubmissions:     submissionsSnap.size,
       pendingRegistrations: pendingSnap.size,
+      companiesWithoutUsers,
     });
   } catch (err) {
     console.error('GET /admin/stats error:', err);
@@ -108,6 +114,30 @@ router.post('/users', async (req: AuthRequest, res: Response) => {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
     console.error('POST /admin/users error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/orphan-companies ──────────────────────────────────────────
+router.get('/orphan-companies', async (req: AuthRequest, res: Response) => {
+  try {
+    const [companiesSnap, usersSnap] = await Promise.all([
+      db.collection('companies').where('status', '==', 'active').get(),
+      db.collection('users').where('role', '==', 'sme').get(),
+    ]);
+
+    const linkedCompanyIds = new Set(
+      usersSnap.docs.map(d => d.data().companyId).filter(Boolean)
+    );
+
+    const orphans = companiesSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter((c: any) => !linkedCompanyIds.has(c.id))
+      .sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''));
+
+    return res.json({ companies: orphans });
+  } catch (err) {
+    console.error('GET /admin/orphan-companies error:', err);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 });

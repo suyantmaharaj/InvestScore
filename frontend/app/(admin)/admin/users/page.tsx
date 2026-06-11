@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   UserPlus, Trash2, Search,
-  Shield, Briefcase, Building2, X, Check,
+  Shield, Briefcase, Building2, X, Check, AlertTriangle,
 } from 'lucide-react';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
@@ -17,6 +17,12 @@ interface UserRecord {
   role:      'sme' | 'pm' | 'admin';
   companyId?: string;
   createdAt: string;
+}
+
+interface OrphanCompany {
+  id:     string;
+  name:   string;
+  sector: string;
 }
 
 function RoleIcon({ role }: { role: string }) {
@@ -64,11 +70,14 @@ export default function UsersPage() {
   const [deleteUid,  setDeleteUid]  = useState<string | null>(null);
   const [deleting,   setDeleting]   = useState(false);
 
+  const [orphans, setOrphans] = useState<OrphanCompany[]>([]);
+
   const [showCreate,    setShowCreate]    = useState(false);
   const [newName,       setNewName]       = useState('');
   const [newEmail,      setNewEmail]      = useState('');
   const [newPassword,   setNewPassword]   = useState('');
   const [newRole,       setNewRole]       = useState<'pm' | 'sme'>('pm');
+  const [newCompanyId,  setNewCompanyId]  = useState('');
   const [creating,      setCreating]      = useState(false);
   const [createError,   setCreateError]   = useState('');
   const [createSuccess, setCreateSuccess] = useState(false);
@@ -76,9 +85,14 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const res  = await apiFetch('/api/admin/users');
-      const json = await res.json();
-      setUsers(json.users || []);
+      const [usersRes, orphansRes] = await Promise.all([
+        apiFetch('/api/admin/users'),
+        apiFetch('/api/admin/orphan-companies'),
+      ]);
+      const usersJson   = await usersRes.json();
+      const orphansJson = await orphansRes.json();
+      setUsers(usersJson.users || []);
+      setOrphans(orphansJson.companies || []);
     } catch (err) {
       console.error('Load users error:', err);
     } finally {
@@ -103,6 +117,14 @@ export default function UsersPage() {
     }
   };
 
+  const prefillOrphan = (company: OrphanCompany) => {
+    setNewRole('sme');
+    setNewCompanyId(company.id);
+    setShowCreate(true);
+    setCreateError('');
+    setCreateSuccess(false);
+  };
+
   const handleCreate = async () => {
     if (!newName || !newEmail || !newPassword) {
       setCreateError('All fields are required.');
@@ -113,14 +135,20 @@ export default function UsersPage() {
     try {
       const res  = await apiFetch('/api/admin/users', {
         method: 'POST',
-        body:   JSON.stringify({ name: newName, email: newEmail, password: newPassword, role: newRole }),
+        body:   JSON.stringify({
+          name:      newName,
+          email:     newEmail,
+          password:  newPassword,
+          role:      newRole,
+          companyId: newRole === 'sme' && newCompanyId ? newCompanyId : undefined,
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
         setCreateError(json.error || 'Failed to create user.');
       } else {
         setCreateSuccess(true);
-        setNewName(''); setNewEmail(''); setNewPassword('');
+        setNewName(''); setNewEmail(''); setNewPassword(''); setNewCompanyId('');
         await loadUsers();
         setTimeout(() => { setCreateSuccess(false); setShowCreate(false); }, 1500);
       }
@@ -250,11 +278,28 @@ export default function UsersPage() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Role</label>
-              <select value={newRole} onChange={e => setNewRole(e.target.value as 'pm' | 'sme')} style={inputStyle}>
+              <select
+                value={newRole}
+                onChange={e => { setNewRole(e.target.value as 'pm' | 'sme'); if (e.target.value !== 'sme') setNewCompanyId(''); }}
+                style={inputStyle}
+              >
                 <option value="pm">Portfolio Manager</option>
                 <option value="sme">SME User</option>
               </select>
             </div>
+            {newRole === 'sme' && (
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
+                  Link to Company {newCompanyId && <span style={{ color: '#00A651' }}>✓ pre-filled</span>}
+                </label>
+                <select value={newCompanyId} onChange={e => setNewCompanyId(e.target.value)} style={inputStyle}>
+                  <option value="">— Select company (optional) —</option>
+                  {orphans.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <button
             onClick={handleCreate}
@@ -268,6 +313,50 @@ export default function UsersPage() {
               <><Check size={14} /> Create User</>
             )}
           </button>
+        </div>
+      )}
+
+      {/* Companies without accounts */}
+      {orphans.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={14} style={{ color: '#E8A020' }} />
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#E8A020' }}>
+              {orphans.length} {orphans.length === 1 ? 'Company' : 'Companies'} without login accounts
+            </p>
+          </div>
+          <div className="space-y-2">
+            {orphans.map((c, idx) => (
+              <div
+                key={c.id}
+                className="card p-4 flex items-center justify-between gap-4 animate-card-in"
+                style={{ background: 'rgba(232,160,32,0.06)', border: '1px solid rgba(232,160,32,0.2)', animationDelay: `${idx * 30}ms` }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(232,160,32,0.15)' }}
+                  >
+                    <Building2 size={16} style={{ color: '#E8A020' }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
+                    <p className="text-xs truncate capitalize" style={{ color: 'var(--text-muted)' }}>
+                      {(c.sector || 'unknown').replace(/_/g, ' ')} · No user account
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => prefillOrphan(c)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all hover:opacity-80"
+                  style={{ background: 'rgba(232,160,32,0.15)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
+                >
+                  <UserPlus size={12} />
+                  Create Account
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
