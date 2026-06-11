@@ -50,12 +50,11 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
   const hoveredRow = hoveredIdx !== null ? scoredRows[hoveredIdx] : null;
   const hoveredDot = hoveredIdx !== null ? point(hoveredIdx, scoreFraction(scoredRows[hoveredIdx].myScore!)) : null;
 
-  // Position tooltip so it stays within the SVG bounds
-  const tooltipW = 148;
-  const tooltipH = 76;
+  const tooltipW = 152;
+  const tooltipH = 92;
   const tip = hoveredDot ? {
-    x: hoveredDot.x > cx ? hoveredDot.x - tooltipW - 10 : hoveredDot.x + 12,
-    y: Math.min(Math.max(hoveredDot.y - tooltipH / 2, 6), size - tooltipH - 6),
+    x: hoveredDot.x > cx ? hoveredDot.x - tooltipW - 12 : hoveredDot.x + 14,
+    y: Math.min(Math.max(hoveredDot.y - tooltipH / 2, 4), size - tooltipH - 4),
   } : null;
 
   return (
@@ -168,55 +167,64 @@ export default function SDGRadarChart({ rows, size = 420 }: Props) {
 
       {/* Hover tooltip */}
       {hoveredRow && tip && (() => {
-        const myScore  = toDisplay(hoveredRow.myScore!);
-        const avgScore = toDisplay(hoveredRow.sectorAvg);
-        const diff     = myScore - avgScore;
+        const myScore   = toDisplay(hoveredRow.myScore!);
+        const avgScore  = toDisplay(hoveredRow.sectorAvg);
+        const diff      = myScore - avgScore;
         const diffColor = diff > 0 ? '#00A651' : diff < 0 ? '#D0021B' : '#4A5568';
+        // Truncate name so it never overflows the card
+        const name = hoveredRow.sdgShortName.length > 17
+          ? hoveredRow.sdgShortName.slice(0, 16) + '…'
+          : hoveredRow.sdgShortName;
 
         return (
           <g>
-            {/* Shadow layer */}
-            <rect x={tip.x + 1} y={tip.y + 1} width={tooltipW} height={tooltipH}
-              rx={8} fill="rgba(0,0,0,0.12)"
-            />
-            {/* Card background */}
+            {/* Drop shadow */}
+            <rect x={tip.x + 2} y={tip.y + 2} width={tooltipW} height={tooltipH}
+              rx={8} fill="rgba(0,0,0,0.10)" />
+            {/* Card */}
             <rect x={tip.x} y={tip.y} width={tooltipW} height={tooltipH}
-              rx={8} fill="white" stroke="#DDE3EC" strokeWidth={1}
-            />
-            {/* SDG header bar */}
-            <rect x={tip.x} y={tip.y} width={tooltipW} height={20}
-              rx={8} fill={hoveredRow.sdgColor + '22'}
-            />
-            <rect x={tip.x} y={tip.y + 12} width={tooltipW} height={8}
-              fill={hoveredRow.sdgColor + '22'}
-            />
-            <text x={tip.x + 10} y={tip.y + 14}
+              rx={8} fill="white" stroke="#DDE3EC" strokeWidth={1} />
+
+            {/* Header tint — top rounded rect */}
+            <rect x={tip.x} y={tip.y} width={tooltipW} height={28}
+              rx={8} fill={hoveredRow.sdgColor + '20'} />
+            {/* Square off the bottom corners of the header */}
+            <rect x={tip.x} y={tip.y + 20} width={tooltipW} height={8}
+              fill={hoveredRow.sdgColor + '20'} />
+
+            {/* Line 1: "SDG X" bold */}
+            <text x={tip.x + 10} y={tip.y + 13}
               fontSize={10} fontWeight={700} fill={hoveredRow.sdgColor}>
-              {hoveredRow.sdgIcon} SDG {hoveredRow.sdgId} · {hoveredRow.sdgShortName}
+              SDG {hoveredRow.sdgId}
+            </text>
+            {/* Line 2: short name — guaranteed to fit */}
+            <text x={tip.x + 10} y={tip.y + 25}
+              fontSize={8} fill={hoveredRow.sdgColor} opacity={0.8}>
+              {name}
             </text>
 
             {/* Row: You */}
-            <text x={tip.x + 10} y={tip.y + 34} fontSize={9} fill="#4A5568">You</text>
-            <text x={tip.x + tooltipW - 10} y={tip.y + 34}
+            <text x={tip.x + 10} y={tip.y + 44} fontSize={9} fill="#4A5568">You</text>
+            <text x={tip.x + tooltipW - 10} y={tip.y + 44}
               fontSize={10} fontWeight={700} fill="#00B5ED" textAnchor="end">
               {myScore}
             </text>
 
             {/* Row: Sector avg */}
-            <text x={tip.x + 10} y={tip.y + 50} fontSize={9} fill="#4A5568">Sector avg</text>
-            <text x={tip.x + tooltipW - 10} y={tip.y + 50}
+            <text x={tip.x + 10} y={tip.y + 59} fontSize={9} fill="#4A5568">Sector avg</text>
+            <text x={tip.x + tooltipW - 10} y={tip.y + 59}
               fontSize={10} fontWeight={700} fill="#015376" textAnchor="end">
               {avgScore}
             </text>
 
             {/* Divider */}
-            <line x1={tip.x + 8} y1={tip.y + 56} x2={tip.x + tooltipW - 8} y2={tip.y + 56}
-              stroke="#DDE3EC" strokeWidth={0.5}
-            />
+            <line x1={tip.x + 8} y1={tip.y + 65}
+              x2={tip.x + tooltipW - 8} y2={tip.y + 65}
+              stroke="#DDE3EC" strokeWidth={0.5} />
 
             {/* Row: Difference */}
-            <text x={tip.x + 10} y={tip.y + 69} fontSize={9} fill="#4A5568">Difference</text>
-            <text x={tip.x + tooltipW - 10} y={tip.y + 69}
+            <text x={tip.x + 10} y={tip.y + 79} fontSize={9} fill="#4A5568">Difference</text>
+            <text x={tip.x + tooltipW - 10} y={tip.y + 79}
               fontSize={10} fontWeight={700} fill={diffColor} textAnchor="end">
               {diff >= 0 ? '+' : ''}{diff}
             </text>
