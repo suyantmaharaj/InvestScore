@@ -34,12 +34,12 @@ function KPIField({
       <div className="flex items-start justify-between gap-2 mb-0.5">
         <label
           className="text-sm font-medium flex items-center gap-1"
-          style={{ color: skipped ? 'var(--c-muted, #4A5568)' : 'var(--c-navy, #015376)' }}
+          style={{ color: skipped ? 'var(--text-muted)' : 'var(--text-primary)' }}
         >
           {kpi.label}
           {kpi.required && <span className="text-red-500 text-xs">*</span>}
         </label>
-        <span className="text-xs flex-shrink-0 mt-0.5" style={{ color: 'var(--c-muted, #4A5568)' }}>
+        <span className="text-xs flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>
           {kpi.unit}
         </span>
       </div>
@@ -49,9 +49,9 @@ function KPIField({
       {skipped ? (
         <div
           className="mt-2 flex items-center justify-between rounded-lg px-3 py-2.5"
-          style={{ background: 'var(--c-bg, #F4F6F8)', border: '1px dashed var(--c-border, #DDE3EC)' }}
+          style={{ background: 'var(--bg)', border: '1px dashed var(--border)' }}
         >
-          <p className="text-xs" style={{ color: 'var(--c-muted, #4A5568)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Marked as not yet collected
           </p>
           {onSkip && (
@@ -70,11 +70,11 @@ function KPIField({
           <div className="relative mt-2">
             {isZAR && (
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
-                style={{ color: 'var(--c-muted, #4A5568)' }}>R</span>
+                style={{ color: 'var(--text-muted)' }}>R</span>
             )}
             {kpi.isPercentage && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
-                style={{ color: 'var(--c-muted, #4A5568)' }}>%</span>
+                style={{ color: 'var(--text-muted)' }}>%</span>
             )}
             <input
               type="text"
@@ -86,9 +86,9 @@ function KPIField({
               style={{
                 paddingLeft:  isZAR ? 28 : 12,
                 paddingRight: kpi.isPercentage ? 28 : 12,
-                border:       `1px solid ${error ? '#D0021B' : 'var(--c-border, #DDE3EC)'}`,
-                background:   error ? '#FEE2E2' : 'var(--c-input, #fff)',
-                color:        'var(--c-navy, #015376)',
+                border:       `1px solid ${error ? '#D0021B' : 'var(--border)'}`,
+                background:   error ? 'rgba(208,2,27,0.1)' : 'var(--bg)',
+                color:        'var(--text-primary)',
                 // @ts-expect-error CSS custom property used by Tailwind's focus ring.
                 '--tw-ring-color': '#00B5ED',
               }}
@@ -102,7 +102,7 @@ function KPIField({
               type="button"
               onClick={() => onSkip(kpi.id)}
               className="text-[11px] mt-1.5 hover:underline"
-              style={{ color: 'var(--c-muted, #4A5568)' }}
+              style={{ color: 'var(--text-muted)' }}
             >
               I don&apos;t have this data yet →
             </button>
@@ -288,34 +288,32 @@ export default function SubmitPage() {
 
   // ── SUCCESS ──────────────────────────────────────────────────────────────
   if (submitted && newScore) {
-    const sc = newScore.score >= 2.4 ? '#00A651' : newScore.score >= 1.6 ? '#E8A020' : '#D0021B';
-    const classBg = newScore.score >= 2.4 ? '#DCFCE7' : newScore.score >= 1.6 ? '#FEF9C3' : '#FEE2E2';
-    const classTx = newScore.score >= 2.4 ? '#166534' : newScore.score >= 1.6 ? '#854D0E' : '#991B1B';
+    const sc        = newScore.score >= 2.4 ? '#00A651' : newScore.score >= 1.6 ? '#E8A020' : '#D0021B';
+    const badgeClass = newScore.score >= 2.4 ? 'badge-high' : newScore.score >= 1.6 ? 'badge-medium' : 'badge-low';
 
     return (
       <div className="max-w-lg mx-auto text-center pt-16 px-4">
         <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-          style={{ background: '#DCFCE7' }}>
+          style={{ background: 'rgba(0,166,81,0.12)' }}>
           <CheckCircle size={40} style={{ color: '#00A651' }} />
         </div>
-        <h1 className="font-bold text-2xl mb-3" style={{ color: 'var(--c-navy, #015376)' }}>
+        <h1 className="font-bold text-2xl mb-3" style={{ color: 'var(--text-primary)' }}>
           Submission Complete
         </h1>
-        <p className="text-sm mb-8" style={{ color: 'var(--c-muted, #4A5568)' }}>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
           Your data has been submitted and your SDG scores have been recalculated for {PERIOD}.
         </p>
 
         <div className="rounded-xl border p-8 mb-8"
-          style={{ background: 'var(--c-card, #fff)', border: '1px solid var(--c-border, #DDE3EC)' }}>
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: 'var(--c-muted, #4A5568)' }}>
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
             Your Updated Overall Score
           </p>
           <p className="font-bold text-6xl mb-2" style={{ color: sc }}>
             {newScore.score.toFixed(1)}
           </p>
-          <p className="text-sm mb-4" style={{ color: 'var(--c-muted, #4A5568)' }}>out of 3.0 maximum</p>
-          <span className="inline-block text-sm font-semibold px-4 py-1.5 rounded-full"
-            style={{ background: classBg, color: classTx }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>out of 3.0 maximum</p>
+          <span className={`inline-block text-sm font-semibold px-4 py-1.5 rounded-full ${badgeClass}`}>
             {newScore.classification} Impact
           </span>
         </div>
@@ -331,15 +329,15 @@ export default function SubmitPage() {
           <button onClick={() => router.push('/coach')}
             className="w-full h-12 rounded-lg font-semibold text-sm transition"
             style={{ border: '1px solid var(--sanlam-teal, #00B5ED)', color: 'var(--sanlam-teal, #00B5ED)', background: 'transparent' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--c-teal-tint, #C9EEFB)'}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(0,181,237,0.12)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
             Talk to Chase
           </button>
           <button onClick={() => router.push('/dashboard')}
             className="text-sm transition"
-            style={{ color: 'var(--c-muted, #4A5568)' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--c-navy, #015376)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--c-muted, #4A5568)'}>
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'}>
             Back to Dashboard
           </button>
         </div>
@@ -371,7 +369,7 @@ export default function SubmitPage() {
               setDraftSavedAt(null);
             }}
             className="flex items-center gap-1 text-xs font-medium ml-4 flex-shrink-0 hover:underline"
-            style={{ color: 'var(--c-muted, #4A5568)' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             <RefreshCw size={11} />
             Start fresh
@@ -381,18 +379,18 @@ export default function SubmitPage() {
 
       {/* Progress card */}
       <div className="rounded-xl p-5"
-        style={{ background: 'var(--c-card, #fff)', border: '1px solid var(--c-border, #DDE3EC)' }}>
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold text-sm" style={{ color: 'var(--c-navy, #015376)' }}>
+          <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
             Step {step + 1} of {totalSteps}: {currentCategory.label}
           </p>
           <div className="flex items-center gap-2">
             {saving && (
-              <span className="text-xs flex items-center gap-1" style={{ color: 'var(--c-muted, #4A5568)' }}>
+              <span className="text-xs flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
                 <Save size={11} /> Saving...
               </span>
             )}
-            <span className="text-xs" style={{ color: 'var(--c-muted, #4A5568)' }}>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {Math.round((step / totalSteps) * 100)}% complete
             </span>
           </div>
@@ -404,7 +402,7 @@ export default function SubmitPage() {
             <button key={cat.id} onClick={() => i < step && setStep(i)}
               className="flex-1 h-1.5 rounded-full transition-all"
               style={{
-                background: i < step ? 'var(--sanlam-teal, #00B5ED)' : i === step ? 'var(--c-sidebar, #015376)' : 'var(--c-border, #DDE3EC)',
+                background: i < step ? 'var(--sanlam-teal, #00B5ED)' : i === step ? 'var(--sanlam-navy, #015376)' : 'var(--border)',
                 cursor: i < step ? 'pointer' : 'default',
               }}
             />
@@ -416,8 +414,8 @@ export default function SubmitPage() {
           {FORM_CATEGORIES.map((cat, i) => (
             <span key={cat.id} className="text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{
-                background: i === step ? 'var(--c-sidebar, #015376)' : i < step ? 'var(--c-teal-tint, #C9EEFB)' : 'var(--c-bg, #F4F6F8)',
-                color:      i === step ? 'white' : i < step ? 'var(--sanlam-teal, #00B5ED)' : 'var(--c-muted, #4A5568)',
+                background: i === step ? 'var(--sanlam-navy, #015376)' : i < step ? 'rgba(0,181,237,0.12)' : 'var(--bg)',
+                color:      i === step ? 'white' : i < step ? 'var(--sanlam-teal, #00B5ED)' : 'var(--text-muted)',
               }}>
               {cat.icon} {cat.label}
             </span>
@@ -425,23 +423,23 @@ export default function SubmitPage() {
         </div>
 
         {/* Completion progress bar */}
-        <div className="mt-4 pt-3" style={{ borderTop: '1px solid var(--c-border, #DDE3EC)' }}>
+        <div className="mt-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px]" style={{ color: 'var(--c-muted, #4A5568)' }}>
+            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
               Data completion
             </p>
             <p className="text-[11px] font-semibold" style={{ color: barColor }}>
               {completionPct}% addressed
             </p>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--c-border, #DDE3EC)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${completionPct}%`, background: barColor }}
             />
           </div>
           {skippedCount > 0 && (
-            <p className="text-[10px] mt-1" style={{ color: 'var(--c-muted, #4A5568)' }}>
+            <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
               {filledFields} filled · {skippedCount} marked as not yet collected
             </p>
           )}
@@ -450,23 +448,23 @@ export default function SubmitPage() {
 
       {/* KPI form card */}
       <div className="rounded-xl p-6"
-        style={{ background: 'var(--c-card, #fff)', border: '1px solid var(--c-border, #DDE3EC)' }}>
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
 
         {/* Category header */}
         <div className="flex items-start gap-3 mb-6 pb-5"
-          style={{ borderBottom: '1px solid var(--c-border, #DDE3EC)' }}>
+          style={{ borderBottom: '1px solid var(--border)' }}>
           <span className="text-3xl">{currentCategory.icon}</span>
           <div>
-            <h2 className="font-semibold text-base" style={{ color: 'var(--c-navy, #015376)' }}>
+            <h2 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
               {currentCategory.label}
             </h2>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--c-muted, #4A5568)' }}>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
               {currentCategory.description}
             </p>
             <div className="flex gap-1.5 mt-2">
               {currentCategory.sdgs.map(sdgId => (
                 <span key={sdgId} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                  style={{ border: '1px solid var(--c-border, #DDE3EC)', color: 'var(--c-muted, #4A5568)' }}>
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                   SDG {sdgId}
                 </span>
               ))}
@@ -487,7 +485,7 @@ export default function SubmitPage() {
           />
         ))}
 
-        <p className="text-xs mt-2 mb-0" style={{ color: 'var(--c-faint, rgba(74,85,104,0.6))' }}>
+        <p className="text-xs mt-2 mb-0" style={{ color: 'var(--text-muted)' }}>
           Fields marked with * are required. All others are optional but improve your score accuracy.
         </p>
       </div>
@@ -497,19 +495,19 @@ export default function SubmitPage() {
         <button onClick={handleBack} disabled={step === 0}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
-            border:   '1px solid var(--c-border, #DDE3EC)',
-            color:    'var(--c-muted, #4A5568)',
+            border:   '1px solid var(--border)',
+            color:    'var(--text-muted)',
             background: 'transparent',
           }}
           onMouseEnter={e => {
             if (step > 0) {
-              (e.currentTarget as HTMLElement).style.color = 'var(--c-navy, #015376)';
-              (e.currentTarget as HTMLElement).style.borderColor = 'var(--c-navy, #015376)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)';
             }
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--c-muted, #4A5568)';
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--c-border, #DDE3EC)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
           }}>
           <ChevronLeft size={16} /> Previous
         </button>
