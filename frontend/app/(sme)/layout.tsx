@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SMESideNav from '@/components/sme/SMESideNav';
 import PageHeader from '@/components/shared/PageHeader';
@@ -14,6 +14,8 @@ function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
   const [collapsed, setCollapsed] = useState(false);
   const { show: showTour, complete: completeTour } = useOnboarding();
+  const pathname = usePathname();
+  const isChat   = pathname === '/coach';
 
   return (
     <div
@@ -31,10 +33,16 @@ function SMEShell({ children }: { children: React.ReactNode }) {
           transition: 'margin-left 250ms cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        <PageHeader />
+        {!isChat && <PageHeader />}
         <main
-          className="p-5 pt-5 lg:p-8"
-          style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
+          className={isChat ? '' : 'p-5 pt-5 lg:p-8'}
+          style={{
+            flex:      1,
+            overflowY: isChat ? 'hidden' : 'auto',
+            overflowX: 'hidden',
+            display:   isChat ? 'flex' : undefined,
+            flexDirection: isChat ? 'column' : undefined,
+          }}
         >
           <ErrorBoundary>
             {children}

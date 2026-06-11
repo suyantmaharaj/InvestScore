@@ -7,7 +7,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSMEData } from '@/hooks/useSMEData';
 import ChaseAvatar from '@/components/sme/ChaseAvatar';
 import ChaseHistorySidebar from '@/components/sme/ChaseHistorySidebar';
-import PageContext from '@/components/shared/PageContext';
 import { readFileAsText, getFileIcon, formatFileSize } from '@/lib/document-reader';
 import {
   ConversationMeta, Message,
@@ -461,7 +460,7 @@ function ChaseInner() {
   return (
     <div
       className="flex animate-page-in"
-      style={{ height: 'calc(100vh - 64px)' }}
+      style={{ flex: 1, overflow: 'hidden' }}
     >
       {/* ── Conversation sidebar ── */}
       <ChaseHistorySidebar
@@ -478,36 +477,6 @@ function ChaseInner() {
 
       {/* ── Chat area ── */}
       <div className="flex-1 flex flex-col min-w-0">
-
-        {/* PageContext strip */}
-        <PageContext>
-          <div className="flex items-center gap-2">
-            <ChaseAvatar size={18} />
-            <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
-              Chase
-            </span>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              · SDG coach · Sanlam Investments
-            </span>
-          </div>
-          <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-          <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#00A651' }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00A651' }} />
-            Online
-          </span>
-          {messages.length > 0 && (
-            <>
-              <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-              <button
-                onClick={startNewChat}
-                className="text-xs hover:underline"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                New chat
-              </button>
-            </>
-          )}
-        </PageContext>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4" style={{ overflowX: 'hidden' }}>

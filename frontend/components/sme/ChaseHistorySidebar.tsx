@@ -37,7 +37,7 @@ export default function ChaseHistorySidebar({
         className="flex-shrink-0 flex flex-col items-center py-4 gap-3"
         style={{
           width:       '52px',
-          background:  'var(--sidebar-bg)',
+          background:  'var(--chase-sidebar-bg)',
           borderRight: '1px solid rgba(255,255,255,0.08)',
           transition:  'width 300ms cubic-bezier(0.16,1,0.3,1)',
         }}
@@ -88,7 +88,7 @@ export default function ChaseHistorySidebar({
       className="flex-shrink-0 flex flex-col"
       style={{
         width:       '260px',
-        background:  'var(--sidebar-bg)',
+        background:  'var(--chase-sidebar-bg)',
         borderRight: '1px solid rgba(255,255,255,0.08)',
         transition:  'width 300ms cubic-bezier(0.16,1,0.3,1)',
         overflow:    'hidden',
