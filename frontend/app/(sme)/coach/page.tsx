@@ -1,461 +1,687 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Send, Bot, User, Sparkles, RefreshCw } from 'lucide-react';
-import { useSMEContext } from '@/context/SMEDataContext';
-import { SDG_LIST } from '@/lib/sdg';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mic, MicOff, Send, Paperclip, X, Copy, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useSMEData } from '@/hooks/useSMEData';
+import ChaseAvatar from '@/components/sme/ChaseAvatar';
 import PageContext from '@/components/shared/PageContext';
+import { readFileAsText, getFileIcon, formatFileSize } from '@/lib/document-reader';
 
 interface Message {
+  id:        string;
   role:      'user' | 'assistant';
   content:   string;
-  timestamp: Date;
+  timestamp: string;
+  file?:     { name: string; size: number };
 }
 
-const QUICK_CHIPS = [
-  { label: 'How do I improve my lowest score?',     icon: '📈' },
-  { label: 'Explain my overall SDG score',          icon: '💡' },
-  { label: 'What does B-BBEE level affect?',        icon: '📊' },
-  { label: 'How do I reduce my carbon emissions?',  icon: '🌱' },
-  { label: 'Tips for hiring more youth employees',  icon: '👥' },
-  { label: 'How to increase local supplier spend?', icon: '🤝' },
+interface ExtractedKPIs {
+  [kpiId: string]: number;
+}
+
+const SUGGESTED_PROMPTS = [
+  'Why is my overall score where it is?',
+  'What should I focus on this quarter?',
+  'Explain my lowest SDG score',
+  'How do I improve my B-BBEE level?',
+  'What does my score mean for my Sanlam investment?',
+  'How do I calculate my Scope 2 emissions?',
 ];
-
-function scoreColor(score: number): string {
-  if (score >= 2.4) return '#00A651';
-  if (score >= 1.6) return '#E8A020';
-  return '#D0021B';
-}
-
-function MessageBubble({ msg }: { msg: Message }) {
-  const isUser = msg.role === 'user';
-
-  const formatText = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, i) => {
-      const bolded = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
-        return (
-          <li
-            key={i}
-            className="ml-4 list-disc text-sm leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: bolded.replace(/^[-•]\s/, '') }}
-          />
-        );
-      }
-      if (line.trim() === '') return <div key={i} className="h-2" />;
-      return (
-        <p
-          key={i}
-          className="text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: bolded }}
-        />
-      );
-    });
-  };
-
-  return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      <div className="flex flex-col items-center gap-1 flex-shrink-0 mt-1">
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ background: isUser ? '#015376' : '#015376' }}
-        >
-          {isUser
-            ? <User size={14} className="text-white" />
-            : <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
-          }
-        </div>
-        {!isUser && (
-          <p className="text-[9px] font-semibold" style={{ color: 'var(--text-muted, #4A5568)' }}>Chase</p>
-        )}
-      </div>
-
-      <div
-        className={`max-w-[78%] rounded-2xl px-4 py-3 ${
-          isUser
-            ? 'rounded-tr-sm'
-            : 'rounded-tl-sm border border-[#DDE3EC]'
-        }`}
-        style={{
-          background: isUser ? '#015376' : 'white',
-          color:      isUser ? 'white'   : '#015376',
-        }}
-      >
-        <div className="space-y-1">
-          {isUser
-            ? <p className="text-sm leading-relaxed">{msg.content}</p>
-            : formatText(msg.content)
-          }
-        </div>
-        <p
-          className="text-[10px] mt-2"
-          style={{
-            color:     isUser ? 'rgba(255,255,255,0.5)' : 'rgba(74,85,104,0.5)',
-            textAlign: isUser ? 'right' : 'left',
-          }}
-        >
-          {msg.timestamp.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
-          {!isUser && ' · Chase · Sanlam INvestScore · Advisory only'}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function TypingIndicator() {
   return (
-    <div className="flex gap-3">
-      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#015376' }}>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
-      </div>
-      <div className="bg-white border border-[#DDE3EC] rounded-2xl rounded-tl-sm px-4 py-3">
-        <div className="flex gap-1 items-center h-5">
-          {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full bg-[#00B5ED] animate-bounce"
-              style={{ animationDelay: `${i * 150}ms` }}
-            />
-          ))}
-        </div>
+    <div className="flex items-end gap-2 animate-fade-in">
+      <ChaseAvatar size={32} className="flex-shrink-0" />
+      <div
+        className="px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="w-2 h-2 rounded-full"
+            style={{
+              background: 'var(--text-muted)',
+              animation:  `chatBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }}
+          />
+        ))}
       </div>
     </div>
   );
 }
 
-function CoachInner() {
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-  const sdgParam     = searchParams.get('sdg');
+function renderMessageContent(text: string) {
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    if (line.startsWith('• ') || line.startsWith('- ')) {
+      return (
+        <div key={i} className="flex items-start gap-2 my-0.5">
+          <span style={{ color: 'var(--sanlam-teal)', flexShrink: 0, marginTop: '3px' }}>•</span>
+          <span>{line.replace(/^[•\-] /, '')}</span>
+        </div>
+      );
+    }
+    if (line === '') return <div key={i} className="h-2" />;
+    const parts = line.split(/\*\*(.+?)\*\*/g);
+    return (
+      <p key={i} className="leading-relaxed">
+        {parts.map((part, j) =>
+          j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+        )}
+      </p>
+    );
+  });
+}
 
-  const { company, scorecard } = useSMEContext();
+function MessageBubble({
+  message, onCopy, onRegenerate, isLast,
+}: {
+  message:      Message;
+  onCopy:       (text: string) => void;
+  onRegenerate: () => void;
+  isLast:       boolean;
+}) {
+  const isUser    = message.role === 'user';
+  const [copied, setCopied] = useState(false);
 
-  const [messages,    setMessages]    = useState<Message[]>([]);
-  const [input,       setInput]       = useState('');
-  const [loading,     setLoading]     = useState(false);
+  const handleCopy = () => {
+    onCopy(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef       = useRef<HTMLTextAreaElement>(null);
+  return (
+    <div className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'} group`}>
 
+      {/* Avatar */}
+      {isUser ? (
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mb-1"
+          style={{ background: 'var(--sanlam-navy, #015376)' }}
+        >
+          You
+        </div>
+      ) : (
+        <ChaseAvatar size={32} className="flex-shrink-0 mb-1" />
+      )}
+
+      <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%]`}>
+
+        {/* Sender label */}
+        <p className="text-[10px] font-medium mb-1 px-1" style={{ color: 'var(--text-muted)' }}>
+          {isUser ? 'You' : 'Chase'}
+        </p>
+
+        {/* File attachment chip */}
+        {message.file && (
+          <div
+            className="flex items-center gap-2 px-3 py-2 rounded-xl mb-1.5"
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+          >
+            <span>{getFileIcon(message.file.name)}</span>
+            <div>
+              <p className="text-xs font-medium truncate max-w-[160px]" style={{ color: 'var(--text-primary)' }}>
+                {message.file.name}
+              </p>
+              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                {formatFileSize(message.file.size)}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Bubble */}
+        <div
+          className="px-4 py-3 rounded-2xl text-sm leading-relaxed"
+          style={{
+            background:              isUser ? 'var(--sanlam-navy, #015376)' : 'var(--surface)',
+            color:                   isUser ? 'white' : 'var(--text-primary)',
+            borderBottomRightRadius: isUser ? '4px' : '16px',
+            borderBottomLeftRadius:  isUser ? '16px' : '4px',
+            border:                  isUser ? 'none' : '1px solid var(--border)',
+          }}
+        >
+          {isUser
+            ? <p>{message.content}</p>
+            : renderMessageContent(message.content)
+          }
+        </div>
+
+        {/* Timestamp + actions */}
+        <div
+          className={`flex items-center gap-2 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+        >
+          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            {new Date(message.timestamp).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <button
+            onClick={handleCopy}
+            className="text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded"
+            style={{ color: 'var(--text-muted)', background: 'var(--bg)' }}
+          >
+            <Copy size={10} />
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+          {!isUser && isLast && (
+            <button
+              onClick={onRegenerate}
+              className="text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded"
+              style={{ color: 'var(--text-muted)', background: 'var(--bg)' }}
+            >
+              <RefreshCw size={10} />
+              Retry
+            </button>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function ChaseInner() {
+  const router  = useRouter();
+  const params  = useSearchParams();
+  const { user }              = useAuth();
+  const { company, scorecard } = useSMEData();
+
+  const [messages,        setMessages]        = useState<Message[]>([]);
+  const [input,           setInput]           = useState('');
+  const [loading,         setLoading]         = useState(false);
+  const [listening,       setListening]       = useState(false);
+  const [attachment,      setAttachment]      = useState<{ file: File; text: string } | null>(null);
+  const [readingFile,     setReadingFile]     = useState(false);
+  const [extracted,       setExtracted]       = useState<ExtractedKPIs | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+
+  const messagesEndRef  = useRef<HTMLDivElement>(null);
+  const inputRef        = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef    = useRef<HTMLInputElement>(null);
+  const recognitionRef  = useRef<any>(null);
+
+  const CHAT_KEY = `chase_chat_${user?.companyId || 'unknown'}`;
+
+  // Load chat history
+  useEffect(() => {
+    if (!user?.companyId) return;
+    try {
+      const saved = localStorage.getItem(CHAT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setMessages(parsed.slice(-50));
+        if (parsed.length > 0) setShowSuggestions(false);
+      }
+    } catch {}
+  }, [CHAT_KEY, user?.companyId]);
+
+  // Persist chat history
+  useEffect(() => {
+    if (messages.length === 0) return;
+    try { localStorage.setItem(CHAT_KEY, JSON.stringify(messages.slice(-50))); } catch {}
+  }, [messages, CHAT_KEY]);
+
+  // Pre-fill input from URL param (deep-link from scorecard / lessons)
+  useEffect(() => {
+    const prompt = params.get('prompt');
+    if (prompt && messages.length === 0) {
+      setInput(decodeURIComponent(prompt));
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [params]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  useEffect(() => {
-    if (!company || !scorecard) return;
-    if (messages.length > 0) return;
-
-    let greeting = '';
-
-    if (sdgParam) {
-      const sdg      = SDG_LIST.find(s => s.id === parseInt(sdgParam));
-      const sdgScore = scorecard.sdgScores.find(s => s.sdgId === parseInt(sdgParam));
-      if (sdg && sdgScore) {
-        const statusLine =
-          sdgScore.classification === 'Low'
-            ? 'This is one of your goals that needs attention. Let me walk you through what drives this score and what you can do to improve it. What would you like to know first?'
-            : sdgScore.classification === 'High'
-            ? 'Great news — you are performing well on this goal! Would you like to understand what is driving this strong performance, or explore how to maintain it?'
-            : 'You are performing at a medium level on this goal. There is room to reach the top tier. Would you like practical steps to get there?';
-
-        greeting = `Hi! I can see you want to discuss your performance on **${sdg.name} (SDG ${sdg.id})**.\n\nYour current score for this goal is **${sdgScore.score.toFixed(1)}** — ${sdgScore.classification} Impact, compared to a sector average of ${sdgScore.sectorAvg.toFixed(1)}.\n\n${statusLine}`;
-      }
-    }
-
-    if (!greeting) {
-      const lowSDGs  = scorecard.sdgScores.filter(s => s.classification === 'Low');
-      const highSDGs = scorecard.sdgScores.filter(s => s.classification === 'High');
-
-      const focusSentence = lowSDGs.length > 0
-        ? `You have **${lowSDGs.length} goal${lowSDGs.length > 1 ? 's' : ''}** that could use some attention: ${lowSDGs.map(s => `SDG ${s.sdgId}`).join(', ')}. I can help you build a practical plan to improve these.\n\n`
-        : highSDGs.length > 3
-        ? `You are performing strongly — **${highSDGs.length} goals** are at High Impact. Let us talk about maintaining that and pushing your remaining goals higher.\n\n`
-        : '';
-
-      greeting = `Hi, I'm Chase — your SDG coach from Sanlam.\n\nI've reviewed the latest scorecard for **${company.name}**. Your overall SDG score is **${scorecard.overallScore.toFixed(1)} / 3.0** — ${scorecard.classification} Impact.\n\n${focusSentence}What would you like to work on today?`;
-    }
-
-    setMessages([{ role: 'assistant', content: greeting, timestamp: new Date() }]);
-  }, [company, scorecard, sdgParam]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const sendMessage = async (text?: string) => {
+  const sendMessage = useCallback(async (text?: string, fileAttach?: typeof attachment) => {
     const content = (text || input).trim();
-    if (!content || loading || !company) return;
+    if (!content && !fileAttach) return;
+    if (!user?.companyId) return;
 
-    const userMsg: Message      = { role: 'user', content, timestamp: new Date() };
-    const updatedMessages       = [...messages, userMsg];
-    setMessages(updatedMessages);
+    const userMsg: Message = {
+      id:        `msg_${Date.now()}`,
+      role:      'user',
+      content,
+      timestamp: new Date().toISOString(),
+      file:      fileAttach ? { name: fileAttach.file.name, size: fileAttach.file.size } : undefined,
+    };
+
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setAttachment(null);
     setLoading(true);
+    setShowSuggestions(false);
 
     try {
       const { auth } = await import('@/lib/firebase');
       const token    = await auth.currentUser?.getIdToken();
-      if (!token) return;
+
+      const allMessages = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }));
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/coach`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          companyId: company.id,
-          sdgFocus:  sdgParam ? parseInt(sdgParam) : null,
-          messages:  updatedMessages.map(m => ({ role: m.role, content: m.content })),
+        body:    JSON.stringify({
+          messages:     allMessages,
+          companyId:    user.companyId,
+          documentText: fileAttach?.text || null,
         }),
       });
 
       const json = await res.json();
-      if (json.message) {
-        setMessages(prev => [...prev, { role: 'assistant', content: json.message, timestamp: new Date() }]);
-      } else {
-        throw new Error('No message');
-      }
+      setMessages(prev => [...prev, {
+        id:        `msg_${Date.now()}_a`,
+        role:      'assistant',
+        content:   json.message || 'Chase is having trouble responding right now. Please try again.',
+        timestamp: new Date().toISOString(),
+      }]);
+
+      if (fileAttach) tryExtractKPIs(fileAttach.text);
+
     } catch {
       setMessages(prev => [...prev, {
+        id:        `msg_${Date.now()}_err`,
         role:      'assistant',
-        content:   'I am having trouble connecting right now. Please try again in a moment.',
-        timestamp: new Date(),
+        content:   'Chase is unavailable right now. Please try again in a moment.',
+        timestamp: new Date().toISOString(),
       }]);
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
+    }
+  }, [input, messages, user?.companyId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const tryExtractKPIs = async (text: string) => {
+    if (!user?.companyId) return;
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token    = await auth.currentUser?.getIdToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/extract-kpis`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ documentText: text, companyId: user.companyId }),
+      });
+      const json = await res.json();
+      if (json.count > 0) setExtracted(json.extracted);
+    } catch {}
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReadingFile(true);
+    try {
+      const text = await readFileAsText(file);
+      setAttachment({ file, text });
+      setInput(prev => prev || `I've uploaded ${file.name}. What can you tell me about it?`);
+    } catch {
+      setAttachment(null);
+    } finally {
+      setReadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const startVoice = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Voice input is not supported in your browser. Try Chrome or Edge.');
+      return;
     }
+    const recognition         = new SpeechRecognition();
+    recognition.continuous    = false;
+    recognition.interimResults = true;
+    recognition.lang          = 'en-ZA';
+    recognition.onstart       = () => setListening(true);
+    recognition.onend         = () => setListening(false);
+    recognition.onerror       = () => setListening(false);
+    recognition.onresult      = (e: any) => {
+      const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join('');
+      setInput(transcript);
+      if (e.results[0].isFinal) setListening(false);
+    };
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopVoice = () => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+  };
+
+  const handleRegenerate = () => {
+    const lastUser = [...messages].reverse().find(m => m.role === 'user');
+    if (!lastUser) return;
+    setMessages(prev => prev.slice(0, -1));
+    sendMessage(lastUser.content);
   };
 
   const clearChat = () => {
-    setMessages([{
-      role:      'assistant',
-      content:   'Chat cleared. How can I help you today?',
-      timestamp: new Date(),
-    }]);
+    setMessages([]);
+    setShowSuggestions(true);
+    try { localStorage.removeItem(CHAT_KEY); } catch {}
   };
 
-  if (!company || !scorecard) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-[#00B5ED] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const prefillAndNavigate = () => {
+    if (!extracted || !user?.companyId) return;
+    try {
+      const key      = `investscore_submission_draft_${user.companyId}`;
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      const updated  = { ...existing, data: { ...(existing.data || {}), ...extracted } };
+      localStorage.setItem(key, JSON.stringify(updated));
+    } catch {}
+    setExtracted(null);
+    router.push('/submit');
+  };
 
-  const lowSDGs  = scorecard.sdgScores.filter(s => s.classification === 'Low');
-  const highSDGs = scorecard.sdgScores.filter(s => s.classification === 'High');
+  const scoreColor = scorecard
+    ? scorecard.overallScore >= 2.4 ? '#00A651' : scorecard.overallScore >= 1.6 ? '#E8A020' : '#D0021B'
+    : 'var(--text-muted)';
 
   return (
-    <div className="max-w-6xl mx-auto animate-page-in">
+    <div
+      className="flex flex-col animate-page-in"
+      style={{ height: 'calc(100vh - 64px)', maxWidth: '800px', margin: '0 auto' }}
+    >
+
+      {/* PageContext strip */}
       <PageContext>
-        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
-          Model:{' '}
-          <strong style={{ color: 'var(--text-primary, #015376)' }}>
-            Claude Sonnet
-          </strong>
-        </span>
+        <div className="flex items-center gap-2">
+          <ChaseAvatar size={18} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Chase
+          </span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            · SDG coach · Sanlam Investments
+          </span>
+        </div>
         <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-        <span className="text-xs" style={{ color: 'var(--text-muted, #4A5568)' }}>
-          Context:{' '}
-          <strong style={{ color: 'var(--text-primary, #015376)' }}>
-            {company?.name} · {scorecard?.submissionPeriod}
-          </strong>
+        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#00A651' }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00A651' }} />
+          Online
         </span>
-        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-        <span
-          className="text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ background: 'rgba(0,166,81,0.1)', color: 'var(--sanlam-green, #00A651)' }}
-        >
-          Advisory only · Scores unchanged
-        </span>
+        {messages.length > 0 && (
+          <>
+            <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+            <button onClick={clearChat} className="text-xs hover:underline" style={{ color: 'var(--text-muted)' }}>
+              Clear chat
+            </button>
+          </>
+        )}
       </PageContext>
 
-    <div className="h-[calc(100vh-180px)] flex gap-5">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4" style={{ overflowX: 'hidden' }}>
 
-      {/* LEFT — Context panel (desktop only) */}
-      <div className="w-72 flex-shrink-0 flex-col gap-4 overflow-y-auto pb-4 hidden lg:flex">
-
-        {/* Score summary */}
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-[#00B5ED]" />
-            <p className="text-[#015376] font-semibold text-sm">Your SDG Summary</p>
-          </div>
-
-          <div className="text-center py-3 mb-4 bg-[#F4F6F8] rounded-xl">
-            <p className="font-bold text-3xl" style={{ color: scoreColor(scorecard.overallScore) }}>
-              {scorecard.overallScore.toFixed(1)}
+        {/* Empty state */}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center py-8 animate-fade-in">
+            <ChaseAvatar size={72} className="mb-4" />
+            <h2 className="font-bold text-xl mb-1" style={{ color: 'var(--text-primary)' }}>
+              Hi, I'm Chase
+            </h2>
+            <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>
+              Your SDG coach from Sanlam Investments
             </p>
-            <p className="text-[#4A5568] text-xs mt-0.5">Overall Score</p>
+            {company && scorecard && (
+              <p className="text-xs mb-6 max-w-sm" style={{ color: 'var(--text-muted)' }}>
+                I can see {company.name}'s scores — your overall is{' '}
+                <span style={{ color: scoreColor, fontWeight: 600 }}>
+                  {scorecard.overallScore.toFixed(1)} ({scorecard.classification} Impact)
+                </span>.
+                Ask me anything.
+              </p>
+            )}
           </div>
+        )}
 
-          <div className="space-y-2 mb-4">
-            {[
-              { label: 'High Impact', count: highSDGs.length, color: '#00A651', bg: '#DCFCE7' },
-              { label: 'Needs Work',  count: lowSDGs.length,  color: '#D0021B', bg: '#FEE2E2' },
-            ].map(({ label, count, color, bg }) => (
-              <div key={label} className="flex items-center justify-between">
-                <span className="text-[#4A5568] text-xs">{label}</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: bg, color }}>
-                  {count} SDGs
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {lowSDGs.length > 0 && (
-            <div>
-              <p className="text-[#4A5568] text-[10px] uppercase tracking-wider mb-2">Focus areas</p>
-              <div className="flex flex-wrap gap-1">
-                {lowSDGs.slice(0, 6).map(s => {
-                  const sdg = SDG_LIST.find(d => d.id === s.sdgId);
-                  return (
-                    <button
-                      key={s.sdgId}
-                      onClick={() => router.push(`/coach?sdg=${s.sdgId}`)}
-                      className="text-[10px] font-medium px-2 py-1 rounded-lg border hover:opacity-80 transition"
-                      style={{
-                        background:  `${sdg?.color}15`,
-                        borderColor: `${sdg?.color}40`,
-                        color:        sdg?.color,
-                      }}
-                    >
-                      SDG {s.sdgId}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Quick chips */}
-        <div className="bg-white rounded-xl border border-[#DDE3EC] p-5">
-          <p className="text-[#015376] font-semibold text-sm mb-3">Ask about</p>
-          <div className="flex flex-col gap-2">
-            {QUICK_CHIPS.map(chip => (
+        {/* Suggested prompts */}
+        {showSuggestions && messages.length === 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
+            {SUGGESTED_PROMPTS.map((prompt, i) => (
               <button
-                key={chip.label}
-                onClick={() => sendMessage(chip.label)}
-                disabled={loading}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-[#015376] border border-[#DDE3EC] hover:bg-[#F0FBFF] hover:border-[#00B5ED] transition disabled:opacity-50"
+                key={i}
+                onClick={() => sendMessage(prompt)}
+                className="text-left px-4 py-3 rounded-xl text-sm transition-all animate-card-in"
+                style={{
+                  background:     'var(--surface)',
+                  border:         '1px solid var(--border)',
+                  color:          'var(--text-primary)',
+                  animationDelay: `${i * 40}ms`,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--sanlam-teal, #00B5ED)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
               >
-                <span>{chip.icon}</span>
-                {chip.label}
+                {prompt}
               </button>
             ))}
           </div>
-        </div>
+        )}
 
-      </div>
+        {/* Message history */}
+        {messages.map((msg, idx) => (
+          <MessageBubble
+            key={msg.id}
+            message={msg}
+            onCopy={handleCopy}
+            onRegenerate={handleRegenerate}
+            isLast={idx === messages.length - 1 && msg.role === 'assistant'}
+          />
+        ))}
 
-      {/* RIGHT — Chat window */}
-      <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#DDE3EC] overflow-hidden">
+        {/* Typing indicator */}
+        {loading && <TypingIndicator />}
 
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-[#DDE3EC] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#015376] flex items-center justify-center">
-              <span style={{ fontSize: '15px', fontWeight: 700, color: 'white', lineHeight: 1 }}>C</span>
-            </div>
-            <div>
-              <p className="text-[#015376] font-semibold text-sm">Chase</p>
-              <p className="text-[#4A5568] text-xs flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] inline-block" />
-                Your SDG coach from Sanlam
-              </p>
+        {/* KPI extraction offer */}
+        {extracted && Object.keys(extracted).length > 0 && (
+          <div
+            className="rounded-2xl p-4 animate-fade-in"
+            style={{ background: 'rgba(0,181,237,0.06)', border: '1px solid rgba(0,181,237,0.2)' }}
+          >
+            <div className="flex items-start gap-3">
+              <ChaseAvatar size={28} className="flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                  I found {Object.keys(extracted).length} KPI value{Object.keys(extracted).length !== 1 ? 's' : ''} in that document
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {Object.entries(extracted).slice(0, 8).map(([kpiId, val]) => (
+                    <span
+                      key={kpiId}
+                      className="text-[11px] px-2 py-1 rounded-lg"
+                      style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                    >
+                      {kpiId.replace(/_/g, ' ')}: <strong style={{ color: 'var(--text-primary)' }}>{val}</strong>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={prefillAndNavigate}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition"
+                    style={{ background: 'var(--sanlam-teal, #00B5ED)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#0099CC')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--sanlam-teal, #00B5ED)')}
+                  >
+                    Pre-fill submission form →
+                  </button>
+                  <button
+                    onClick={() => setExtracted(null)}
+                    className="text-xs hover:underline"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <button
-            onClick={clearChat}
-            className="flex items-center gap-1.5 text-[#4A5568] text-xs hover:text-[#015376] transition px-3 py-1.5 rounded-lg hover:bg-[#F4F6F8]"
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area */}
+      <div
+        className="flex-shrink-0 px-4 pb-4"
+        style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}
+      >
+
+        {/* File attachment preview */}
+        {attachment && (
+          <div
+            className="flex items-center gap-2 px-3 py-2 mb-2 rounded-xl"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
-            <RefreshCw size={13} />
-            Clear chat
+            <span>{getFileIcon(attachment.file.name)}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                {attachment.file.name}
+              </p>
+              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                {formatFileSize(attachment.file.size)} · Ready to send
+              </p>
+            </div>
+            <button onClick={() => setAttachment(null)} style={{ color: 'var(--text-muted)' }}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Listening indicator */}
+        {listening && (
+          <div
+            className="flex items-center gap-2 px-3 py-2 mb-2 rounded-xl animate-fade-in"
+            style={{ background: 'rgba(208,2,27,0.06)', border: '1px solid rgba(208,2,27,0.2)' }}
+          >
+            <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#D0021B' }} />
+            <p className="text-xs font-medium" style={{ color: '#D0021B' }}>
+              Listening… speak now
+            </p>
+          </div>
+        )}
+
+        {/* Input row */}
+        <div
+          className="flex items-end gap-2 rounded-2xl px-3 py-2"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          {/* File upload */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={readingFile}
+            className="p-2 rounded-xl flex-shrink-0 transition mb-0.5"
+            style={{ color: readingFile ? 'var(--sanlam-teal, #00B5ED)' : 'var(--text-muted)' }}
+            title="Upload a document"
+          >
+            {readingFile
+              ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : <Paperclip size={18} />
+            }
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.jpg,.jpeg,.png,.gif,.webp"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
+
+          {/* Text area */}
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={listening ? 'Listening…' : 'Ask Chase anything… (Shift+Enter for new line)'}
+            rows={1}
+            className="flex-1 resize-none text-sm focus:outline-none"
+            style={{
+              background: 'transparent',
+              color:      'var(--text-primary)',
+              maxHeight:  '120px',
+              minHeight:  '24px',
+              lineHeight: '1.5',
+            }}
+            onInput={e => {
+              const el = e.currentTarget;
+              el.style.height = 'auto';
+              el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+            }}
+          />
+
+          {/* Voice */}
+          <button
+            type="button"
+            onClick={listening ? stopVoice : startVoice}
+            className="p-2 rounded-xl flex-shrink-0 transition mb-0.5"
+            style={{
+              color:      listening ? '#D0021B' : 'var(--text-muted)',
+              background: listening ? 'rgba(208,2,27,0.1)' : 'transparent',
+            }}
+            title={listening ? 'Stop listening' : 'Voice input'}
+          >
+            {listening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+
+          {/* Send */}
+          <button
+            type="button"
+            onClick={() => sendMessage()}
+            disabled={(!input.trim() && !attachment) || loading}
+            className="p-2 rounded-xl flex-shrink-0 transition mb-0.5"
+            style={{
+              background: (input.trim() || attachment) && !loading
+                ? 'var(--sanlam-teal, #00B5ED)'
+                : 'var(--border)',
+              color: (input.trim() || attachment) && !loading
+                ? 'white'
+                : 'var(--text-muted)',
+            }}
+          >
+            {loading
+              ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : <Send size={16} />
+            }
           </button>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-          {messages.map((msg, i) => (
-            <MessageBubble key={i} msg={msg} />
-          ))}
-          {loading && <TypingIndicator />}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* SDG focus strip */}
-        {sdgParam && (() => {
-          const sdg = SDG_LIST.find(s => s.id === parseInt(sdgParam));
-          return sdg ? (
-            <div
-              className="mx-5 mb-3 flex items-center justify-between px-3 py-2 rounded-lg text-xs"
-              style={{
-                background:  `${sdg.color}12`,
-                border:      `1px solid ${sdg.color}30`,
-                color:        sdg.color,
-              }}
-            >
-              <span className="font-medium">Focused on: SDG {sdg.id} — {sdg.shortName}</span>
-              <button
-                onClick={() => router.replace('/coach')}
-                className="hover:opacity-70 text-[10px] underline"
-              >
-                Clear focus
-              </button>
-            </div>
-          ) : null;
-        })()}
-
-        {/* Input */}
-        <div className="px-5 py-4 border-t border-[#DDE3EC]">
-          <div className="flex items-end gap-3">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask Chase anything about your SDG performance…"
-              rows={1}
-              className="flex-1 resize-none rounded-xl border border-[#DDE3EC] bg-[#F4F6F8] px-4 py-3 text-sm text-[#015376] placeholder:text-[#4A5568]/50 focus:outline-none focus:ring-2 focus:ring-[#00B5ED] focus:border-transparent transition max-h-32"
-              style={{ minHeight: '44px' }}
-              onInput={e => {
-                const el = e.currentTarget;
-                el.style.height = 'auto';
-                el.style.height = Math.min(el.scrollHeight, 128) + 'px';
-              }}
-            />
-            <button
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim()}
-              className="w-11 h-11 rounded-xl bg-[#00B5ED] text-white flex items-center justify-center hover:bg-[#0099CC] transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-            >
-              {loading
-                ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <Send size={16} />
-              }
-            </button>
-          </div>
-        </div>
-
+        <p className="text-[10px] text-center mt-2" style={{ color: 'var(--text-muted)' }}>
+          Chase · Powered by Sanlam INvestScore · Advisory only · Not financial advice
+        </p>
       </div>
-    </div>
+
+      {/* Typing dot bounce keyframe */}
+      <style>{`
+        @keyframes chatBounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30%            { transform: translateY(-6px); }
+        }
+      `}</style>
     </div>
   );
 }
 
-export default function CoachPage() {
+export default function ChasePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-4 border-[#00B5ED] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
-      <CoachInner />
+      <ChaseInner />
     </Suspense>
   );
 }

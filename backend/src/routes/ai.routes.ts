@@ -7,102 +7,211 @@ import { requireRole } from '../middleware/role.middleware';
 const router = Router();
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// POST /api/ai/coach — SME AI Coach chat
+// POST /api/ai/coach — Chase chat with full company context
 router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId, messages, sdgFocus } = req.body;
+    const { messages, companyId, documentText } = req.body;
 
     if (!companyId || !messages?.length) {
       return res.status(400).json({ error: 'companyId and messages are required.' });
     }
 
-    const companySnap = await db.collection('companies').doc(companyId).get();
+    // Load all context in parallel — no orderBy (sort in JS)
+    const [
+      companySnap,
+      scorecardDocs,
+      submissionDocs,
+      targetsSnap,
+      aiContextSnap,
+    ] = await Promise.all([
+      db.collection('companies').doc(companyId).get(),
+      db.collection('scorecards').where('companyId', '==', companyId).get(),
+      db.collection('submissions')
+        .where('companyId', '==', companyId)
+        .where('status', '==', 'scored')
+        .get(),
+      db.collection('targets').doc(companyId).get(),
+      db.collection('aiContext').doc('global').get(),
+    ]);
+
     if (!companySnap.exists) {
       return res.status(404).json({ error: 'Company not found.' });
     }
-    const company = companySnap.data()!;
 
-    // Sort in JS to avoid composite index requirement
-    const scorecardSnap = await db
-      .collection('scorecards')
-      .where('companyId', '==', companyId)
-      .get();
+    const company   = companySnap.data()!;
+    const aiContext = aiContextSnap.exists ? aiContextSnap.data() : null;
 
-    let scorecardContext = 'No scorecard data available yet.';
-    if (!scorecardSnap.empty) {
-      const sorted = scorecardSnap.docs
-        .map(d => d.data())
-        .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
-      const sc = sorted[0];
-      const toDisp = (raw: number) => Math.round(((raw - 1) / 2) * 100);
-      const sdgLines = sc.sdgScores
-        .map((s: any) => `  SDG ${s.sdgId} (${s.sdgName}): ${toDisp(s.score)}/100 — ${s.classification} (sector avg: ${toDisp(s.sectorAvg)}/100)`)
-        .join('\n');
-      scorecardContext = `Overall Score: ${toDisp(sc.overallScore)}/100 (${sc.classification} Impact)\nPeriod: ${sc.submissionPeriod}\n\nSDG Scores:\n${sdgLines}`;
+    // Sort scorecards in JS
+    const sortedScorecards = scorecardDocs.docs
+      .map(d => d.data())
+      .sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt));
+    const scorecard    = sortedScorecards[0] || null;
+    const scoreHistory = sortedScorecards.slice(0, 4).reverse(); // oldest→newest for trend
+
+    // Sort submissions in JS
+    const sortedSubmissions = submissionDocs.docs
+      .map(d => d.data())
+      .sort((a, b) => (b.scoredAt || '').localeCompare(a.scoredAt || ''));
+    const submission = sortedSubmissions[0] || null;
+
+    const targets = targetsSnap.exists ? (targetsSnap.data()!.targets || {}) : {};
+
+    // Build SDG scores context
+    let sdgContext = 'No scorecard data submitted yet.';
+    if (scorecard) {
+      const low    = scorecard.sdgScores.filter((s: any) => s.classification === 'Low');
+      const medium = scorecard.sdgScores.filter((s: any) => s.classification === 'Medium');
+      const high   = scorecard.sdgScores.filter((s: any) => s.classification === 'High');
+      sdgContext = `Overall score: ${scorecard.overallScore.toFixed(1)}/3.0 (${scorecard.classification} Impact)
+
+HIGH IMPACT goals: ${high.map((s: any) => `SDG ${s.sdgId} (${s.score.toFixed(1)})`).join(', ') || 'None yet'}
+MEDIUM IMPACT goals: ${medium.map((s: any) => `SDG ${s.sdgId} (${s.score.toFixed(1)})`).join(', ') || 'None'}
+LOW IMPACT goals (need attention): ${low.map((s: any) => `SDG ${s.sdgId} (${s.score.toFixed(1)}, sector avg ${s.sectorAvg.toFixed(1)})`).join(', ') || 'None'}`;
     }
 
-    const aiContextSnap = await db.collection('aiContext').doc('global').get();
-    const aiContext   = aiContextSnap.exists ? aiContextSnap.data()! : {};
-    const globalRules = (aiContext.rules || []).join('\n- ');
-    const sectorNote  = aiContext.sectorNotes?.[company.sector] || '';
+    // Build KPI context from latest submission
+    let kpiContext = 'No KPI data submitted yet.';
+    if (submission?.data) {
+      const d = submission.data;
+      const lines = [
+        d.total_employees    != null ? `Total employees: ${d.total_employees}` : null,
+        d.youth_employees    != null ? `Youth employees: ${d.youth_employees}${d.total_employees ? ` (${Math.round((d.youth_employees/d.total_employees)*100)}%)` : ''}` : null,
+        d.female_employees   != null ? `Female employees: ${d.female_employees}${d.total_employees ? ` (${Math.round((d.female_employees/d.total_employees)*100)}%)` : ''}` : null,
+        d.bbbee_rating       != null ? `B-BBEE Level: ${d.bbbee_rating}` : null,
+        d.black_ownership_pct!= null ? `Black ownership: ${d.black_ownership_pct}%` : null,
+        d.scope2_co2e        != null ? `Scope 2 emissions: ${d.scope2_co2e} tCO2e` : null,
+        d.renewable_energy_produced != null ? `Renewable energy: ${d.renewable_energy_produced} kWh` : null,
+        d.total_annual_revenue != null ? `Annual revenue: R${Number(d.total_annual_revenue).toLocaleString('en-ZA')}` : null,
+        d.procurement_black_owned_pct != null ? `Procurement to Black-owned: ${d.procurement_black_owned_pct}%` : null,
+      ].filter(Boolean);
+      kpiContext = lines.join('\n');
+    }
 
-    const systemPrompt = `You are Chase, the SDG coaching assistant for INvestScore — a platform built by Sanlam Investments.
+    // Build targets context
+    let targetsContext = 'No targets set by Portfolio Manager yet.';
+    if (Object.keys(targets).length > 0) {
+      targetsContext = 'PM-set targets: ' + Object.entries(targets)
+        .map(([sdgId, t]: any) => `SDG ${sdgId} → ${t.classification || t} Impact`)
+        .join(', ');
+    }
 
-Your role is to help ${company.name} understand their SDG (Sustainable Development Goal) scores, improve their performance, and navigate the 104+ SMME Growth and Empowerment Solution framework.
+    // Score trend
+    const trendContext = scoreHistory.length > 1
+      ? `Score history: ${scoreHistory.map((h: any) => `${h.submissionPeriod}: ${h.overallScore?.toFixed(1)} (${h.classification})`).join(' → ')}`
+      : scoreHistory.length === 1
+        ? `First submission: ${scoreHistory[0].overallScore?.toFixed(1)} (${scoreHistory[0].classification}). No trend data yet.`
+        : 'No submission history yet.';
 
-COMPANY CONTEXT:
-Company: ${company.name}
-Sector: ${company.sector.replace(/_/g, ' ')}
-Location: ${company.location}
-Industry: ${company.industry}
+    const globalRules = aiContext?.rules?.join('\n') || 'Always provide practical, actionable advice.';
+    const sectorNote  = aiContext?.sectorNotes?.[company.sector] || '';
+    const mandateNote = aiContext?.mandateContext?.[company.mandate] || '';
 
-SCORECARD DATA:
-${scorecardContext}
+    const docContext = documentText
+      ? `\n\nUSER UPLOADED DOCUMENT:\n${String(documentText).slice(0, 8000)}\n\nUse this document to answer the user's question. If it contains KPI data relevant to their submission, highlight it.`
+      : '';
 
-${sdgFocus ? `USER IS ASKING ABOUT: SDG ${sdgFocus} specifically. Start by acknowledging this focus.` : ''}
+    const systemPrompt = `You are Chase, the SDG coaching assistant for INvestScore — built by Sanlam Investments for the 104+ SMME Growth and Empowerment Solution.
 
-COACHING RULES (from Sanlam Investments):
-- ${globalRules || 'Always provide practical, actionable advice.'}
+You are talking to ${company.spokespersonName || 'the owner'} of ${company.name}, a ${(company.sector || '').replace(/_/g, ' ')} company based in ${company.location}.
 
-SECTOR GUIDANCE:
+COMPANY PROFILE:
+- Name: ${company.name}
+- Sector: ${(company.sector || '').replace(/_/g, ' ')}
+- Industry: ${company.industry || 'Not provided'}
+- Location: ${company.location}
+- Mandate: ${company.mandate || 'Not assigned'} Mandate
+- B-BBEE Level: ${company.bbbeeLevel || 'Not certified'}
+- Description: ${company.description || 'Not provided'}
+
+CURRENT SDG PERFORMANCE:
+${sdgContext}
+
+SUBMITTED KPI DATA (most recent):
+${kpiContext}
+
+PM TARGETS:
+${targetsContext}
+
+SCORE TREND:
+${trendContext}
+
+COACHING RULES:
+${globalRules}
+
+SECTOR CONTEXT:
 ${sectorNote || 'Provide relevant sector-specific advice.'}
 
-CRITICAL RULES YOU MUST ALWAYS FOLLOW:
-1. You are an interpreter of scores — you do not calculate, change, or override scores.
-2. Always refer to the Sanlam proprietary methodology when explaining how scores work.
-3. Speak in South African context: use Rands (ZAR), reference B-BBEE, Eskom, SETA, NQF, POPIA, and other South African frameworks where relevant.
-4. Be encouraging and practical. Never condescending.
-5. Always prioritise high-impact, low-cost improvements first.
-6. Do not reveal or compare specific named peer companies.
-7. When you recommend improving a metric, always explain WHY it matters for the specific SDG.
-8. Keep responses concise and actionable — bullet points work well for action steps.
-9. If asked about topics unrelated to SDGs, sustainability, or business improvement, politely redirect to your coaching role.
-10. Never claim to have real-time data beyond what is in the scorecard provided above.
+MANDATE CONTEXT:
+${mandateNote}
+${docContext}
 
-TONE: Warm, direct, South African. Like a trusted business advisor, not a corporate chatbot.`;
-
-    const claudeMessages = messages.map((m: { role: string; content: string }) => ({
-      role:    m.role as 'user' | 'assistant',
-      content: m.content,
-    }));
+CHASE PERSONALITY AND STYLE:
+- You are Chase — friendly, direct, and encouraging. Named after the Sanlam cheetah mascot.
+- You know this company's data intimately. Reference specific numbers from their scorecard.
+- Never give generic advice. Always tie recommendations to their actual scores and KPIs.
+- Use South African context: Eskom, B-BBEE, SETA, SANAS, NQF, POPIA, rand amounts.
+- Celebrate wins. If a score is High, acknowledge it before pivoting to improvements.
+- Keep responses concise — 2–4 short paragraphs. Use bullet points for action lists.
+- End responses with a specific question to keep the conversation moving.
+- Never make up scores or data. If you don't know something, say so.
+- Do not alter or question Sanlam's scoring methodology — it is fixed.`;
 
     const response = await claude.messages.create({
       model:      'claude-sonnet-4-6',
-      max_tokens: 1000,
+      max_tokens: 800,
       system:     systemPrompt,
-      messages:   claudeMessages,
+      messages:   messages.map((m: any) => ({ role: m.role, content: m.content })),
     });
 
     const text = response.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as any).text)
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => b.text)
       .join('');
 
     return res.json({ message: text });
 
   } catch (err) {
-    console.error('AI coach error:', err);
-    return res.status(500).json({ error: 'AI service unavailable. Please try again.' });
+    console.error('Chase /coach error:', err);
+    return res.status(500).json({ error: 'Chase is unavailable right now. Please try again.' });
+  }
+});
+
+// POST /api/ai/extract-kpis — Chase reads a document and extracts KPI values
+router.post('/extract-kpis', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { documentText, companyId } = req.body;
+    if (!documentText) return res.status(400).json({ error: 'documentText is required.' });
+
+    const prompt = `Extract SDG-relevant KPI values from this business document.
+
+Look for these KPI IDs:
+total_employees, youth_employees, female_employees, management_employees, contractor_employees,
+scope1_co2e, scope2_co2e, electricity_consumption, renewable_energy_produced,
+recycled_waste_pct, total_water_consumption,
+bbbee_rating, black_ownership_pct, black_female_ownership_pct,
+black_board_pct, procurement_black_owned_pct, procurement_women_owned_pct,
+total_annual_revenue, csi_spend, local_suppliers, smes_in_supply_chain
+
+DOCUMENT:
+${String(documentText).slice(0, 10000)}
+
+Respond ONLY with a JSON object. Keys are KPI IDs from the list. Values are numbers only. Only include KPIs you found with confidence. Example: {"total_employees": 71, "female_employees": 15}`;
+
+    const response = await claude.messages.create({
+      model:      'claude-sonnet-4-6',
+      max_tokens: 500,
+      messages:   [{ role: 'user', content: prompt }],
+    });
+
+    const text  = response.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    let extracted: Record<string, number> = {};
+    try { extracted = JSON.parse(clean); } catch {}
+
+    return res.json({ extracted, count: Object.keys(extracted).length });
+  } catch (err) {
+    console.error('KPI extraction error:', err);
+    return res.status(500).json({ error: 'Extraction failed.' });
   }
 });
 
