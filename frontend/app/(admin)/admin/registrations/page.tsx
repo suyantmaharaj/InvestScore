@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, X, Clock, Building2, Trash2 } from 'lucide-react';
+import { Check, X, Clock, Building2, Trash2, Copy, KeyRound } from 'lucide-react';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
@@ -44,6 +44,8 @@ export default function RegistrationsPage() {
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [companies,       setCompanies]       = useState<Company[]>([]);
   const [deleteId,        setDeleteId]        = useState<string | null>(null);
+  const [tempPassword,    setTempPassword]    = useState<string | null>(null);
+  const [copied,          setCopied]          = useState(false);
 
   const load = async () => {
     try {
@@ -78,22 +80,31 @@ export default function RegistrationsPage() {
   const handleApprove = async (id: string) => {
     setActionId(id);
     try {
-      const res = await apiFetch(`/api/admin/registrations/${id}/approve`, {
+      const res  = await apiFetch(`/api/admin/registrations/${id}/approve`, {
         method: 'POST',
         body:   JSON.stringify({ companyId: selectedCompany || null }),
       });
       if (res.ok) {
+        const json = await res.json();
         setRegistrations(prev =>
           prev.map(r => r.id === id ? { ...r, status: 'approved' } : r)
         );
         setApproveId(null);
         setSelectedCompany('');
+        if (json.temporaryPassword) setTempPassword(json.temporaryPassword);
       }
     } catch (err) {
       console.error('Approve error:', err);
     } finally {
       setActionId(null);
     }
+  };
+
+  const handleCopyPassword = async () => {
+    if (!tempPassword) return;
+    await navigator.clipboard.writeText(tempPassword);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleReject = async (id: string) => {
@@ -140,6 +151,56 @@ export default function RegistrationsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
+
+      {/* Temporary password reveal — shown once after approval */}
+      {tempPassword && (
+        <div
+          className="card p-5 flex items-start gap-4 animate-card-in"
+          style={{ border: '1.5px solid rgba(0,166,81,0.35)', background: 'rgba(0,166,81,0.05)' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+            style={{ background: 'rgba(0,166,81,0.12)' }}
+          >
+            <KeyRound size={16} style={{ color: '#00A651' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold mb-0.5" style={{ color: '#00A651' }}>
+              Account created — share this temporary password
+            </p>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+              The user should log in and change this immediately. It will not be shown again.
+            </p>
+            <div className="flex items-center gap-2">
+              <code
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-mono"
+                style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+              >
+                {tempPassword}
+              </code>
+              <button
+                onClick={handleCopyPassword}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition pressable"
+                style={{
+                  background: copied ? 'rgba(0,166,81,0.12)' : 'var(--bg)',
+                  border:     '1px solid var(--border)',
+                  color:      copied ? '#00A651' : 'var(--text-muted)',
+                }}
+              >
+                <Copy size={12} />
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                onClick={() => setTempPassword(null)}
+                className="p-2 rounded-lg transition"
+                style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>

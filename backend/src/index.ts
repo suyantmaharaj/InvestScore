@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();  // must run before any import that reads process.env
 
-import express from 'express';
-import cors    from 'cors';
+import express   from 'express';
+import cors      from 'cors';
+import helmet    from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 import authRoutes       from './routes/auth.routes';
 import smeRoutes        from './routes/sme.routes';
@@ -22,8 +24,23 @@ import scoringConfigRoutes from './routes/scoring-config.routes';
 const app  = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json());
+app.use(helmet());
+
+app.use(cors({
+  origin:      process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+}));
+
+app.use(express.json({ limit: '10kb' }));
+
+const authLimiter = rateLimit({
+  windowMs:       15 * 60 * 1000,
+  max:            20,
+  message:        { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders:   false,
+});
+app.use('/api/auth', authLimiter);
 
 app.use('/api/auth',        authRoutes);
 app.use('/api/sme',         smeRoutes);

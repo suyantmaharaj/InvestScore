@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import crypto from 'crypto';
 import { db, adminAuth } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
@@ -109,7 +110,9 @@ router.post('/users', async (req: AuthRequest, res: Response) => {
       emailVerified: true,
     });
 
-    await adminAuth.setCustomUserClaims(fbUser.uid, { role });
+    const claims: Record<string, any> = { role };
+    if (role === 'sme' && companyId) claims.companyId = companyId;
+    await adminAuth.setCustomUserClaims(fbUser.uid, claims);
 
     await db.collection('users').doc(fbUser.uid).set({
       uid:       fbUser.uid,
@@ -167,7 +170,10 @@ router.get('/registrations', async (req: AuthRequest, res: Response) => {
   try {
     const snap = await db.collection('pendingRegistrations').get();
     const registrations = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map(d => {
+        const { passwordHash, password, ...safe } = d.data() as any;
+        return { id: d.id, ...safe };
+      })
       .sort((a: any, b: any) => (b.requestedAt ?? '').localeCompare(a.requestedAt ?? ''));
     return res.json({ registrations });
   } catch (err) {
@@ -187,14 +193,19 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
     const reg        = snap.data()!;
     const { companyId } = req.body;
 
+    // Generate a secure temporary password — admin shares this with the user
+    const temporaryPassword = crypto.randomBytes(12).toString('base64url').slice(0, 16);
+
     const fbUser = await adminAuth.createUser({
       email:         reg.email,
-      password:      reg.password,
+      password:      temporaryPassword,
       displayName:   reg.name,
       emailVerified: true,
     });
 
-    await adminAuth.setCustomUserClaims(fbUser.uid, { role: 'sme' });
+    const claims: Record<string, any> = { role: 'sme' };
+    if (companyId) claims.companyId = companyId;
+    await adminAuth.setCustomUserClaims(fbUser.uid, claims);
 
     await db.collection('users').doc(fbUser.uid).set({
       uid:       fbUser.uid,
@@ -212,7 +223,12 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
       });
     }
 
-    await snap.ref.update({ status: 'approved', approvedAt: new Date().toISOString() });
+    // Clear the stored hash and mark approved
+    await snap.ref.update({
+      status:       'approved',
+      approvedAt:   new Date().toISOString(),
+      passwordHash: null,
+    });
 
     await writeAuditLog({
       action:    'registration_approved',
@@ -237,7 +253,7 @@ router.post('/registrations/:id/approve', async (req: AuthRequest, res: Response
       console.error('Notification creation error (non-fatal):', notifErr);
     }
 
-    return res.json({ success: true, uid: fbUser.uid });
+    return res.json({ success: true, uid: fbUser.uid, temporaryPassword });
   } catch (err: any) {
     if (err.code === 'auth/email-already-exists') {
       return res.status(409).json({ error: 'An account with this email already exists.' });
@@ -254,8 +270,9 @@ router.post('/registrations/:id/reject', async (req: AuthRequest, res: Response)
     const rejEmail = rejSnap.exists ? rejSnap.data()!.email : req.params.id;
 
     await db.collection('pendingRegistrations').doc(req.params.id as string).update({
-      status:     'rejected',
-      rejectedAt: new Date().toISOString(),
+      status:       'rejected',
+      rejectedAt:   new Date().toISOString(),
+      passwordHash: null,
     });
 
     await writeAuditLog({

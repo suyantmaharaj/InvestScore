@@ -73,11 +73,22 @@ async function computeLiveSectorAverages(
   }
 }
 
+async function resolveUserCompanyId(uid: string, claimCompanyId: string | null): Promise<string | null> {
+  if (claimCompanyId) return claimCompanyId;
+  const userDoc = await db.collection('users').doc(uid).get();
+  return userDoc.exists ? (userDoc.data()?.companyId ?? null) : null;
+}
+
 // GET /api/submissions/draft?companyId=xxx
 router.get('/draft', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
   try {
     const companyId = req.query.companyId as string;
     if (!companyId) return res.json({ draft: null });
+
+    const userCompanyId = await resolveUserCompanyId(req.user!.uid, req.user!.companyId);
+    if (!userCompanyId || userCompanyId !== companyId) {
+      return res.status(403).json({ error: 'Forbidden.' });
+    }
 
     const snap = await db
       .collection('submissions')
@@ -106,6 +117,11 @@ router.post('/save-draft', verifyToken, requireRole('sme'), async (req: AuthRequ
 
     if (!companyId || !data) {
       return res.status(400).json({ error: 'companyId and data are required.' });
+    }
+
+    const userCompanyId = await resolveUserCompanyId(req.user!.uid, req.user!.companyId);
+    if (!userCompanyId || userCompanyId !== companyId) {
+      return res.status(403).json({ error: 'Forbidden.' });
     }
 
     const existing = await db
@@ -148,6 +164,11 @@ router.post('/submit', verifyToken, requireRole('sme'), async (req: AuthRequest,
 
     if (!companyId || !data) {
       return res.status(400).json({ error: 'companyId and data are required.' });
+    }
+
+    const userCompanyId = await resolveUserCompanyId(req.user!.uid, req.user!.companyId);
+    if (!userCompanyId || userCompanyId !== companyId) {
+      return res.status(403).json({ error: 'Forbidden.' });
     }
 
     const companySnap = await db.collection('companies').doc(companyId).get();

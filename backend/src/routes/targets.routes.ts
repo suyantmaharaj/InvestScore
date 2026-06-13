@@ -6,6 +6,9 @@ import { writeAuditLog } from '../services/audit.service';
 
 const router = Router();
 
+// health must come before /:companyId to avoid being swallowed by the dynamic route
+router.get('/health', (_, res) => res.json({ status: 'ok', route: 'targets' }));
+
 // GET /api/targets/:companyId - load targets for a company
 router.get('/:companyId', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
@@ -51,7 +54,5 @@ router.put('/:companyId', verifyToken, requireRole('pm', 'admin'), async (req: A
     return res.status(500).json({ error: 'Internal server error.' });
   }
 });
-
-router.get('/health', (_, res) => res.json({ status: 'ok', route: 'targets' }));
 
 export default router;

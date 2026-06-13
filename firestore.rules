@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function hasRole(role) {
+      return isAuthenticated() && request.auth.token.role == role;
+    }
+    function isAdmin() { return hasRole('admin'); }
+    function isPM()    { return hasRole('pm'); }
+    function isSME()   { return hasRole('sme'); }
+    function isOwner(companyId) {
+      return isSME() && request.auth.token.companyId == companyId;
+    }
+
+    // Anyone (even unauthenticated) can submit a registration request.
+    // Only admins can read or manage registrations.
+    match /pendingRegistrations/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Users can read their own profile; admins can read/write all
+    match /users/{uid} {
+      allow read:  if isAuthenticated() && (request.auth.uid == uid || isAdmin() || isPM());
+      allow write: if isAdmin();
+    }
+
+    // Companies are readable by all authenticated users; writable by admin/pm only
+    match /companies/{companyId} {
+      allow read:  if isAuthenticated();
+      allow write: if isAdmin() || isPM();
+    }
+
+    // Submissions: SMEs can read/write their own company only; PM/admin read all
+    match /submissions/{docId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || isPM() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId)
+      );
+      allow create, update: if isSME() &&
+        request.resource.data.companyId == request.auth.token.companyId;
+      allow delete: if isAdmin();
+    }
+
+    // Scorecards are read-only from the client; all writes go through the backend
+    match /scorecards/{docId} {
+      allow read:  if isAuthenticated();
+      allow write: if false;
+    }
+
+    // PM notes: PM/admin only
+    match /pmNotes/{companyId} {
+      allow read, write: if isAdmin() || isPM();
+    }
+
+    // Targets: PM/admin write; all authenticated can read
+    match /targets/{companyId} {
+      allow read:  if isAuthenticated();
+      allow write: if isAdmin() || isPM();
+    }
+
+    // Watchlist: PM/admin only
+    match /watchlists/{docId} {
+      allow read, write: if isAdmin() || isPM();
+    }
+
+    // Notifications: PM/admin only
+    match /notifications/{docId} {
+      allow read, write: if isAdmin() || isPM();
+    }
+
+    // AI coaching context: admin writes, PM/admin reads
+    match /aiContext/{docId} {
+      allow read:  if isAdmin() || isPM();
+      allow write: if isAdmin();
+    }
+
+    // Audit log: admin read only; all writes go through the backend
+    match /auditLog/{docId} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+
+    // Engagement records (learning, engagement tracking)
+    match /engagement/{docId} {
+      allow read:  if isAuthenticated() && (isAdmin() || isPM() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId));
+      allow write: if isAuthenticated();
+    }
+
+    // Deny everything not explicitly matched
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

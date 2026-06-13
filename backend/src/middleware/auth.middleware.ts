@@ -3,9 +3,10 @@ import { adminAuth } from '../services/firebase.service';
 
 export interface AuthRequest extends Request {
   user?: {
-    uid:   string;
-    email: string;
-    role:  string;
+    uid:       string;
+    email:     string;
+    role:      string;
+    companyId: string | null;
   };
 }
 
@@ -23,9 +24,10 @@ export const verifyToken = async (
   try {
     const decoded = await adminAuth.verifyIdToken(token);
     req.user = {
-      uid:   decoded.uid,
-      email: decoded.email || '',
-      role:  (decoded['role'] as string) || 'sme',
+      uid:       decoded.uid,
+      email:     decoded.email || '',
+      role:      (decoded['role']      as string) || 'sme',
+      companyId: (decoded['companyId'] as string) || null,
     };
     next();
   } catch {
