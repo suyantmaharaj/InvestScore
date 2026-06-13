@@ -39,8 +39,12 @@ export interface CompanyData {
   spokespersonName: string;
   spokespersonTitle?: string;
   spokespersonEmail?: string;
-  mandate?:         string;
-  bbbeeLevel?:      number;
+  mandate?:                string;
+  bbbeeLevel?:             number;
+  bbbeeVerificationStatus?: 'pending' | 'verified' | 'rejected';
+  bbbeeVerificationId?:    string;
+  bbbeeClaimedLevel?:      number;
+  bbbeeRejectionReason?:   string;
 }
 
 export function useSMEData() {

@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 import {
   Users, Building2, ClipboardList,
   UserPlus, Brain, AlertTriangle,
+  Shield, CheckCircle, XCircle, ExternalLink, Clock,
 } from 'lucide-react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
 import AnimatedScore from '@/components/shared/AnimatedScore';
+import { formatFileSize, getFileIcon } from '@/lib/storage-upload';
 
 interface AdminStats {
   totalUsers:           number;
@@ -25,19 +29,24 @@ interface AdminStats {
 export default function AdminDashboardPage() {
   const router   = useRouter();
   const { user } = useAuth();
-  const [stats,   setStats]   = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats,        setStats]        = useState<AdminStats | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [pendingBBBEE, setPendingBBBEE] = useState<any[]>([]);
+  const [showRejectId, setShowRejectId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [reviewingId,  setReviewingId]  = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
         const { auth } = await import('@/lib/firebase');
         const token    = await auth.currentUser?.getIdToken();
-        const res      = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const json = await res.json();
+        const [statsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        const json = await statsRes.json();
         setStats(json);
       } catch (err) {
         console.error('Admin stats error:', err);
@@ -47,6 +56,44 @@ export default function AdminDashboardPage() {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    const loadBBBEE = async () => {
+      try {
+        const snap = await getDocs(
+          query(collection(db, 'bbbeeVerifications'), where('status', '==', 'pending'))
+        );
+        const items = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a: any, b: any) => b.submittedAt.localeCompare(a.submittedAt));
+        setPendingBBBEE(items);
+      } catch (err) {
+        console.error('Load B-BBEE error:', err);
+      }
+    };
+    loadBBBEE();
+  }, []);
+
+  const handleReview = async (verificationId: string, action: 'approve' | 'reject') => {
+    if (action === 'reject' && !rejectionReason.trim()) return;
+    setReviewingId(verificationId);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const token    = await auth.currentUser?.getIdToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/bbbee/${verificationId}/review`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ action, rejectionReason: rejectionReason.trim() || undefined }),
+      });
+      setPendingBBBEE(prev => prev.filter(v => v.id !== verificationId));
+      setShowRejectId(null);
+      setRejectionReason('');
+    } catch (err) {
+      console.error('Review error:', err);
+    } finally {
+      setReviewingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -223,6 +270,113 @@ export default function AdminDashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* B-BBEE Verification Queue */}
+      {pendingBBBEE.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Shield size={16} style={{ color: 'var(--sanlam-teal)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              B-BBEE Certificates Pending Verification
+            </h2>
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full animate-pulse"
+              style={{ background: 'rgba(232,160,32,0.15)', color: '#E8A020' }}
+            >
+              {pendingBBBEE.length}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {pendingBBBEE.map(v => (
+              <div
+                key={v.id}
+                className="card p-4 animate-card-in"
+                style={{ background: 'var(--surface)', border: '1px solid rgba(232,160,32,0.2)' }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0">{getFileIcon(v.originalName)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                        {v.originalName}
+                      </p>
+                      <span
+                        className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
+                      >
+                        Claimed Level {v.claimedLevel}
+                      </span>
+                      <span
+                        className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.2)' }}
+                      >
+                        <Clock size={10} /> Pending
+                      </span>
+                    </div>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {v.companyId} · {formatFileSize(v.fileSize)} ·{' '}
+                      {new Date(v.submittedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <a
+                      href={v.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-medium mt-1.5 hover:underline"
+                      style={{ color: 'var(--sanlam-teal)' }}
+                    >
+                      <ExternalLink size={11} /> View certificate
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleReview(v.id, 'approve')}
+                      disabled={reviewingId === v.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white pressable disabled:opacity-60"
+                      style={{ background: '#00A651' }}
+                    >
+                      <CheckCircle size={13} />
+                      {reviewingId === v.id ? 'Saving...' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => setShowRejectId(showRejectId === v.id ? null : v.id)}
+                      disabled={reviewingId === v.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold pressable disabled:opacity-60"
+                      style={{ background: 'rgba(208,2,27,0.1)', color: '#D0021B', border: '1px solid rgba(208,2,27,0.2)' }}
+                    >
+                      <XCircle size={13} />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+
+                {showRejectId === v.id && (
+                  <div
+                    className="mt-3 pt-3 animate-card-in"
+                    style={{ borderTop: '1px solid var(--border)' }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Reason for rejection (required)"
+                      value={rejectionReason}
+                      onChange={e => setRejectionReason(e.target.value)}
+                      className="w-full h-9 px-3 rounded-lg text-xs focus:outline-none mb-2"
+                      style={{ background: 'var(--bg)', border: '1.5px solid var(--border)', color: 'var(--text-primary)' }}
+                    />
+                    <button
+                      onClick={() => handleReview(v.id, 'reject')}
+                      disabled={!rejectionReason.trim() || reviewingId === v.id}
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white pressable disabled:opacity-50"
+                      style={{ background: '#D0021B' }}
+                    >
+                      Confirm rejection
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Platform info */}
       <div className="card p-5" style={{ background: 'var(--surface)' }}>

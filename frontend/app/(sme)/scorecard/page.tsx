@@ -6,6 +6,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import {
   TrendingUp, Minus, AlertTriangle, X,
   ArrowUpRight, ArrowDownRight, Download, Target,
+  Clock, XCircle, Shield,
 } from 'lucide-react';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import type { SDGScoreData } from '@/hooks/useSMEData';
@@ -531,6 +532,52 @@ export default function ScorecardPage() {
           </Tooltip>
         </div>
       </PageContext>
+
+      {/* B-BBEE status banner */}
+      {company?.bbbeeVerificationStatus === 'pending' && (
+        <div
+          className="flex items-center gap-3 p-4 rounded-xl animate-card-in"
+          style={{ background: 'rgba(232,160,32,0.08)', border: '1px solid rgba(232,160,32,0.25)' }}
+        >
+          <Clock size={16} style={{ color: '#E8A020', flexShrink: 0 }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: '#E8A020' }}>
+              B-BBEE Level {company.bbbeeClaimedLevel} — awaiting verification
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Your certificate has been submitted and is under review by Sanlam Investments.
+              Your scorecard will update once verified.
+            </p>
+          </div>
+          <Shield size={20} style={{ color: 'rgba(232,160,32,0.4)', flexShrink: 0 }} />
+        </div>
+      )}
+
+      {company?.bbbeeVerificationStatus === 'rejected' && (
+        <div
+          className="flex items-center gap-3 p-4 rounded-xl animate-card-in"
+          style={{ background: 'rgba(208,2,27,0.06)', border: '1px solid rgba(208,2,27,0.2)' }}
+        >
+          <XCircle size={16} style={{ color: '#D0021B', flexShrink: 0 }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: '#D0021B' }}>
+              B-BBEE certificate rejected
+            </p>
+            {company.bbbeeRejectionReason && (
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                Reason: {company.bbbeeRejectionReason}
+              </p>
+            )}
+            <a
+              href="/profile"
+              className="text-xs font-semibold hover:underline mt-1 inline-block"
+              style={{ color: '#D0021B' }}
+            >
+              Upload a new certificate →
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Summary strip */}
       <div className="flex flex-wrap gap-2">

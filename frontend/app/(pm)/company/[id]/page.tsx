@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, TrendingUp, TrendingDown, Minus, Star,
+  ExternalLink, Shield, Clock, CheckCircle, XCircle, AlertTriangle,
 } from 'lucide-react';
+import { formatFileSize, getFileIcon } from '@/lib/storage-upload';
 import { usePMCompanyDetail } from '@/hooks/usePMData';
 import { useWatchlist } from '@/hooks/useWatchlist';
 import EngagementLog from '@/components/pm/EngagementLog';
@@ -15,7 +17,7 @@ import { toDisplay } from '@/lib/score';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore from '@/components/shared/AnimatedScore';
 
-type Tab = 'employment' | 'overview' | 'sdg';
+type Tab = 'employment' | 'overview' | 'sdg' | 'documents';
 
 function scoreColor(s: number) {
   if (s >= 2.4) return '#00A651';
@@ -593,6 +595,178 @@ function EmploymentTab({
   );
 }
 
+/* ── Documents Tab ── */
+function DocumentsTab({ companyId }: { companyId: string }) {
+  const [documents,   setDocuments]   = useState<any[]>([]);
+  const [bbbeeVerifs, setBbbeeVerifs] = useState<any[]>([]);
+  const [loading,     setLoading]     = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const token    = await auth.currentUser?.getIdToken();
+        const [docsRes, bbRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/${companyId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/${companyId}/bbbee`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        const [docsJson, bbJson] = await Promise.all([docsRes.json(), bbRes.json()]);
+        setDocuments(docsJson.documents || []);
+        setBbbeeVerifs(bbJson.verifications || []);
+      } catch (err) {
+        console.error('Load documents error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [companyId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[0, 1, 2].map(i => <SkeletonCard key={i} className="h-20" />)}
+      </div>
+    );
+  }
+
+  const latestBBBEE = bbbeeVerifs[0] ?? null;
+  const statusConfig = {
+    pending:    { color: '#E8A020', Icon: Clock,         label: 'Awaiting verification' },
+    approved:   { color: '#00A651', Icon: CheckCircle,   label: 'Verified'              },
+    rejected:   { color: '#D0021B', Icon: XCircle,       label: 'Rejected'              },
+    superseded: { color: '#4A5568', Icon: AlertTriangle, label: 'Superseded'            },
+  };
+
+  return (
+    <div className="space-y-6 animate-page-in">
+
+      {/* B-BBEE Certificate section */}
+      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Shield size={15} style={{ color: 'var(--sanlam-teal)' }} />
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            B-BBEE Certificate
+          </h3>
+        </div>
+
+        {bbbeeVerifs.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            No B-BBEE certificate uploaded yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {bbbeeVerifs.map(v => {
+              const cfg = statusConfig[v.status as keyof typeof statusConfig] || statusConfig.pending;
+              const { Icon } = cfg;
+              return (
+                <div
+                  key={v.id}
+                  className="flex items-start gap-3 p-3 rounded-xl"
+                  style={{
+                    background: `${cfg.color}06`,
+                    border:     `1px solid ${cfg.color}20`,
+                  }}
+                >
+                  <Icon size={15} style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-xs font-semibold" style={{ color: cfg.color }}>
+                        Level {v.claimedLevel} — {cfg.label}
+                      </p>
+                      <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                        {v.originalName}
+                      </span>
+                    </div>
+                    {v.status === 'rejected' && v.rejectionReason && (
+                      <p className="text-xs mt-0.5" style={{ color: '#D0021B' }}>
+                        Reason: {v.rejectionReason}
+                      </p>
+                    )}
+                    {v.status === 'approved' && v.reviewedAt && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        Verified {new Date(v.reviewedAt).toLocaleDateString('en-ZA', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                        })}
+                      </p>
+                    )}
+                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {formatFileSize(v.fileSize)} ·{' '}
+                      Submitted {new Date(v.submittedAt).toLocaleDateString('en-ZA', {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                  <a
+                    href={v.downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg flex-shrink-0"
+                    style={{ color: 'var(--sanlam-teal)' }}
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Supporting Documents section */}
+      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+          Supporting Documents
+        </h3>
+
+        {documents.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            No documents uploaded yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {documents.map(doc => (
+              <div
+                key={doc.id}
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: 'var(--bg)' }}
+              >
+                <span className="text-xl flex-shrink-0">{getFileIcon(doc.originalName)}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                    {doc.originalName}
+                  </p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {doc.description && `${doc.description} · `}
+                    {formatFileSize(doc.fileSize)} ·{' '}
+                    {new Date(doc.uploadedAt).toLocaleDateString('en-ZA', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <a
+                  href={doc.downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded-lg flex-shrink-0"
+                  style={{ color: 'var(--sanlam-teal)' }}
+                >
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
 /* ── Main Page ── */
 export default function CompanyDetailPage() {
   const params   = useParams();
@@ -607,6 +781,7 @@ export default function CompanyDetailPage() {
     { key: 'employment', label: 'Employment & Transformation' },
     { key: 'overview',   label: 'Overview'                    },
     { key: 'sdg',        label: 'SDG Scorecard'               },
+    { key: 'documents',  label: 'Documents'                   },
   ];
 
   if (loading) {
@@ -741,7 +916,9 @@ export default function CompanyDetailPage() {
       </div>
 
       {/* Tab content */}
-      {!scorecard ? (
+      {tab === 'documents' ? (
+        <DocumentsTab companyId={id} />
+      ) : !scorecard ? (
         <EmptyState
           icon="📊"
           title="No scorecard data"

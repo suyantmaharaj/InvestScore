@@ -20,6 +20,7 @@ import watchlistRoutes      from './routes/watchlist.routes';
 import analyticsRoutes     from './routes/analytics.routes';
 import engagementRoutes    from './routes/engagement.routes';
 import scoringConfigRoutes from './routes/scoring-config.routes';
+import documentRoutes      from './routes/documents.routes';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -56,6 +57,7 @@ app.use('/api/watchlist',     watchlistRoutes);
 app.use('/api/analytics',      analyticsRoutes);
 app.use('/api/engagement',     engagementRoutes);
 app.use('/api/scoring-config', scoringConfigRoutes);
+app.use('/api/documents',     documentRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 
