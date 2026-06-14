@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, ChevronLeft, ChevronRight, RefreshCw, Save, Send } from 'lucide-react';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
 import { useSMEContext } from '@/context/SMEDataContext';
 import { FORM_CATEGORIES, FormKPI } from '@/lib/kpi-form';
 import HelpChip from '@/components/sme/HelpChip';
@@ -17,14 +20,16 @@ async function getBearerToken(): Promise<string | null> {
 }
 
 function KPIField({
-  kpi, value, onChange, error, skipped, onSkip,
+  kpi, value, onChange, error, skipped, onSkip, isPrefilled, isEdited,
 }: {
-  kpi:      FormKPI;
-  value:    string;
-  onChange: (id: string, val: string) => void;
-  error?:   string;
-  skipped?: boolean;
-  onSkip?:  (id: string) => void;
+  kpi:          FormKPI;
+  value:        string;
+  onChange:     (id: string, val: string) => void;
+  error?:       string;
+  skipped?:     boolean;
+  onSkip?:      (id: string) => void;
+  isPrefilled?: boolean;
+  isEdited?:    boolean;
 }) {
   const isZAR = kpi.unit === 'ZAR';
 
@@ -33,11 +38,23 @@ function KPIField({
       {/* Label row */}
       <div className="flex items-start justify-between gap-2 mb-0.5">
         <label
-          className="text-sm font-medium flex items-center gap-1"
+          className="text-sm font-medium flex items-center gap-1 flex-wrap"
           style={{ color: skipped ? 'var(--text-muted)' : 'var(--text-primary)' }}
         >
           {kpi.label}
           {kpi.required && <span className="text-red-500 text-xs">*</span>}
+          {isPrefilled && !isEdited && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+              style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}>
+              from last quarter
+            </span>
+          )}
+          {isEdited && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+              style={{ background: 'rgba(0,166,81,0.1)', color: '#00A651' }}>
+              updated ✓
+            </span>
+          )}
         </label>
         <span className="text-xs flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>
           {kpi.unit}
@@ -115,6 +132,7 @@ function KPIField({
 
 export default function SubmitPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { company } = useSMEContext();
 
   const [step,          setStep]          = useState(0);
@@ -126,6 +144,11 @@ export default function SubmitPage() {
   const [submitting,    setSubmitting]    = useState(false);
   const [submitted,     setSubmitted]     = useState(false);
   const [newScore,      setNewScore]      = useState<{ score: number; classification: string } | null>(null);
+
+  const [prefilledFrom,       setPrefilledFrom]       = useState<string | null>(null);
+  const [showPrefilledBanner, setShowPrefilledBanner] = useState(false);
+  const [prefilledFields,     setPrefilledFields]     = useState<Set<string>>(new Set());
+  const [editedFields,        setEditedFields]        = useState<Set<string>>(new Set());
 
   const draftKey = company?.id ? `investscore_submission_draft_${company.id}` : null;
 
@@ -173,6 +196,61 @@ export default function SubmitPage() {
     loadServerDraft();
   }, [company?.id]);
 
+  // Pre-fill from last scored submission when no draft exists
+  useEffect(() => {
+    if (!user?.companyId || !company?.id) return;
+
+    const loadPrefill = async () => {
+      const draftKey = `investscore_submission_draft_${company.id}`;
+      try {
+        if (localStorage.getItem(draftKey)) return; // existing draft wins
+      } catch {}
+
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'submissions'),
+            where('companyId', '==', user.companyId),
+            where('status',    '==', 'scored'),
+            orderBy('scoredAt', 'desc'),
+            limit(1)
+          )
+        );
+        if (snap.empty) return;
+
+        const lastSub  = snap.docs[0].data();
+        const lastData = lastSub.data as Record<string, number | null> | undefined;
+        const lastPeriod = lastSub.submissionPeriod as string | undefined;
+        if (!lastData || !lastPeriod) return;
+
+        const pre: Record<string, string> = {};
+        Object.entries(lastData).forEach(([k, v]) => {
+          if (v !== null && v !== undefined) pre[k] = String(v);
+        });
+
+        setValues(pre);
+        setPrefilledFrom(lastPeriod);
+        setShowPrefilledBanner(true);
+        setPrefilledFields(new Set(Object.keys(lastData).filter(k => lastData[k] !== null)));
+
+        try {
+          localStorage.setItem(draftKey, JSON.stringify({
+            data:          pre,
+            skipped:       [],
+            step:          0,
+            savedAt:       new Date().toISOString(),
+            prefilledFrom: lastPeriod,
+          }));
+          setDraftSavedAt(new Date().toISOString());
+        } catch {}
+      } catch (err) {
+        if (!(err instanceof TypeError)) console.error('Prefill load error:', err);
+      }
+    };
+
+    loadPrefill();
+  }, [user?.companyId, company?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Persist draft to localStorage on every change
   useEffect(() => {
     if (!draftKey) return;
@@ -203,6 +281,7 @@ export default function SubmitPage() {
 
   const handleChange = (id: string, val: string) => {
     setValues(prev => ({ ...prev, [id]: val }));
+    if (prefilledFields.has(id)) setEditedFields(prev => new Set([...prev, id]));
     if (errors[id]) setErrors(prev => { const e = { ...prev }; delete e[id]; return e; });
   };
 
@@ -352,8 +431,44 @@ export default function SubmitPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
+      {/* Pre-filled banner */}
+      {showPrefilledBanner && prefilledFrom && (
+        <div className="rounded-xl p-4 flex items-start justify-between gap-3"
+          style={{ background: 'rgba(0,181,237,0.06)', border: '1px solid rgba(0,181,237,0.2)' }}>
+          <div className="flex items-start gap-2">
+            <span className="text-base flex-shrink-0">⚡</span>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--sanlam-teal)' }}>
+                Pre-filled from your {prefilledFrom} submission
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                Your previous values are loaded. Review each field and update anything that has changed.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setValues({});
+              setPrefilledFields(new Set());
+              setEditedFields(new Set());
+              setShowPrefilledBanner(false);
+              setPrefilledFrom(null);
+              setDraftSavedAt(null);
+              try {
+                if (company?.id) localStorage.removeItem(`investscore_submission_draft_${company.id}`);
+              } catch {}
+            }}
+            className="text-xs flex-shrink-0 hover:underline"
+            style={{ color: '#D0021B' }}
+          >
+            Start fresh
+          </button>
+        </div>
+      )}
+
       {/* Resume banner */}
-      {draftSavedAt && (
+      {!showPrefilledBanner && draftSavedAt && (
         <div
           className="rounded-xl px-4 py-3 flex items-center justify-between"
           style={{ background: 'rgba(0,181,237,0.08)', border: '1px solid rgba(0,181,237,0.2)' }}
@@ -485,6 +600,8 @@ export default function SubmitPage() {
             error={errors[kpi.id]}
             skipped={skippedFields.has(kpi.id)}
             onSkip={toggleSkip}
+            isPrefilled={prefilledFields.has(kpi.id)}
+            isEdited={editedFields.has(kpi.id)}
           />
         ))}
 

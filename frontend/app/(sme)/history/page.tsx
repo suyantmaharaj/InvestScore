@@ -1,183 +1,185 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter }   from 'next/navigation';
+import {
+  collection, query, where, getDocs,
+} from 'firebase/firestore';
+import { db }          from '@/lib/firebase';
+import { useAuth }     from '@/hooks/useAuth';
+import { SDG_LIST }    from '@/lib/sdg';
+import SDGIcon         from '@/components/sdg/SDGIcon';
 import { SkeletonCard } from '@/components/shared/Skeleton';
-import EmptyState from '@/components/shared/EmptyState';
-import PageContext from '@/components/shared/PageContext';
-import { CLASSIFICATION_COLORS } from '@/lib/sdg';
-import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
-import { KPI_DISPLAY_LIST } from '@/lib/kpi-data';
-import { toDisplay } from '@/lib/score';
+import PageContext      from '@/components/shared/PageContext';
+import { TrendingUp, TrendingDown, Minus, Award } from 'lucide-react';
 
 interface HistoryEntry {
-  scorecardId:      string;
-  submissionId?:    string;
-  submissionPeriod: string;
-  overallScore:     number;
-  classification:   'Low' | 'Medium' | 'High';
-  calculatedAt:     string;
-  highCount:        number;
-  lowCount:         number;
-  sdgScores:        Array<{
+  id:             string;
+  period:         string;
+  calculatedAt:   string;
+  overallScore:   number;
+  classification: string;
+  sdgScores:      Array<{
     sdgId:          number;
-    sdgName:        string;
     score:          number;
-    classification: 'Low' | 'Medium' | 'High';
+    classification: string;
   }>;
-  submissionData:   Record<string, number | null>;
-  submittedAt?:     string;
 }
 
-function scoreColor(score: number) {
-  if (score >= 2.4) return '#00A651';
-  if (score >= 1.6) return '#E8A020';
-  return '#D0021B';
-}
+function Sparkline({
+  values, width = 80, height = 32, color,
+}: {
+  values: number[]; width?: number; height?: number; color: string;
+}) {
+  if (values.length < 2) return null;
 
-function formatKPIValue(value: number | null, unit?: string): string {
-  if (value === null || value === undefined) return 'Not provided';
-  if (unit === 'ZAR') return `R${value.toLocaleString('en-ZA')}`;
-  if (unit === '%') return `${value}%`;
-  return unit ? `${value.toLocaleString('en-ZA')} ${unit}` : value.toLocaleString('en-ZA');
-}
+  const min   = Math.min(...values, 1.0);
+  const max   = Math.max(...values, 3.0);
+  const range = max - min || 1;
+  const pad   = 4;
+  const w     = width  - pad * 2;
+  const h     = height - pad * 2;
 
-function categoryLabel(category: string): string {
-  return category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
+  const points = values.map((v, i) => ({
+    x: pad + (i / (values.length - 1)) * w,
+    y: pad + (1 - (v - min) / range) * h,
+  }));
 
-function TrendChart({ entries }: { entries: HistoryEntry[] }) {
-  if (entries.length < 2) return null;
-
-  const W = 600; const H = 120; const PAD = 20;
-  const minS = 0; const maxS = 100;
-  const toY  = (s: number) => PAD + ((maxS - s) / (maxS - minS)) * (H - PAD * 2);
-  const toX  = (i: number) => PAD + (i / (entries.length - 1)) * (W - PAD * 2);
-
-  const points      = entries.map((e, i) => `${toX(i)},${toY(toDisplay(e.overallScore))}`).join(' ');
-  const areaPoints  = [
-    `${toX(0)},${H - PAD}`,
-    ...entries.map((e, i) => `${toX(i)},${toY(toDisplay(e.overallScore))}`),
-    `${toX(entries.length - 1)},${H - PAD}`,
-  ].join(' ');
+  const pathD = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+    .join(' ');
 
   return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
-      {[0, 25, 50, 75, 100].map(v => (
-        <g key={v}>
-          <line
-            x1={PAD} y1={toY(v)} x2={W - PAD} y2={toY(v)}
-            stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 4"
-          />
-          <text
-            x={PAD - 4} y={toY(v) + 4}
-            fontSize="9" textAnchor="end" fill="var(--text-muted)" fontFamily="Inter, sans-serif"
-          >
-            {v}
-          </text>
-        </g>
-      ))}
-
-      <polygon points={areaPoints} fill="rgba(0,181,237,0.08)" />
-
-      <polyline
-        points={points} fill="none"
-        stroke="var(--sanlam-teal, #00B5ED)" strokeWidth="2"
-        strokeLinejoin="round" strokeLinecap="round"
+    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+      <path
+        d={pathD}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.9"
       />
-
-      {entries.map((e, i) => (
-        <g key={i}>
-          <circle
-            cx={toX(i)} cy={toY(toDisplay(e.overallScore))} r="5"
-            fill={scoreColor(e.overallScore)} stroke="var(--surface)" strokeWidth="2"
-          />
-          <text
-            x={toX(i)} y={toY(toDisplay(e.overallScore)) - 12}
-            fontSize="10" textAnchor="middle"
-            fill={scoreColor(e.overallScore)} fontWeight="700" fontFamily="Inter, sans-serif"
-          >
-            {toDisplay(e.overallScore)}
-          </text>
-          <text
-            x={toX(i)} y={H - 4}
-            fontSize="9" textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="Inter, sans-serif"
-          >
-            {e.submissionPeriod}
-          </text>
-        </g>
-      ))}
+      <circle
+        cx={points[points.length - 1].x}
+        cy={points[points.length - 1].y}
+        r="3"
+        fill={color}
+      />
     </svg>
   );
 }
 
-export default function HistoryPage() {
-  const router      = useRouter();
-  const { user }    = useAuth();
-  const [entries,  setEntries]  = useState<HistoryEntry[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [openId,             setOpenId]             = useState<string | null>(null);
-  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+function ScoreLineChart({ entries }: { entries: HistoryEntry[] }) {
+  if (entries.length < 1) return null;
 
-  const toggleCategory = (key: string) =>
-    setOpenCategories(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
+  const W = 560; const H = 180;
+  const PAD_L = 40; const PAD_R = 20; const PAD_T = 16; const PAD_B = 28;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const toX = (i: number) =>
+    PAD_L + (i / Math.max(entries.length - 1, 1)) * plotW;
+  const toY = (s: number) =>
+    PAD_T + (1 - (s - 1) / 2) * plotH;
+
+  const pathD = entries
+    .map((e, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(e.overallScore).toFixed(1)}`)
+    .join(' ');
+
+  const areaD = `${pathD} L${toX(entries.length - 1).toFixed(1)},${(PAD_T + plotH).toFixed(1)} L${PAD_L},${(PAD_T + plotH).toFixed(1)} Z`;
+
+  const scoreColor = (s: number) =>
+    s >= 2.4 ? '#00A651' : s >= 1.6 ? '#E8A020' : '#D0021B';
+
+  const lastScore = entries[entries.length - 1].overallScore;
+  const lineColor = scoreColor(lastScore);
+
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+        {/* Classification bands */}
+        <rect x={PAD_L} y={PAD_T} width={plotW} height={toY(2.4) - PAD_T} fill="rgba(0,166,81,0.04)" />
+        <rect x={PAD_L} y={toY(2.4)} width={plotW} height={toY(1.6) - toY(2.4)} fill="rgba(232,160,32,0.04)" />
+        <rect x={PAD_L} y={toY(1.6)} width={plotW} height={PAD_T + plotH - toY(1.6)} fill="rgba(208,2,27,0.04)" />
+
+        {/* Band labels */}
+        {[
+          { y: PAD_T + 10,  label: 'High',   c: '#00A651' },
+          { y: toY(2.0),    label: 'Medium', c: '#E8A020' },
+          { y: toY(1.3),    label: 'Low',    c: '#D0021B' },
+        ].map(({ y, label, c }) => (
+          <text key={label} x={PAD_L - 6} y={y}
+            textAnchor="end" fontSize="9" fill={c} fontWeight="600" opacity="0.7">
+            {label}
+          </text>
+        ))}
+
+        {/* Threshold lines */}
+        {[1.6, 2.4].map(s => (
+          <line key={s} x1={PAD_L} y1={toY(s)} x2={W - PAD_R} y2={toY(s)}
+            stroke="var(--border)" strokeWidth="1" strokeDasharray="4 3" />
+        ))}
+
+        {/* Y axis ticks */}
+        {[1.0, 1.5, 2.0, 2.5, 3.0].map(s => (
+          <g key={s}>
+            <text x={PAD_L - 6} y={toY(s) + 3} textAnchor="end" fontSize="9"
+              fill="var(--text-muted)">{s.toFixed(1)}</text>
+            <line x1={PAD_L - 3} y1={toY(s)} x2={PAD_L} y2={toY(s)}
+              stroke="var(--border)" strokeWidth="1" />
+          </g>
+        ))}
+
+        {/* Area fill */}
+        <path d={areaD} fill={lineColor} opacity="0.08" />
+
+        {/* Main line */}
+        <path d={pathD} fill="none" stroke={lineColor}
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Data points */}
+        {entries.map((e, i) => {
+          const x = toX(i);
+          const y = toY(e.overallScore);
+          const c = scoreColor(e.overallScore);
+          return (
+            <g key={e.id}>
+              <circle cx={x} cy={y} r="5" fill={c} />
+              <circle cx={x} cy={y} r="3" fill="white" />
+              <text x={x} y={H - 4} textAnchor="middle" fontSize="9" fill="var(--text-muted)">
+                {e.period}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+export default function ScoreHistoryPage() {
+  const router   = useRouter();
+  const { user } = useAuth();
+
+  const [history,   setHistory]   = useState<HistoryEntry[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [sdgFilter, setSdgFilter] = useState<'all' | 'improving' | 'declining'>('all');
 
   useEffect(() => {
-    if (!user?.companyId) { setLoading(false); return; }
-
+    if (!user?.companyId) return;
     const load = async () => {
       try {
-        const [scorecardSnap, submissionSnap] = await Promise.all([
-          getDocs(
-            query(
-              collection(db, 'scorecards'),
-              where('companyId', '==', user.companyId),
-            )
-          ),
-          getDocs(
-            query(
-              collection(db, 'submissions'),
-              where('companyId', '==', user.companyId),
-              where('status', '==', 'scored'),
-            )
-          ),
-        ]);
-
-        const submissions = submissionSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const submissionById = new Map(submissions.map((s: any) => [s.id || s.submissionId, s]));
-        const submissionByPeriod = new Map(submissions.map((s: any) => [s.period, s]));
-
-        const data: HistoryEntry[] = scorecardSnap.docs
-          .map(d => {
-            const sc = d.data();
-            const submission = submissionById.get(sc.submissionId) || submissionByPeriod.get(sc.submissionPeriod);
-            return {
-              scorecardId:      d.id,
-              submissionId:     sc.submissionId,
-              submissionPeriod: sc.submissionPeriod,
-              overallScore:     sc.overallScore,
-              classification:   sc.classification,
-              calculatedAt:     sc.calculatedAt,
-              highCount:        (sc.sdgScores || []).filter((s: { classification: string }) => s.classification === 'High').length,
-              lowCount:         (sc.sdgScores || []).filter((s: { classification: string }) => s.classification === 'Low').length,
-              sdgScores:        sc.sdgScores || [],
-              submissionData:   (submission as any)?.data || {},
-              submittedAt:      (submission as any)?.submittedAt,
-            };
-          })
+        const snap = await getDocs(
+          query(
+            collection(db, 'scorecards'),
+            where('companyId', '==', user.companyId)
+          )
+        );
+        const sorted = snap.docs
+          .map(d => ({ id: d.id, ...d.data() } as HistoryEntry))
           .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt));
-        setEntries(data);
-      } catch (err) {
-        console.error('History load error:', err);
+        setHistory(sorted);
       } finally {
         setLoading(false);
       }
@@ -185,281 +187,300 @@ export default function HistoryPage() {
     load();
   }, [user?.companyId]);
 
+  const milestones = useMemo(() => {
+    const events: { period: string; label: string; color: string; dot: string }[] = [];
+    for (let i = 1; i < history.length; i++) {
+      const prev = history[i - 1];
+      const curr = history[i];
+      if (
+        (prev.classification === 'Low'    && curr.classification === 'Medium') ||
+        (prev.classification === 'Medium' && curr.classification === 'High')
+      ) {
+        events.push({
+          period: curr.period,
+          label:  `Moved to ${curr.classification} Impact`,
+          color:  curr.classification === 'High' ? '#00A651' : '#E8A020',
+          dot:    curr.classification === 'High' ? '🏆' : '⭐',
+        });
+      }
+    }
+    if (history.length > 0) {
+      events.unshift({
+        period: history[0].period,
+        label:  'First submission',
+        color:  'var(--sanlam-teal)',
+        dot:    '🚀',
+      });
+    }
+    return events;
+  }, [history]);
+
+  const sdgSeries = useMemo(() => {
+    if (history.length < 2) return [];
+    const sdgIds = [...new Set(history.flatMap(h => h.sdgScores.map(s => s.sdgId)))].sort((a, b) => a - b);
+    return sdgIds.map(sdgId => {
+      const values = history.map(h => {
+        const s = h.sdgScores.find(s => s.sdgId === sdgId);
+        return s?.score ?? null;
+      });
+      const first = values.find(v => v !== null);
+      const last  = [...values].reverse().find(v => v !== null);
+      const delta = first != null && last != null ? last - first : 0;
+      return { sdgId, values, delta };
+    });
+  }, [history]);
+
+  const latest        = history[history.length - 1];
+  const first         = history[0];
+  const overall_delta = latest && first ? latest.overallScore - first.overallScore : 0;
+
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
-        <SkeletonCard className="h-40" />
-        <div className="space-y-3">
-          {[0, 1, 2].map(i => <SkeletonCard key={i} className="h-24" />)}
+      <div className="max-w-4xl mx-auto space-y-5">
+        <SkeletonCard className="h-48" />
+        <SkeletonCard className="h-32" />
+        <SkeletonCard className="h-64" />
+      </div>
+    );
+  }
+
+  if (history.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="card p-10 text-center" style={{ background: 'var(--surface)' }}>
+          <p className="text-4xl mb-3">📈</p>
+          <p className="font-semibold text-base mb-1" style={{ color: 'var(--text-primary)' }}>
+            No score history yet
+          </p>
+          <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
+            Submit your data to get your first score. Your history builds with every quarterly submission.
+          </p>
+          <button
+            onClick={() => router.push('/submit')}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ background: 'var(--sanlam-teal)' }}
+          >
+            Start first submission →
+          </button>
         </div>
       </div>
     );
   }
 
-  if (entries.length === 0) {
-    return (
-      <EmptyState
-        icon="📅"
-        title="No submission history yet"
-        description="Submit your first SDG data to start tracking your progress over time."
-        action={
-          <button className="btn-primary mx-auto" onClick={() => router.push('/submit')}>
-            Submit your data
-          </button>
-        }
-      />
-    );
-  }
-
-  const latest   = entries[entries.length - 1];
-  const previous = entries.length > 1 ? entries[entries.length - 2] : null;
-  const trend    = previous ? latest.overallScore - previous.overallScore : 0;
+  const scoreColor = (s: number) => s >= 2.4 ? '#00A651' : s >= 1.6 ? '#E8A020' : '#D0021B';
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          {entries.length} submission{entries.length > 1 ? 's' : ''} on record
+          {history.length} submission{history.length !== 1 ? 's' : ''} on record
         </span>
-        {previous && (
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          Since {new Date(first.calculatedAt).toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })}
+        </span>
+        {overall_delta !== 0 && (
           <>
             <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-            <span
-              className="text-xs font-medium"
-              style={{ color: trend >= 0 ? '#00A651' : '#D0021B' }}
-            >
-              {trend >= 0 ? '↑' : '↓'} {Math.abs(toDisplay(latest.overallScore) - toDisplay(previous!.overallScore))} pts vs previous period
+            <span className="flex items-center gap-1 text-xs font-semibold"
+              style={{ color: overall_delta > 0 ? '#00A651' : '#D0021B' }}>
+              {overall_delta > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              {overall_delta > 0 ? '+' : ''}{overall_delta.toFixed(2)} overall
             </span>
           </>
         )}
       </PageContext>
 
-      {entries.length >= 2 && (
+      {/* Hero stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          {
+            label: 'Starting score',
+            value: first.overallScore.toFixed(1),
+            sub:   first.period,
+            color: scoreColor(first.overallScore),
+          },
+          {
+            label: 'Current score',
+            value: latest.overallScore.toFixed(1),
+            sub:   latest.period,
+            color: scoreColor(latest.overallScore),
+          },
+          {
+            label: 'Total improvement',
+            value: overall_delta >= 0 ? `+${overall_delta.toFixed(2)}` : overall_delta.toFixed(2),
+            sub:   `${history.length} period${history.length !== 1 ? 's' : ''}`,
+            color: overall_delta > 0 ? '#00A651' : overall_delta < 0 ? '#D0021B' : '#E8A020',
+          },
+        ].map(({ label, value, sub, color }, i) => (
+          <div key={label} className="card p-5 text-center animate-card-in"
+            style={{ background: 'var(--surface)', animationDelay: `${i * 60}ms` }}>
+            <p className="font-bold text-3xl mb-1" style={{ color }}>{value}</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{label}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Score line chart */}
+      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+          Overall Score Trend
+        </p>
+        <ScoreLineChart entries={history} />
+      </div>
+
+      {/* Milestones */}
+      {milestones.length > 0 && (
         <div className="card p-5" style={{ background: 'var(--surface)' }}>
-          <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-            Score Progression
-          </p>
-          <TrendChart entries={entries} />
+          <div className="flex items-center gap-2 mb-4">
+            <Award size={16} style={{ color: '#E8A020' }} />
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Milestones
+            </p>
+          </div>
+          <div className="relative">
+            <div className="absolute left-3 top-2 bottom-2 w-px" style={{ background: 'var(--border)' }} />
+            <div className="space-y-4 pl-10">
+              {milestones.map((m, i) => (
+                <div key={i} className="relative animate-card-in" style={{ animationDelay: `${i * 60}ms` }}>
+                  <div className="absolute -left-7 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                    style={{ background: m.color, top: '2px' }}>
+                    {m.dot}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: m.color }}>{m.label}</p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{m.period}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      <div>
-        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-          All Submissions
-        </p>
-        <div className="space-y-3">
-          {[...entries].reverse().map((entry, idx) => {
-            const cc       = CLASSIFICATION_COLORS[entry.classification];
-            const isLatest = idx === 0;
-            const isOpen   = openId === entry.scorecardId;
-            const submittedKpis = Object.entries(entry.submissionData || {})
-              .filter(([, value]) => value !== null && value !== undefined)
-              .map(([id, value]) => ({
-                id,
-                value,
-                meta: KPI_DISPLAY_LIST.find(kpi => kpi.id === id),
-              }))
-              .sort((a, b) => {
-                const catA = a.meta?.category || 'other';
-                const catB = b.meta?.category || 'other';
-                if (catA !== catB) return catA.localeCompare(catB);
-                return (a.meta?.label || a.id).localeCompare(b.meta?.label || b.id);
-              });
-            const groupedKpis = submittedKpis.reduce<Record<string, typeof submittedKpis>>((acc, item) => {
-              const key = item.meta?.category || 'other';
-              acc[key] = acc[key] || [];
-              acc[key].push(item);
-              return acc;
-            }, {});
-
-            return (
-              <div
-                key={entry.scorecardId}
-                className="card p-5 animate-card-in"
-                style={{
-                  background:     'var(--surface)',
-                  animationDelay: `${idx * 50}ms`,
-                  borderLeft:     isLatest ? '4px solid var(--sanlam-teal)' : '4px solid var(--border)',
-                }}
-              >
-                <button
-                  onClick={() => setOpenId(prev => prev === entry.scorecardId ? null : entry.scorecardId)}
-                  className="w-full flex items-center justify-between gap-4 text-left"
-                >
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                        {entry.submissionPeriod}
-                      </p>
-                      {isLatest && (
-                        <span
-                          className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(0,181,237,0.1)', color: 'var(--sanlam-teal)' }}
-                        >
-                          Latest
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(entry.submittedAt || entry.calculatedAt).toLocaleDateString('en-ZA', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-center hidden sm:block">
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>High</p>
-                      <p className="font-bold text-sm" style={{ color: '#00A651' }}>{entry.highCount}</p>
-                    </div>
-                    <div className="text-center hidden sm:block">
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Low</p>
-                      <p className="font-bold text-sm" style={{ color: '#D0021B' }}>{entry.lowCount}</p>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className="font-bold text-xl leading-none mb-1"
-                        style={{ color: scoreColor(entry.overallScore) }}
-                      >
-                        {toDisplay(entry.overallScore)}
-                      </p>
-                      {cc && (
-                        <span
-                          className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                          style={{ background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}
-                        >
-                          {entry.classification}
-                        </span>
-                      )}
-                    </div>
-                    {isOpen
-                      ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
-                      : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
-                    }
-                  </div>
+      {/* Per-SDG trend */}
+      {sdgSeries.length > 0 && (
+        <div className="card p-5" style={{ background: 'var(--surface)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              SDG Score Trends
+            </p>
+            <div className="flex items-center gap-1.5">
+              {(['all', 'improving', 'declining'] as const).map(f => (
+                <button key={f}
+                  onClick={() => setSdgFilter(f)}
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium transition"
+                  style={{
+                    background: sdgFilter === f ? 'rgba(0,181,237,0.1)' : 'var(--bg)',
+                    color:      sdgFilter === f ? 'var(--sanlam-teal)' : 'var(--text-muted)',
+                  }}>
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
                 </button>
+              ))}
+            </div>
+          </div>
 
-                <div className="mt-3">
-                  <AnimatedProgressBar
-                    value={((entry.overallScore - 1) / 2) * 100}
-                    color={scoreColor(entry.overallScore)}
-                    height={4}
-                    delay={idx * 50 + 200}
-                  />
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {sdgSeries
+              .filter(s => {
+                if (sdgFilter === 'improving') return s.delta > 0;
+                if (sdgFilter === 'declining') return s.delta < 0;
+                return true;
+              })
+              .map((s, idx) => {
+                const sdg         = SDG_LIST.find(d => d.id === s.sdgId);
+                const validValues = s.values.filter((v): v is number => v !== null);
+                const latestVal   = validValues[validValues.length - 1];
+                const deltaColor  = s.delta > 0 ? '#00A651' : s.delta < 0 ? '#D0021B' : '#E8A020';
+                const sc          = latestVal >= 2.4 ? '#00A651' : latestVal >= 1.6 ? '#E8A020' : '#D0021B';
 
-                {isOpen && (
-                  <div className="mt-5 pt-5 animate-fade-in" style={{ borderTop: '1px solid var(--border)' }}>
-                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-8">
-
-                      {/* KPI values - clean list */}
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
-                          Submitted KPI data
-                        </p>
-                        {submittedKpis.length === 0 ? (
-                          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                            No KPI values found for this submission.
-                          </p>
-                        ) : (
-                          <div>
-                            {Object.entries(groupedKpis).map(([category, items], catIdx) => {
-                              const catKey    = `${entry.scorecardId}_${category}`;
-                              const isCatOpen = openCategories.has(catKey);
-                              return (
-                                <div key={category}>
-                                  {/* Collapsible category header */}
-                                  <button
-                                    onClick={() => toggleCategory(catKey)}
-                                    className="w-full flex items-center justify-between gap-2 py-2.5 transition-colors"
-                                    style={{
-                                      borderTop:   catIdx > 0 ? '1px solid var(--border)' : 'none',
-                                      color:       'var(--text-muted)',
-                                    }}
-                                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                  >
-                                    <span className="text-[10px] font-semibold uppercase tracking-widest">
-                                      {categoryLabel(category)}
-                                      <span className="ml-1.5 font-normal normal-case tracking-normal">
-                                        ({items.length})
-                                      </span>
-                                    </span>
-                                    {isCatOpen
-                                      ? <ChevronDown size={13} />
-                                      : <ChevronRight size={13} />
-                                    }
-                                  </button>
-
-                                  {/* KPI rows */}
-                                  {isCatOpen && items.map(({ id, value, meta }) => (
-                                    <div
-                                      key={id}
-                                      className="flex items-center justify-between py-2 px-1"
-                                      style={{ borderBottom: '1px solid var(--border)' }}
-                                    >
-                                      <span className="text-sm pr-4" style={{ color: 'var(--text-muted)' }}>
-                                        {meta?.label || id.replace(/_/g, ' ')}
-                                      </span>
-                                      <span className="text-sm font-semibold flex-shrink-0" style={{ color: 'var(--text-primary)' }}>
-                                        {formatKPIValue(value, meta?.unit)}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                return (
+                  <div key={s.sdgId} className="flex items-center gap-3 p-3 rounded-xl animate-card-in"
+                    style={{ background: 'var(--bg)', animationDelay: `${idx * 20}ms` }}>
+                    <SDGIcon sdgId={s.sdgId} size={32} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                        {sdg?.shortName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-bold" style={{ color: sc }}>
+                          {latestVal?.toFixed(1) ?? '—'}
+                        </span>
+                        <span className="text-[10px] font-semibold" style={{ color: deltaColor }}>
+                          {s.delta > 0 ? '+' : ''}{s.delta.toFixed(2)}
+                        </span>
                       </div>
-
-                      {/* SDG scores - compact list */}
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
-                          SDG scores
-                        </p>
-                        <div>
-                          {[...entry.sdgScores]
-                            .sort((a, b) => a.sdgId - b.sdgId)
-                            .map(sdg => (
-                              <div
-                                key={sdg.sdgId}
-                                className="flex items-center justify-between gap-3 py-2"
-                                style={{ borderBottom: '1px solid var(--border)' }}
-                              >
-                                <span className="text-xs truncate" style={{ color: 'var(--text-muted)', maxWidth: '160px' }}>
-                                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
-                                    SDG {sdg.sdgId}
-                                  </span>
-                                  {' '}· {sdg.sdgName}
-                                </span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  <span
-                                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                                    style={{
-                                      background: CLASSIFICATION_COLORS[sdg.classification]?.bg,
-                                      color:      CLASSIFICATION_COLORS[sdg.classification]?.text,
-                                    }}
-                                  >
-                                    {sdg.classification}
-                                  </span>
-                                  <span className="text-sm font-bold w-7 text-right" style={{ color: scoreColor(sdg.score) }}>
-                                    {toDisplay(sdg.score)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-
                     </div>
+                    <Sparkline values={validValues} color={deltaColor} width={64} height={28} />
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+          </div>
         </div>
+      )}
+
+      {/* Submission history table */}
+      <div className="card" style={{ background: 'var(--surface)' }}>
+        <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Submission History
+          </p>
+        </div>
+        <div className="grid px-5 py-2 text-[11px] font-semibold uppercase tracking-wider"
+          style={{
+            gridTemplateColumns: '1fr 1fr 1fr 1fr',
+            color:               'var(--text-muted)',
+            borderBottom:        '1px solid var(--border)',
+            background:          'var(--bg)',
+          }}>
+          <span>Period</span>
+          <span className="text-center">Score</span>
+          <span className="text-center">Classification</span>
+          <span className="text-center">Change</span>
+        </div>
+        {[...history].reverse().map((entry, idx) => {
+          const prev      = history[history.length - 2 - idx];
+          const delta     = prev ? entry.overallScore - prev.overallScore : null;
+          const sc        = scoreColor(entry.overallScore);
+          const dc        = delta === null ? 'var(--text-muted)' : delta > 0 ? '#00A651' : delta < 0 ? '#D0021B' : '#E8A020';
+          const DeltaIcon = delta === null ? null : delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
+
+          return (
+            <div key={entry.id} className="grid px-5 py-3 text-sm items-center"
+              style={{
+                gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                borderBottom:        idx < history.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                  {entry.period}
+                </p>
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {new Date(entry.calculatedAt).toLocaleDateString('en-ZA', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })}
+                </p>
+              </div>
+              <p className="text-center font-bold text-base" style={{ color: sc }}>
+                {entry.overallScore.toFixed(1)}
+              </p>
+              <span className="text-center text-xs font-semibold px-2 py-0.5 rounded mx-auto block w-fit"
+                style={{ background: `${sc}15`, color: sc }}>
+                {entry.classification}
+              </span>
+              <div className="flex items-center justify-center gap-1" style={{ color: dc }}>
+                {DeltaIcon && <DeltaIcon size={13} />}
+                <span className="text-xs font-semibold">
+                  {delta !== null
+                    ? `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}`
+                    : 'First'}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
     </div>

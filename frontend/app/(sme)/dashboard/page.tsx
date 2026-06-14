@@ -20,6 +20,7 @@ import QuarterlyReminder from '@/components/sme/QuarterlyReminder';
 import CourseBadges from '@/components/sme/CourseBadges';
 import InvestmentContext from '@/components/sme/InvestmentContext';
 import PortfolioPulse from '@/components/sme/PortfolioPulse';
+import ClassificationCelebration from '@/components/sme/ClassificationCelebration';
 
 function ScoreDots({ score }: { score: number }) {
   const level = score >= 2.4 ? 3 : score >= 1.6 ? 2 : 1;
@@ -58,7 +59,8 @@ export default function SMEDashboardPage() {
   const { company, scorecard, loading, error } = useSMEData();
   const [lastSubmissionDate, setLastSubmissionDate] = useState<string | null>(null);
   const [lastSubmissionData, setLastSubmissionData] = useState<Record<string, number | null> | null>(null);
-  const [targets, setTargets] = useState<Record<string, number>>({});
+  const [targets,             setTargets]             = useState<Record<string, number>>({});
+  const [prevClassification,  setPrevClassification]  = useState<string | null>(null);
 
   useEffect(() => {
     if (!company?.id) return;
@@ -81,6 +83,27 @@ export default function SMEDashboardPage() {
     };
     load();
   }, [company?.id]);
+
+  useEffect(() => {
+    if (!company?.id || !scorecard) return;
+    const loadPrev = async () => {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'scorecards'),
+            where('companyId', '==', company.id)
+          )
+        );
+        const sorted = snap.docs
+          .map(d => d.data())
+          .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt));
+        if (sorted.length >= 2) {
+          setPrevClassification(sorted[sorted.length - 2].classification);
+        }
+      } catch {}
+    };
+    loadPrev();
+  }, [company?.id, scorecard?.calculatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!company?.id) return;
@@ -438,6 +461,15 @@ export default function SMEDashboardPage() {
       </div>
 
       <PortfolioPulse />
+
+      {scorecard && company && (
+        <ClassificationCelebration
+          currentClassification={scorecard.classification}
+          previousClassification={prevClassification}
+          currentScore={scorecard.overallScore}
+          companyName={company.name}
+        />
+      )}
 
     </div>
   );
