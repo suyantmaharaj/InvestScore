@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePMData } from '@/hooks/usePMData';
 import { SDG_LIST } from '@/lib/sdg';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import Tooltip from '@/components/shared/Tooltip';
@@ -187,7 +188,7 @@ export default function HeatMapPage() {
                 >
                   <Tooltip content={sdg.name} position="top">
                     <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-base leading-none">{sdg.icon}</span>
+                      <SDGIcon sdgId={sdg.id} size={20} />
                       <span
                         className="text-[9px] font-bold"
                         style={{ color: selectedSDG === sdg.id ? sdg.color : 'var(--text-muted)' }}

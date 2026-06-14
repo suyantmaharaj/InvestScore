@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronRight, Award } from 'lucide-react';
+import { ChevronRight, Award, BookOpen } from 'lucide-react';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { LEARNING_COURSES, LEARNING_LESSONS } from '@/lib/learn-content';
 import {
   getAllProgress,
@@ -51,7 +52,7 @@ export default function CourseOverviewPage() {
     <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 20px' }} className="animate-page-in">
       <div className="card p-6 mb-5" style={{ background: 'var(--surface)', borderTop: `3px solid ${course.color}` }}>
         <div className="flex items-start gap-4">
-          <span className="text-4xl flex-shrink-0">{course.icon}</span>
+          <span className="flex-shrink-0">{course.icon ? <span className="text-4xl">{course.icon}</span> : <BookOpen size={40} style={{ color: course.color }} />}</span>
           <div className="flex-1">
             <h1 className="font-bold text-xl mb-1" style={{ color: 'var(--text-primary)' }}>
               {course.title}
@@ -137,7 +138,7 @@ export default function CourseOverviewPage() {
                 {done ? '✓' : li + 1}
               </div>
 
-              <span className="text-xl flex-shrink-0">{lesson.icon}</span>
+              <span className="flex-shrink-0">{lesson.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={24} /> : lesson.icon ? <span className="text-xl">{lesson.icon}</span> : <BookOpen size={20} style={{ color: lesson.color }} />}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{lesson.title}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">

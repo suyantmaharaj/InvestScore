@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import {
   TrendingUp, Minus, AlertTriangle, X,
   ArrowUpRight, ArrowDownRight, Download, Target,
@@ -147,7 +148,7 @@ function DrillDownPanel({
 
           {/* Header */}
           <div className="flex items-start gap-4 mb-8 pr-12 max-w-6xl">
-            <span className="text-4xl leading-none">{sdg.icon}</span>
+            <SDGIcon sdgId={sdg.id} size={48} rounded />
             <div>
               <p className="text-[#015376] font-bold text-2xl sm:text-3xl leading-tight">{sdg.name}</p>
               <span
@@ -657,7 +658,7 @@ export default function ScorecardPage() {
               {/* Top row: icon + name + SDG badge */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xl flex-shrink-0">{sdg.icon}</span>
+                  <SDGIcon sdgId={sdg.id} size={28} />
                   <p className="font-semibold text-sm leading-tight truncate" style={{ color: 'var(--text-primary, #015376)' }}>
                     {sdg.name}
                   </p>

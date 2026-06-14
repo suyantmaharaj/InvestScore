@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { MoreHorizontal, X, ChevronLeft, ChevronRight, CheckCircle, ExternalLink } from 'lucide-react';
+import { MoreHorizontal, X, ChevronLeft, ChevronRight, CheckCircle, ExternalLink, BookOpen } from 'lucide-react';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { LEARNING_LESSONS, LEARNING_COURSES } from '@/lib/learn-content';
 import { completeLesson, getLessonProgress, getCourseProgress, completeCourse } from '@/lib/learn-progress';
 
@@ -154,7 +155,7 @@ export default function LessonPage() {
                     >
                       {isDone ? '✓' : i + 1}
                     </div>
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="flex-shrink-0">{item.sdgId ? <SDGIcon sdgId={item.sdgId} size={20} /> : item.icon ? <span className="text-sm">{item.icon}</span> : <BookOpen size={16} style={{ color: 'var(--text-muted)' }} />}</span>
                     <p className="text-xs flex-1 min-w-0 truncate font-medium" style={{ color: isCurrent ? 'var(--sanlam-teal)' : 'var(--text-muted)' }}>
                       {item.title}
                     </p>
@@ -214,7 +215,7 @@ export default function LessonPage() {
           </div>
 
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">{lesson.icon}</span>
+            <span className="flex-shrink-0">{lesson.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={48} rounded /> : lesson.icon ? <span className="text-4xl">{lesson.icon}</span> : <BookOpen size={40} style={{ color: lesson.color }} />}</span>
             <div>
               <h1 className="font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>{lesson.title}</h1>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{lesson.tagline}</p>

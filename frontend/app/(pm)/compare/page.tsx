@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { usePMData } from '@/hooks/usePMData';
 import { SDG_LIST } from '@/lib/sdg';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
 import { X, Plus, Download, Trophy } from 'lucide-react';
@@ -391,8 +392,8 @@ export default function ComparePage() {
                       </span>{' '}
                       SDG {c.wins === 1 ? 'win' : 'wins'}
                     </p>
-                    {strongSDG && <p>Strongest: {strongSDG.icon} SDG {strongSDG.id}</p>}
-                    {weakSDG   && <p>Weakest: {weakSDG.icon} SDG {weakSDG.id}</p>}
+                    {strongSDG && <p className="flex items-center gap-1">Strongest: <SDGIcon sdgId={strongSDG.id} size={16} /> SDG {strongSDG.id}</p>}
+                    {weakSDG   && <p className="flex items-center gap-1">Weakest: <SDGIcon sdgId={weakSDG.id} size={16} /> SDG {weakSDG.id}</p>}
                   </div>
                 </div>
               );
@@ -457,7 +458,7 @@ export default function ComparePage() {
                     className="flex items-center gap-1.5 flex-shrink-0"
                     style={{ width: '100px', paddingTop: '3px' }}
                   >
-                    <span className="text-sm leading-none">{sdg.icon}</span>
+                    <SDGIcon sdgId={sdg.id} size={20} />
                     <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                       SDG {sdg.id}
                     </span>

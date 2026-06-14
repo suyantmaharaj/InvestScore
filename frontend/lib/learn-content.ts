@@ -6,7 +6,7 @@ export interface LearningLesson {
   tagline:      string;
   duration:     string;
   difficulty:   'Beginner' | 'Intermediate' | 'Advanced';
-  icon:         string;
+  icon?:        string;
   color:        string;
   what:         string;
   why:          string;
@@ -31,7 +31,7 @@ export interface LearningCourse {
   id:           string;
   title:        string;
   description:  string;
-  icon:         string;
+  icon?:        string;
   color:        string;
   lessons:      string[];
   estimatedTime:string;

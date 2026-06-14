@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Award } from 'lucide-react';
+import { Award, BookOpen } from 'lucide-react';
 import { LEARNING_COURSES } from '@/lib/learn-content';
 import { getCourseProgress, getCourseCompletionPct } from '@/lib/learn-progress';
 
@@ -98,13 +98,17 @@ export default function CourseBadges() {
             >
               <div className="relative">
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
                   style={{
                     background: badge.earned ? `${badge.color}20` : 'var(--border)',
                     border: `2px solid ${badge.earned ? badge.color : 'transparent'}`,
                   }}
                 >
-                  {badge.icon}
+                  {badge.icon ? (
+                    <span className="text-2xl">{badge.icon}</span>
+                  ) : (
+                    <BookOpen size={22} style={{ color: badge.earned ? badge.color : 'var(--text-muted)' }} />
+                  )}
                 </div>
 
                 {badge.earned && (

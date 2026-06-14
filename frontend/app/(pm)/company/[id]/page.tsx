@@ -11,6 +11,7 @@ import { usePMCompanyDetail } from '@/hooks/usePMData';
 import { useWatchlist } from '@/hooks/useWatchlist';
 import EngagementLog from '@/components/pm/EngagementLog';
 import { SDG_LIST, CLASSIFICATION_COLORS } from '@/lib/sdg';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { SkeletonCard, SkeletonLine } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import { toDisplay } from '@/lib/score';
@@ -173,7 +174,7 @@ function PMTargetPanel({
                   className="flex items-center gap-3 p-3 rounded-xl"
                   style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <span className="text-base flex-shrink-0">{sdgMeta?.icon ?? '🎯'}</span>
+                  {sdgMeta ? <SDGIcon sdgId={sdgMeta.id} size={24} /> : <span className="text-base flex-shrink-0">🎯</span>}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                       SDG {s.sdgId}
@@ -447,10 +448,10 @@ function SDGTab({ scorecard }: { scorecard: NonNullable<ReturnType<typeof usePMC
           >
             <div className="flex items-start gap-3">
               <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
                 style={{ background: `${sdg?.color ?? '#888'}20` }}
               >
-                {sdg?.icon ?? '🎯'}
+                {sdg ? <SDGIcon sdgId={sdg.id} size={28} /> : <span className="text-base">🎯</span>}
               </div>
 
               <div className="flex-1 min-w-0">

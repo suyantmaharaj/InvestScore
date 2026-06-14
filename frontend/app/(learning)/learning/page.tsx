@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookOpen, Map, Star, RefreshCw, ChevronRight, Zap, Calculator, BookMarked } from 'lucide-react';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { LEARNING_LESSONS, LEARNING_COURSES } from '@/lib/learn-content';
 import {
   getAllProgress,
@@ -156,8 +157,12 @@ export default function LearningHubPage() {
                 >
                   <div className="relative inline-block mb-3">
                     <ProgressRing pct={pct} size={72} stroke={6} color={course.color} />
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ fontSize: '20px' }}>
-                      {course.icon}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {course.icon ? (
+                        <span style={{ fontSize: '20px' }}>{course.icon}</span>
+                      ) : (
+                        <BookOpen size={20} style={{ color: course.color }} />
+                      )}
                     </div>
                   </div>
                   <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--text-primary)' }}>{course.title}</p>
@@ -198,7 +203,7 @@ export default function LearningHubPage() {
                   className="card card-interactive p-4 text-left animate-card-in"
                   style={{ background: 'var(--surface)', borderLeft: `4px solid ${lesson.color}`, animationDelay: `${i * 50}ms` }}
                 >
-                  <span className="text-xl mb-2 block">{lesson.icon}</span>
+                  <div className="mb-2">{lesson.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={28} /> : lesson.icon ? <span className="text-xl">{lesson.icon}</span> : <BookOpen size={24} style={{ color: lesson.color }} />}</div>
                   <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text-primary)' }}>{lesson.title}</p>
                   <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{lesson.duration} | {lesson.difficulty}</p>
                 </button>
@@ -254,7 +259,9 @@ export default function LearningHubPage() {
                 >
                   <div className="relative">
                     <ProgressRing pct={done ? 100 : 0} size={52} stroke={4} color={sdg?.color || '#00B5ED'} />
-                    <div className="absolute inset-0 flex items-center justify-center text-xl">{sdg?.icon}</div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {sdg ? <SDGIcon sdgId={sdg.id} size={28} rounded /> : <BookOpen size={20} style={{ color: '#00B5ED' }} />}
+                    </div>
                   </div>
                   <p className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'var(--text-muted)' }}>
                     SDG {lesson.sdgId}
@@ -312,7 +319,7 @@ export default function LearningHubPage() {
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 text-white" style={{ background: done ? '#00A651' : isNext ? 'var(--sanlam-teal)' : 'var(--border)' }}>
                         {done ? '✓' : i + 1}
                       </div>
-                      <span className="text-lg flex-shrink-0">{lesson?.icon || '📖'}</span>
+                      <span className="flex-shrink-0">{lesson?.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={24} /> : lesson?.icon ? <span className="text-lg">{lesson.icon}</span> : <BookOpen size={20} style={{ color: 'var(--text-muted)' }} />}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{pl.title}</p>
                         <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{pl.reason}</p>
@@ -360,7 +367,13 @@ export default function LearningHubPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                       <ProgressRing pct={pct} size={56} stroke={5} color={course.color} />
-                      <div className="absolute inset-0 flex items-center justify-center text-lg">{course.icon}</div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {course.icon ? (
+                          <span className="text-lg">{course.icon}</span>
+                        ) : (
+                          <BookOpen size={18} style={{ color: course.color }} />
+                        )}
+                      </div>
                     </div>
                     <div>
                       <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{course.title}</p>
@@ -394,7 +407,7 @@ export default function LearningHubPage() {
                         <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0" style={{ background: done ? '#00A651' : `${lesson.color}20`, color: done ? 'white' : lesson.color }}>
                           {done ? '✓' : li + 1}
                         </div>
-                        <span className="text-base flex-shrink-0">{lesson.icon}</span>
+                        <span className="flex-shrink-0">{lesson.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={20} /> : lesson.icon ? <span className="text-base">{lesson.icon}</span> : <BookOpen size={18} style={{ color: lesson.color }} />}</span>
                         <p className="text-sm flex-1 min-w-0 truncate" style={{ color: 'var(--text-primary)' }}>{lesson.title}</p>
                         <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{lesson.duration}</span>
                         <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} />
@@ -426,7 +439,7 @@ export default function LearningHubPage() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl flex-shrink-0">{lesson.icon}</span>
+                  <span className="flex-shrink-0">{lesson.sdgId ? <SDGIcon sdgId={lesson.sdgId} size={28} /> : lesson.icon ? <span className="text-2xl">{lesson.icon}</span> : <BookOpen size={24} style={{ color: lesson.color }} />}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{lesson.title}</p>

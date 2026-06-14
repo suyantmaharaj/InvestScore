@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { usePMData } from '@/hooks/usePMData';
 import { SDG_LIST } from '@/lib/sdg';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
@@ -272,7 +273,7 @@ export default function AlertsPage() {
                       {m.label}
                     </span>
                     {sdg && (
-                      <span className="text-base leading-none">{sdg.icon}</span>
+                      <SDGIcon sdgId={sdg.id} size={20} />
                     )}
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {alert.title}

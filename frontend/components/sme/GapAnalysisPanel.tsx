@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, TrendingUp, Clock, ArrowRight, Download, Target } from 'lucide-react';
 import { SDG_LIST } from '@/lib/sdg';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { calculateGaps, GapAnalysisResult, TargetClassification } from '@/lib/gap-analysis';
 
 interface Props {
@@ -109,7 +110,7 @@ export default function GapAnalysisPanel({
 
         {/* Header */}
         <div className="flex items-start gap-4 mb-8 pr-12 max-w-6xl">
-          <span className="text-4xl leading-none">{sdg?.icon}</span>
+          {sdg && <SDGIcon sdgId={sdg.id} size={48} rounded />}
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <p className="font-bold text-2xl sm:text-3xl leading-tight" style={{ color: 'var(--text-primary)' }}>

@@ -3,6 +3,7 @@
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import { SDG_LIST } from '@/lib/sdg';
 import { toDisplay } from '@/lib/score';
+import SDGIcon from '@/components/sdg/SDGIcon';
 
 export default function SectorContext() {
   const { data, loading } = useBenchmarkData();
@@ -43,7 +44,7 @@ export default function SectorContext() {
             <div key={row.sdgId}>
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">{sdg?.icon}</span>
+                  {sdg && <SDGIcon sdgId={sdg.id} size={20} />}
                   <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                     SDG {row.sdgId}
                   </span>

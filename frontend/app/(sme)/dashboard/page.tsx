@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getCached, setCached } from '@/lib/queryClient';
 import { TrendingUp, AlertTriangle, Award, CheckCircle } from 'lucide-react';
+import SDGIcon from '@/components/sdg/SDGIcon';
 import { useSMEContext as useSMEData } from '@/context/SMEDataContext';
 import { db } from '@/lib/firebase';
 import { SDG_LIST, CLASSIFICATION_COLORS, CLASSIFICATION_LABELS } from '@/lib/sdg';
@@ -337,7 +338,7 @@ export default function SMEDashboardPage() {
                     className="flex items-center gap-2 p-2 rounded-lg"
                     style={{ background: 'var(--bg)', border: `1px solid ${done ? 'rgba(0,166,81,0.2)' : 'var(--border)'}` }}
                   >
-                    <span className="text-sm flex-shrink-0">{sdg?.icon ?? '🎯'}</span>
+                    {sdg ? <SDGIcon sdgId={sdg.id} size={20} /> : <span className="text-sm flex-shrink-0">🎯</span>}
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>SDG {sdgId}</p>
                       <p className="text-[11px] font-bold" style={{ color: done ? '#00A651' : '#E8A020' }}>
@@ -413,7 +414,7 @@ export default function SMEDashboardPage() {
                   <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted, #4A5568)' }}>
                     SDG {sdg.id}
                   </p>
-                  <p className="text-base leading-none my-1">{sdg.icon}</p>
+                  <div className="flex justify-center my-1"><SDGIcon sdgId={sdg.id} size={24} /></div>
                   <p className="text-[10px] truncate leading-tight mb-1.5" style={{ color: 'var(--text-muted, #4A5568)' }}>
                     {sdg.shortName}
                   </p>
