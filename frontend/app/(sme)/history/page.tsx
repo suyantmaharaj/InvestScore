@@ -11,11 +11,14 @@ import { SDG_LIST }    from '@/lib/sdg';
 import SDGIcon         from '@/components/sdg/SDGIcon';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext      from '@/components/shared/PageContext';
-import { TrendingUp, TrendingDown, Minus, Award } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Award, ChevronDown, ChevronUp } from 'lucide-react';
+import { KPI_DISPLAY_LIST } from '@/lib/kpi-data';
+import { CLASSIFICATION_COLORS } from '@/lib/sdg';
 
 interface HistoryEntry {
   id:             string;
   period:         string;
+  submissionId?:  string;
   calculatedAt:   string;
   overallScore:   number;
   classification: string;
@@ -24,6 +27,8 @@ interface HistoryEntry {
     score:          number;
     classification: string;
   }>;
+  submissionData?: Record<string, number | null>;
+  submittedAt?:    string;
 }
 
 function Sparkline({
@@ -164,21 +169,53 @@ export default function ScoreHistoryPage() {
 
   const [history,   setHistory]   = useState<HistoryEntry[]>([]);
   const [loading,   setLoading]   = useState(true);
-  const [sdgFilter, setSdgFilter] = useState<'all' | 'improving' | 'declining'>('all');
+  const [sdgFilter,      setSdgFilter]      = useState<'all' | 'improving' | 'declining'>('all');
+  const [openId,         setOpenId]         = useState<string | null>(null);
+  const [collapsedCats,  setCollapsedCats]  = useState<Set<string>>(new Set());
+
+  const toggleCat = (key: string) =>
+    setCollapsedCats(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   useEffect(() => {
     if (!user?.companyId) return;
     const load = async () => {
       try {
-        const snap = await getDocs(
-          query(
-            collection(db, 'scorecards'),
-            where('companyId', '==', user.companyId)
-          )
-        );
-        const sorted = snap.docs
-          .map(d => ({ id: d.id, ...d.data() } as HistoryEntry))
+        const [scorecardSnap, submissionSnap] = await Promise.all([
+          getDocs(query(collection(db, 'scorecards'),  where('companyId', '==', user.companyId))),
+          getDocs(query(collection(db, 'submissions'), where('companyId', '==', user.companyId), where('status', '==', 'scored'))),
+        ]);
+
+        const subByPeriod = new Map<string, any>();
+        const subById     = new Map<string, any>();
+        submissionSnap.docs.forEach(d => {
+          const s = { id: d.id, ...d.data() };
+          if ((s as any).period)           subByPeriod.set((s as any).period,           s);
+          if ((s as any).submissionPeriod) subByPeriod.set((s as any).submissionPeriod, s);
+          subById.set(d.id, s);
+        });
+
+        const sorted = scorecardSnap.docs
+          .map(d => {
+            const sc  = d.data();
+            const sub = subById.get(sc.submissionId) || subByPeriod.get(sc.submissionPeriod) || subByPeriod.get(sc.period);
+            return {
+              id:             d.id,
+              period:         sc.submissionPeriod || sc.period || '',
+              submissionId:   sc.submissionId,
+              calculatedAt:   sc.calculatedAt,
+              overallScore:   sc.overallScore,
+              classification: sc.classification,
+              sdgScores:      sc.sdgScores || [],
+              submissionData: sub?.data    || null,
+              submittedAt:    sub?.submittedAt || sc.calculatedAt,
+            } as HistoryEntry;
+          })
           .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt));
+
         setHistory(sorted);
       } finally {
         setLoading(false);
@@ -421,16 +458,21 @@ export default function ScoreHistoryPage() {
         </div>
       )}
 
-      {/* Submission history table */}
+      {/* Submission history — expandable rows */}
       <div className="card" style={{ background: 'var(--surface)' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Submission History
           </p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Click any row to see the full KPI data submitted that period
+          </p>
         </div>
+
+        {/* Header row */}
         <div className="grid px-5 py-2 text-[11px] font-semibold uppercase tracking-wider"
           style={{
-            gridTemplateColumns: '1fr 1fr 1fr 1fr',
+            gridTemplateColumns: '1fr 80px 100px 80px 24px',
             color:               'var(--text-muted)',
             borderBottom:        '1px solid var(--border)',
             background:          'var(--bg)',
@@ -439,45 +481,201 @@ export default function ScoreHistoryPage() {
           <span className="text-center">Score</span>
           <span className="text-center">Classification</span>
           <span className="text-center">Change</span>
+          <span />
         </div>
+
         {[...history].reverse().map((entry, idx) => {
           const prev      = history[history.length - 2 - idx];
           const delta     = prev ? entry.overallScore - prev.overallScore : null;
           const sc        = scoreColor(entry.overallScore);
           const dc        = delta === null ? 'var(--text-muted)' : delta > 0 ? '#00A651' : delta < 0 ? '#D0021B' : '#E8A020';
           const DeltaIcon = delta === null ? null : delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
+          const isOpen    = openId === entry.id;
+
+          // Build grouped KPI list for the drawer
+          const kpiRows = Object.entries(entry.submissionData || {})
+            .filter(([, v]) => v !== null && v !== undefined)
+            .map(([id, value]) => ({ id, value: value as number, meta: KPI_DISPLAY_LIST.find(k => k.id === id) }))
+            .sort((a, b) => {
+              const ca = a.meta?.category || 'z';
+              const cb = b.meta?.category || 'z';
+              return ca !== cb ? ca.localeCompare(cb) : (a.meta?.label || a.id).localeCompare(b.meta?.label || b.id);
+            });
+
+          const grouped = kpiRows.reduce<Record<string, typeof kpiRows>>((acc, row) => {
+            const cat = row.meta?.category || 'other';
+            acc[cat] = acc[cat] || [];
+            acc[cat].push(row);
+            return acc;
+          }, {});
+
+          const formatVal = (v: number, unit?: string) => {
+            if (unit === 'ZAR') return `R${v.toLocaleString('en-ZA')}`;
+            if (unit === '%')   return `${v}%`;
+            return unit ? `${v.toLocaleString('en-ZA')} ${unit}` : v.toLocaleString('en-ZA');
+          };
+
+          const catLabel = (cat: string) =>
+            cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
           return (
-            <div key={entry.id} className="grid px-5 py-3 text-sm items-center"
-              style={{
-                gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                borderBottom:        idx < history.length - 1 ? '1px solid var(--border)' : 'none',
-              }}>
-              <div>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {entry.period}
+            <div key={entry.id}
+              style={{ borderBottom: idx < history.length - 1 ? '1px solid var(--border)' : 'none' }}>
+
+              {/* Clickable summary row */}
+              <button
+                onClick={() => setOpenId(prev => prev === entry.id ? null : entry.id)}
+                className="w-full grid px-5 py-3 items-center text-left transition"
+                style={{
+                  gridTemplateColumns: '1fr 80px 100px 80px 24px',
+                  background: isOpen ? 'rgba(0,181,237,0.04)' : 'transparent',
+                }}
+                onMouseEnter={e => { if (!isOpen) (e.currentTarget as HTMLElement).style.background = 'var(--bg)'; }}
+                onMouseLeave={e => { if (!isOpen) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                <div>
+                  <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {entry.period}
+                  </p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {new Date(entry.submittedAt || entry.calculatedAt).toLocaleDateString('en-ZA', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <p className="text-center font-bold text-base" style={{ color: sc }}>
+                  {entry.overallScore.toFixed(1)}
                 </p>
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                  {new Date(entry.calculatedAt).toLocaleDateString('en-ZA', {
-                    day: 'numeric', month: 'short', year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <p className="text-center font-bold text-base" style={{ color: sc }}>
-                {entry.overallScore.toFixed(1)}
-              </p>
-              <span className="text-center text-xs font-semibold px-2 py-0.5 rounded mx-auto block w-fit"
-                style={{ background: `${sc}15`, color: sc }}>
-                {entry.classification}
-              </span>
-              <div className="flex items-center justify-center gap-1" style={{ color: dc }}>
-                {DeltaIcon && <DeltaIcon size={13} />}
-                <span className="text-xs font-semibold">
-                  {delta !== null
-                    ? `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}`
-                    : 'First'}
+                <span className="text-center text-xs font-semibold px-2 py-0.5 rounded mx-auto block w-fit"
+                  style={{ background: `${sc}15`, color: sc }}>
+                  {entry.classification}
                 </span>
-              </div>
+                <div className="flex items-center justify-center gap-1" style={{ color: dc }}>
+                  {DeltaIcon && <DeltaIcon size={13} />}
+                  <span className="text-xs font-semibold">
+                    {delta !== null ? `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}` : 'First'}
+                  </span>
+                </div>
+                <div style={{ color: 'var(--text-muted)' }}>
+                  {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+              </button>
+
+              {/* Expanded detail drawer */}
+              {isOpen && (
+                <div className="px-5 pb-6 animate-fade-in"
+                  style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)' }}>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 pt-5">
+
+                    {/* KPI data */}
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider mb-3"
+                        style={{ color: 'var(--text-muted)' }}>
+                        Submitted KPI Data
+                      </p>
+                      {kpiRows.length === 0 ? (
+                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                          No KPI data found for this submission.
+                        </p>
+                      ) : (
+                        Object.entries(grouped).map(([cat, rows]) => {
+                          const catKey    = `${entry.id}_${cat}`;
+                          const collapsed = collapsedCats.has(catKey);
+                          return (
+                            <div key={cat} className="mb-3">
+                              {/* Collapsible category header */}
+                              <button
+                                onClick={() => toggleCat(catKey)}
+                                className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition"
+                                style={{ background: 'var(--border)' }}
+                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
+                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+                              >
+                                <span className="text-[10px] font-semibold uppercase tracking-widest"
+                                  style={{ color: 'var(--text-muted)' }}>
+                                  {catLabel(cat)}
+                                  <span className="ml-1.5 font-normal normal-case tracking-normal">
+                                    ({rows.length})
+                                  </span>
+                                </span>
+                                {collapsed
+                                  ? <ChevronDown size={12} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                                  : <ChevronUp   size={12} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                                }
+                              </button>
+
+                              {/* Rows — hidden when collapsed */}
+                              {!collapsed && (
+                                <div className="rounded-xl overflow-hidden mt-1"
+                                  style={{ border: '1px solid var(--border)' }}>
+                                  {rows.map((row, ri) => (
+                                    <div key={row.id}
+                                      className="flex items-center justify-between px-3 py-2"
+                                      style={{
+                                        borderBottom: ri < rows.length - 1 ? '1px solid var(--border)' : 'none',
+                                        background: 'var(--surface)',
+                                      }}>
+                                      <span className="text-xs pr-4" style={{ color: 'var(--text-muted)' }}>
+                                        {row.meta?.label || row.id.replace(/_/g, ' ')}
+                                      </span>
+                                      <span className="text-xs font-semibold flex-shrink-0"
+                                        style={{ color: 'var(--text-primary)' }}>
+                                        {formatVal(row.value, row.meta?.unit)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* SDG scores for this period */}
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider mb-3"
+                        style={{ color: 'var(--text-muted)' }}>
+                        SDG Scores This Period
+                      </p>
+                      <div className="rounded-xl overflow-hidden"
+                        style={{ border: '1px solid var(--border)' }}>
+                        {[...entry.sdgScores]
+                          .sort((a, b) => a.sdgId - b.sdgId)
+                          .map((s, si) => {
+                            const cc  = CLASSIFICATION_COLORS[s.classification as keyof typeof CLASSIFICATION_COLORS];
+                            const col = s.score >= 2.4 ? '#00A651' : s.score >= 1.6 ? '#E8A020' : '#D0021B';
+                            return (
+                              <div key={s.sdgId}
+                                className="flex items-center gap-2 px-3 py-2"
+                                style={{
+                                  borderBottom: si < entry.sdgScores.length - 1 ? '1px solid var(--border)' : 'none',
+                                  background: 'var(--surface)',
+                                }}>
+                                <SDGIcon sdgId={s.sdgId} size={20} />
+                                <span className="text-xs flex-1" style={{ color: 'var(--text-muted)' }}>
+                                  SDG {s.sdgId}
+                                </span>
+                                {cc && (
+                                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                    style={{ background: cc.bg, color: cc.text }}>
+                                    {s.classification}
+                                  </span>
+                                )}
+                                <span className="text-xs font-bold w-8 text-right flex-shrink-0"
+                                  style={{ color: col }}>
+                                  {s.score.toFixed(1)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
