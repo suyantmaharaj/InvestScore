@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Map,
   GitCompare, Bell, BellDot, LogOut, TrendingUp, Menu, X,
-  ChevronLeft, ChevronRight, Users, BarChart2,
+  ChevronLeft, ChevronRight, Users, BarChart2, Crosshair,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -17,6 +17,8 @@ const NAV_ITEMS = [
   { href: '/completeness',  label: 'Data Completeness',   icon: BarChart2       },
   { href: '/explorer',      label: 'Heat Map',            icon: Map             },
   { href: '/compare',       label: 'Compare',             icon: GitCompare      },
+  { href: '/attention',     label: 'Attention Score',     icon: Crosshair       },
+  { href: '/trends',        label: 'Score Trends',        icon: TrendingUp      },
   { href: '/alerts',        label: 'Alerts',              icon: Bell            },
   { href: '/notifications', label: 'Notifications',       icon: BellDot         }
 ];

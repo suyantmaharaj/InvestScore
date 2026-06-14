@@ -2,6 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+async function apiFetch(path: string, options?: RequestInit): Promise<Response | null> {
+  if (!process.env.NEXT_PUBLIC_API_URL) return null;
+  const { auth } = await import('@/lib/firebase');
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) return null;
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
+    ...options,
+    headers: { Authorization: `Bearer ${token}`, ...options?.headers },
+  });
+}
+
 export function useWatchlist() {
   const [watchlist, setWatchlist] = useState<string[]>([]);
   const [loading,   setLoading]   = useState(true);
@@ -9,16 +20,12 @@ export function useWatchlist() {
   useEffect(() => {
     const load = async () => {
       try {
-        const { auth } = await import('@/lib/firebase');
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) return;
-        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/watchlist`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiFetch('/api/watchlist');
+        if (!res?.ok) return;
         const json = await res.json();
         setWatchlist(json.watchlist ?? []);
       } catch (err) {
-        console.error('Load watchlist error:', err);
+        if (!(err instanceof TypeError)) console.error('Load watchlist error:', err);
       } finally {
         setLoading(false);
       }
@@ -34,16 +41,13 @@ export function useWatchlist() {
 
       (async () => {
         try {
-          const { auth } = await import('@/lib/firebase');
-          const token = await auth.currentUser?.getIdToken();
-          if (!token) return;
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/watchlist`, {
+          await apiFetch('/api/watchlist', {
             method:  'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ watchlist: next }),
           });
         } catch (err) {
-          console.error('Toggle watchlist error:', err);
+          if (!(err instanceof TypeError)) console.error('Toggle watchlist error:', err);
         }
       })();
 
