@@ -5,7 +5,8 @@ import { Notification } from '@/types/notifications';
 
 const POLL_INTERVAL = 30_000;
 
-async function apiFetch(path: string, options?: RequestInit) {
+async function apiFetch(path: string, options?: RequestInit): Promise<Response | null> {
+  if (!process.env.NEXT_PUBLIC_API_URL) return null;
   const { auth } = await import('@/lib/firebase');
   const token    = await auth.currentUser?.getIdToken();
   if (!token) return null;
@@ -27,11 +28,11 @@ export function useNotifications() {
   const fetchNotifications = useCallback(async () => {
     try {
       const res = await apiFetch('/api/notifications?limit=50');
-      if (!res) return;
+      if (!res?.ok) return;
       const json = await res.json();
       setNotifications(json.notifications || []);
     } catch (err) {
-      console.error('useNotifications error:', err);
+      if (!(err instanceof TypeError)) console.error('useNotifications error:', err);
     } finally {
       setLoading(false);
     }
