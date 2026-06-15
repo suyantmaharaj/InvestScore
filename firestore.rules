@@ -91,6 +91,30 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
+    // B-BBEE certificate verifications
+    match /bbbeeVerifications/{docId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || isPM() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId)
+      );
+      allow create: if isSME() &&
+        request.resource.data.companyId == request.auth.token.companyId;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Company document vault
+    match /documents/{docId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || isPM() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId)
+      );
+      allow create: if isSME() &&
+        request.resource.data.companyId == request.auth.token.companyId;
+      allow delete: if isAdmin() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId);
+    }
+
     // Deny everything not explicitly matched
     match /{document=**} {
       allow read, write: if false;

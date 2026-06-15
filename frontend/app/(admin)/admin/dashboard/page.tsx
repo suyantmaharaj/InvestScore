@@ -41,12 +41,10 @@ export default function AdminDashboardPage() {
       try {
         const { auth } = await import('@/lib/firebase');
         const token    = await auth.currentUser?.getIdToken();
-        const [statsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-        const json = await statsRes.json();
+        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
         setStats(json);
       } catch (err) {
         console.error('Admin stats error:', err);
@@ -207,6 +205,7 @@ export default function AdminDashboardPage() {
             <AnimatedScore
               value={value}
               decimals={0}
+              raw
               className="font-bold text-2xl block mb-0.5"
               style={{ color: 'var(--text-primary)' }}
             />

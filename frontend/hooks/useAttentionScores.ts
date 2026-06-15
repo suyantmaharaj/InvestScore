@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PMPortfolioEntry, PMScorecard } from './usePMData';
 import { calculateAttentionScore, AttentionScoreResult } from '@/lib/attention-score';
@@ -21,10 +21,10 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
 
         const results = await Promise.all(
           portfolio.map(async ({ company, scorecard }) => {
-            const [historySnap, subSnap, targetSnap] = await Promise.all([
+            const [historySnap, subSnap, targetDoc] = await Promise.all([
               getDocs(query(collection(db, 'scorecards'), where('companyId', '==', company.id))),
-              getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id), where('status', '==', 'scored'))),
-              getDocs(query(collection(db, 'sdgTargets'),  where('companyId', '==', company.id))),
+              getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id))),
+              getDoc(doc(db, 'targets', company.id)),
             ]);
 
             const recentScores = historySnap.docs
@@ -33,11 +33,13 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
               .slice(-4)
               .map(s => s.overallScore);
 
-            const allSubs = subSnap.docs
+            const scoredDocs = subSnap.docs.filter(d => d.data().status === 'scored');
+
+            const allSubs = scoredDocs
               .map(d => d.data())
               .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''));
 
-            const subsInYear = subSnap.docs.filter(d => {
+            const subsInYear = scoredDocs.filter(d => {
               const s = d.data();
               return (s.scoredAt ?? s.submittedAt ?? '') >= twelveMonthsAgo;
             }).length;
@@ -53,15 +55,16 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
               ? kpiValues.filter(v => v !== null && v !== undefined).length / kpiValues.length
               : 0;
 
-            const targets      = targetSnap.docs.map(d => d.data());
-            const hasTargets   = targets.length > 0;
+            const targetsMap    = targetDoc.exists() ? (targetDoc.data()?.targets ?? {}) as Record<string, number> : {};
+            const targetEntries = Object.entries(targetsMap).map(([sdgId, v]) => ({ sdgId: parseInt(sdgId), targetScore: v }));
+            const hasTargets    = targetEntries.length > 0;
             let targetAttainment = 0;
             if (hasTargets && scorecard) {
-              const met = targets.filter(t => {
+              const met = targetEntries.filter(t => {
                 const s = scorecard.sdgScores.find(x => x.sdgId === t.sdgId);
-                return s && s.score >= (t.targetScore ?? 0);
+                return s && s.score >= t.targetScore;
               });
-              targetAttainment = met.length / targets.length;
+              targetAttainment = met.length / targetEntries.length;
             }
 
             return calculateAttentionScore({

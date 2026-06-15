@@ -17,7 +17,7 @@ router.get('/health', (_, res) => res.json({ status: 'ok', route: 'documents' })
 // GET /api/documents/:companyId — list general documents
 router.get('/:companyId', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId } = req.params;
+    const companyId = req.params['companyId'] as string;
 
     if (req.user!.role === 'sme' && req.user!.companyId !== companyId) {
       return res.status(403).json({ error: 'Forbidden.' });
@@ -42,7 +42,7 @@ router.get('/:companyId', verifyToken, async (req: AuthRequest, res: Response) =
 // POST /api/documents/:companyId — record a document after client-side upload
 router.post('/:companyId', verifyToken, requireRole('sme', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId } = req.params;
+    const companyId = req.params['companyId'] as string;
 
     if (req.user!.role === 'sme' && req.user!.companyId !== companyId) {
       return res.status(403).json({ error: 'Forbidden.' });
@@ -108,7 +108,8 @@ router.post('/:companyId', verifyToken, requireRole('sme', 'admin'), async (req:
 // DELETE /api/documents/:companyId/:docId
 router.delete('/:companyId/:docId', verifyToken, requireRole('sme', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId, docId } = req.params;
+    const companyId = req.params['companyId'] as string;
+    const docId     = req.params['docId'] as string;
 
     if (req.user!.role === 'sme' && req.user!.companyId !== companyId) {
       return res.status(403).json({ error: 'Forbidden.' });
@@ -138,7 +139,7 @@ router.delete('/:companyId/:docId', verifyToken, requireRole('sme', 'admin'), as
 // Must be defined BEFORE /:companyId/bbbee to avoid route ambiguity
 router.post('/bbbee/:verificationId/review', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
   try {
-    const { verificationId } = req.params;
+    const verificationId = req.params['verificationId'] as string;
     const { decision, rejectionReason } = req.body;
 
     if (!['approve', 'reject'].includes(decision)) {
@@ -185,8 +186,8 @@ router.post('/bbbee/:verificationId/review', verifyToken, requireRole('admin'), 
         : `Your B-BBEE certificate submission was not accepted. Reason: ${rejectionReason}. Please upload a valid certificate.`,
       companyId:   verif.companyId,
       companyName: verif.companyName,
-      severity:    decision === 'approve' ? 'info' : 'high',
-      forRole:     'sme',
+      severity:    decision === 'approve' ? 'info' : 'critical',
+      forRole:     'all',
       metadata:    { verificationId, decision, claimedLevel: verif.claimedLevel },
     });
 
@@ -210,7 +211,7 @@ router.post('/bbbee/:verificationId/review', verifyToken, requireRole('admin'), 
 // GET /api/documents/:companyId/bbbee — list B-BBEE verifications for a company
 router.get('/:companyId/bbbee', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId } = req.params;
+    const companyId = req.params['companyId'] as string;
 
     if (req.user!.role === 'sme' && req.user!.companyId !== companyId) {
       return res.status(403).json({ error: 'Forbidden.' });
@@ -235,7 +236,7 @@ router.get('/:companyId/bbbee', verifyToken, async (req: AuthRequest, res: Respo
 // POST /api/documents/:companyId/bbbee — submit B-BBEE certificate for verification
 router.post('/:companyId/bbbee', verifyToken, requireRole('sme', 'admin'), async (req: AuthRequest, res: Response) => {
   try {
-    const { companyId } = req.params;
+    const companyId = req.params['companyId'] as string;
 
     if (req.user!.role === 'sme' && req.user!.companyId !== companyId) {
       return res.status(403).json({ error: 'Forbidden.' });
