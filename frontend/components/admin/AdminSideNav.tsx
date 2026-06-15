@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserPlus,
   Brain, LogOut, TrendingUp, Menu, X, Shield, BarChart2, Sliders, ScrollText,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Building2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { href: '/audit',               label: 'Audit Log',       icon: ScrollText      },
   { href: '/admin/users',         label: 'User Management', icon: Users           },
   { href: '/admin/registrations', label: 'Registrations',   icon: UserPlus        },
+  { href: '/companies',           label: 'Companies',       icon: Building2       },
   { href: '/admin/ai-context',    label: 'AI Context',      icon: Brain           },
 ];
 

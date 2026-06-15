@@ -54,6 +54,8 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor',      subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
   '/admin/scoring':       { icon: '⚙️', title: 'Scoring Methodology',   subtitle: 'Edit KPI thresholds and sector weights',                 breadcrumb: ['Admin Portal', 'Scoring Config'] },
   '/audit':               { icon: '📋', title: 'Audit Log',             subtitle: 'Complete record of all platform actions and changes',      breadcrumb: ['Admin Portal', 'Audit Log']      },
+  '/companies/new':       { icon: '🏭', title: 'Add Company',           subtitle: 'Create a new portfolio company',                            breadcrumb: ['Admin', 'Companies', 'New']      },
+  '/companies':           { icon: '🏭', title: 'Company Management',    subtitle: 'Add, edit, and manage portfolio companies',                 breadcrumb: ['Admin', 'Companies']             },
 };
 
 function getInitials(name: string): string {

@@ -5,7 +5,7 @@ import {
   collection, getDocs, query,
   where, doc, getDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { getCached, setCached } from '@/lib/queryClient';
 
 export interface PMCompany {
@@ -62,14 +62,16 @@ export function usePMData() {
           return;
         }
 
-        const companiesSnap = await getDocs(
-          query(collection(db, 'companies'), where('status', '==', 'active'))
-        );
+        const uid = auth.currentUser?.uid;
 
-        const companies: PMCompany[] = companiesSnap.docs.map(d => ({
-          id: d.id,
-          ...d.data(),
-        } as PMCompany));
+        const companiesSnap = await getDocs(collection(db, 'companies'));
+
+        const companies: PMCompany[] = companiesSnap.docs
+          .map(d => ({ id: d.id, ...d.data() } as PMCompany & { active?: boolean; assignedPmUid?: string }))
+          .filter((c: any) =>
+            c.active !== false &&
+            (!c.assignedPmUid || c.assignedPmUid === uid)
+          ) as PMCompany[];
 
         const entries: PMPortfolioEntry[] = await Promise.all(
           companies.map(async company => {
