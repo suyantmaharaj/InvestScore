@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { PMPortfolioEntry } from './usePMData';
 
 export interface CompanyEmploymentRow {
@@ -52,6 +52,7 @@ export function usePortfolioEmployment(portfolio: PMPortfolioEntry[]) {
 
     const load = async () => {
       try {
+        await auth.currentUser?.getIdToken(true);
         // Fetch all scored submissions per company - no orderBy to avoid composite index requirement
         const submissions = await Promise.all(
           portfolio.map(async ({ company }) => {

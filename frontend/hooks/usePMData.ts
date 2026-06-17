@@ -141,6 +141,7 @@ export function usePMCompanyDetail(companyId: string) {
     const load = async () => {
       try {
         setLoading(true);
+        await auth.currentUser?.getIdToken(true);
 
         const [companySnap, scorecardSnap, submissionSnap] = await Promise.all([
           getDoc(doc(db, 'companies', companyId)),

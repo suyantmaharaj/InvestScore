@@ -34,6 +34,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/profile':      { icon: '🏢', title: 'Company Profile',    subtitle: '',                                                   breadcrumb: ['SME Portal', 'Company Profile'] },
 
   // PM Portal pages
+  '/pm-dashboard': { icon: '📊', title: 'Portfolio Dashboard', subtitle: '104+ SMME Growth & Empowerment Solution — portfolio overview', breadcrumb: ['PM Portal', 'Dashboard'] },
   '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: '',                                                   breadcrumb: ['PM Portal', 'Portfolio Overview'] },
   '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Heat Map']           },
   '/compare':       { icon: '⚖️', title: 'Compare Companies',    subtitle: 'Side-by-side SDG performance across up to 4 companies', breadcrumb: ['PM Portal', 'Compare']       },

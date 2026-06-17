@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const NAV_ITEMS = [
+  { href: '/pm-dashboard',  label: 'Dashboard',          icon: LayoutDashboard },
   { href: '/heatmap',       label: 'Portfolio Overview', icon: LayoutDashboard },
   { href: '/employment',    label: 'Employment',          icon: Users           },
   { href: '/completeness',  label: 'Data Completeness',   icon: BarChart2       },

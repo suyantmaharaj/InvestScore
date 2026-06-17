@@ -18,7 +18,7 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
-      if (user.role === 'pm')         router.replace('/heatmap');
+      if (user.role === 'pm')         router.replace('/pm-dashboard');
       else if (user.role === 'admin') router.replace('/admin/dashboard');
       else                            router.replace('/dashboard');
     }
