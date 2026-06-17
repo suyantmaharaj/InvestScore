@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme';
 import SplashWrapper from '@/components/shared/SplashWrapper';
+import { TourProvider } from '@/contexts/TourContext';
+import TourOverlay from '@/components/shared/TourOverlay';
 
 const inter = Inter({
   subsets:  ['latin'],
@@ -22,11 +24,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased min-h-screen" style={{ background: 'var(--surface-page)' }}>
-        <ThemeProvider>
-          <SplashWrapper>
-            {children}
-          </SplashWrapper>
-        </ThemeProvider>
+        <TourProvider>
+          <ThemeProvider>
+            <SplashWrapper>
+              {children}
+            </SplashWrapper>
+          </ThemeProvider>
+          <TourOverlay />
+        </TourProvider>
       </body>
     </html>
   );

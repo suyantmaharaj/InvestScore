@@ -173,7 +173,7 @@ export default function PMDashboardPage() {
       </PageContext>
 
       {/* ── HERO STATS ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div data-tour="pm-hero-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <HeroCard
           icon={Building2}
           label="Active companies"
@@ -273,7 +273,7 @@ export default function PMDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Attention alerts */}
-        <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <div data-tour="pm-attention-alerts" className="card p-5" style={{ background: 'var(--surface)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <AlertCircle size={16} style={{ color: '#D0021B' }} />

@@ -361,7 +361,7 @@ export default function ScoreHistoryPage() {
       </div>
 
       {/* Score line chart */}
-      <div className="card p-5" style={{ background: 'var(--surface)' }}>
+      <div data-tour="history-chart" className="card p-5" style={{ background: 'var(--surface)' }}>
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
           Overall Score Trend
         </p>
@@ -370,7 +370,7 @@ export default function ScoreHistoryPage() {
 
       {/* Milestones */}
       {milestones.length > 0 && (
-        <div className="card p-5" style={{ background: 'var(--surface)' }}>
+        <div data-tour="history-milestones" className="card p-5" style={{ background: 'var(--surface)' }}>
           <div className="flex items-center gap-2 mb-4">
             <Award size={16} style={{ color: '#E8A020' }} />
             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>

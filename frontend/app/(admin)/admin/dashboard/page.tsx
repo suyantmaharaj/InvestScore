@@ -272,7 +272,7 @@ export default function AdminDashboardPage() {
 
       {/* B-BBEE Verification Queue */}
       {pendingBBBEE.length > 0 && (
-        <div>
+        <div data-tour="admin-bbbee-queue">
           <div className="flex items-center gap-2 mb-4">
             <Shield size={16} style={{ color: 'var(--sanlam-teal)' }} />
             <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>

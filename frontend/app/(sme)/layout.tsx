@@ -9,6 +9,7 @@ import { SMEDataProvider } from '@/context/SMEDataContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useSMEKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import OnboardingTour, { useOnboarding } from '@/components/sme/OnboardingTour';
+import { useTour } from '@/contexts/TourContext';
 
 function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
@@ -57,16 +58,18 @@ function SMEShell({ children }: { children: React.ReactNode }) {
 export default function SMELayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { active: tourActive } = useTour();
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');
     }
-    if (!loading && user && user.role !== 'sme') {
+    // Skip role-based redirect when the platform tour is active
+    if (!loading && user && user.role !== 'sme' && !tourActive) {
       if (user.role === 'pm')    router.replace('/heatmap');
       if (user.role === 'admin') router.replace('/admin/dashboard');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, tourActive]);
 
   if (loading || !user) {
     return (

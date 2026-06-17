@@ -178,7 +178,7 @@ export default function AttentionPage() {
       </div>
 
       {/* Scatter plot */}
-      <div className="card overflow-hidden">
+      <div data-tour="attention-quadrant" className="card overflow-hidden">
         <div className="px-5 pt-5 pb-3 flex items-center gap-2">
           <Crosshair size={16} style={{ color: 'var(--sanlam-teal)' }} />
           <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>

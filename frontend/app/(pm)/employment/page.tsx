@@ -128,7 +128,7 @@ export default function PortfolioEmploymentPage() {
       </PageContext>
 
       {/* Hero stat cards - mirrors 104+ report structure */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div data-tour="employment-hero" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon="👥" label="Total employees" value={totalEmployees}
           color="#00B5ED" sub={`Across ${reportingCompanies} companies`} delay="delay-50" />
         <StatCard icon="✊" label="Black employees" value={`${blackPct}%`}

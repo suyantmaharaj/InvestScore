@@ -254,6 +254,7 @@ export default function AuditLogPage() {
       )}
 
       {/* Grouped entries */}
+      <div data-tour="audit-log-entries">
       {grouped.length === 0 ? (
         <div className="card p-10 text-center" style={{ background: 'var(--surface)' }}>
           <FileText size={24} className="mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
@@ -376,6 +377,7 @@ export default function AuditLogPage() {
           </div>
         ))
       )}
+      </div>
 
       {/* Load more */}
       {hasMore && (

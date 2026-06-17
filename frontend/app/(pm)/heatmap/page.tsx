@@ -575,7 +575,7 @@ export default function PMPortfolioOverviewPage() {
           description="Try adjusting your search or filter."
         />
       ) : (
-        <div className="space-y-3">
+        <div data-tour="heatmap-grid" className="space-y-3">
           {filtered.map(({ company, scorecard }, idx) => {
             const cc      = scorecard ? CLASSIFICATION_COLORS[scorecard.classification] : null;
             const topSDGs = scorecard?.sdgScores

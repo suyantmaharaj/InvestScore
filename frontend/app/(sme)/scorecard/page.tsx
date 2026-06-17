@@ -537,6 +537,7 @@ export default function ScorecardPage() {
       {/* B-BBEE status banner */}
       {company?.bbbeeVerificationStatus === 'pending' && (
         <div
+          data-tour="scorecard-bbbee-badge"
           className="flex items-center gap-3 p-4 rounded-xl animate-card-in"
           style={{ background: 'rgba(232,160,32,0.08)', border: '1px solid rgba(232,160,32,0.25)' }}
         >
@@ -633,7 +634,7 @@ export default function ScorecardPage() {
       </div>
 
       {/* SDG Goal Cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div data-tour="scorecard-sdg-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredSDGs.map(({ sdg, score }, idx) => {
           const cc   = score ? CLASSIFICATION_COLORS[score.classification] : null;
           const liveSectorAvg = score ? getSectorAvg(company!.sector, sdg.id) : 0;

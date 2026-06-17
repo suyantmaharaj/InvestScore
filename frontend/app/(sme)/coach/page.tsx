@@ -593,6 +593,7 @@ function ChaseInner() {
 
         {/* Input area */}
         <div
+          data-tour="chase-input"
           className="flex-shrink-0 px-4 pb-4"
           style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}
         >
@@ -637,6 +638,7 @@ function ChaseInner() {
           >
             {/* File upload */}
             <button
+              data-tour="chase-upload"
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={readingFile}

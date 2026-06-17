@@ -433,7 +433,7 @@ export default function SubmitPage() {
 
       {/* Pre-filled banner */}
       {showPrefilledBanner && prefilledFrom && (
-        <div className="rounded-xl p-4 flex items-start justify-between gap-3"
+        <div data-tour="submission-prefill-banner" className="rounded-xl p-4 flex items-start justify-between gap-3"
           style={{ background: 'rgba(0,181,237,0.06)', border: '1px solid rgba(0,181,237,0.2)' }}>
           <div className="flex items-start gap-2">
             <span className="text-base flex-shrink-0">⚡</span>
@@ -496,7 +496,7 @@ export default function SubmitPage() {
       )}
 
       {/* Progress card */}
-      <div className="rounded-xl p-5"
+      <div data-tour="submission-progress" className="rounded-xl p-5"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-3">
           <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>

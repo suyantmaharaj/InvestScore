@@ -204,6 +204,7 @@ export default function SMEDashboardPage() {
 
       {/* Overall Score Hero */}
       <div
+        data-tour="sme-hero-score"
         className="rounded-xl border p-7 animate-card-in delay-50"
         style={{ background: 'var(--surface, #fff)', borderColor: 'var(--border, #DDE3EC)' }}
       >
@@ -272,8 +273,9 @@ export default function SMEDashboardPage() {
         </div>
       </div>
 
-      {/* Investment context */}
+      {/* Investment context — PM activity signal for tour */}
       {scorecard && company && (
+        <div data-tour="pm-activity-signal">
         <InvestmentContext
           overallScore={scorecard.overallScore}
           classification={scorecard.classification}
@@ -281,6 +283,7 @@ export default function SMEDashboardPage() {
           bbbeeLevel={company.bbbeeLevel}
           companyName={company.name}
         />
+        </div>
       )}
 
       {/* Stats row */}
@@ -317,6 +320,7 @@ export default function SMEDashboardPage() {
         const pct  = Math.round((met / targetEntries.length) * 100);
         return (
           <div
+            data-tour="sme-targets-card"
             className="rounded-xl border p-5 animate-card-in delay-300"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           >

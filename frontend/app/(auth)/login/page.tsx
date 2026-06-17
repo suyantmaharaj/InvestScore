@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTour } from '@/contexts/TourContext';
 
 export default function LoginPage() {
   const router  = useRouter();
   const { user, loading, login } = useAuth();
+  const { startTour, active: tourActive } = useTour();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -15,14 +17,14 @@ export default function LoginPage() {
   const [error,    setError]    = useState('');
   const [busy,     setBusy]     = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (but not while the tour is active)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !tourActive) {
       if (user.role === 'pm')         router.replace('/pm-dashboard');
       else if (user.role === 'admin') router.replace('/admin/dashboard');
       else                            router.replace('/dashboard');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, tourActive]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -114,14 +116,22 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="relative z-10 text-white/40 text-xs">
-          Twin Transition Challenge 2026
-        </p>
+        <div className="relative z-10 flex items-center gap-3">
+          <p className="text-white/40 text-xs">Twin Transition Challenge 2026</p>
+          {/* Concealed demo script launcher — invisible until hovered */}
+          <button
+            onClick={() => router.push('/demo-script')}
+            className="w-3 h-3 rounded-full transition-all duration-300 opacity-0 hover:opacity-40 focus:opacity-60"
+            style={{ background: 'rgba(0,181,237,0.6)', flexShrink: 0 }}
+            aria-label="Demo script"
+            tabIndex={-1}
+          />
+        </div>
       </div>
 
       {/* RIGHT PANEL - form */}
       <div className="relative flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg, #F4F6F8)' }}>
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm" data-tour="login-form">
 
           {/* Mobile logo */}
           <div className="md:hidden text-center mb-8">
@@ -215,10 +225,28 @@ export default function LoginPage() {
           {/* Register button */}
           <button
             onClick={() => router.push('/register')}
-            className="w-full h-12 rounded-lg border border-[#00B5ED] text-[#00B5ED] font-semibold text-sm hover:bg-[#C9EEFB] active:bg-[#C9EEFB]/70 transition mb-8"
+            className="w-full h-12 rounded-lg border border-[#00B5ED] text-[#00B5ED] font-semibold text-sm hover:bg-[#C9EEFB] active:bg-[#C9EEFB]/70 transition mb-5"
           >
             Register your company
           </button>
+
+          {/* Platform tour */}
+          <div style={{ borderTop: '1px solid var(--border, #DDE3EC)', paddingTop: '16px', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={startTour}
+              className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ background: 'rgba(0,181,237,0.1)', color: '#00B5ED', border: '1px solid rgba(0,181,237,0.25)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.18)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.1)')}
+            >
+              <span style={{ fontSize: '16px' }}>🗺</span>
+              Take a platform tour
+            </button>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted, #4A5568)', marginTop: '8px' }}>
+              No login required · 5 minutes · All three portals
+            </p>
+          </div>
 
         </div>
       </div>

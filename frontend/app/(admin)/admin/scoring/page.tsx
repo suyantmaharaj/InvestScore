@@ -641,10 +641,12 @@ export default function ScoringConfigPage() {
 
       {/* Tab content */}
       {tab === 'thresholds' && edited && (
-        <ThresholdsTab
-          thresholds={edited.kpiThresholds}
-          onChange={handleThresholdChange}
-        />
+        <div data-tour="scoring-thresholds">
+          <ThresholdsTab
+            thresholds={edited.kpiThresholds}
+            onChange={handleThresholdChange}
+          />
+        </div>
       )}
       {tab === 'weights' && edited && (
         <WeightsTab

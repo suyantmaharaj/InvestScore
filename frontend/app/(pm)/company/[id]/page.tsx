@@ -420,10 +420,14 @@ function OverviewTab({
       </div>
 
       {/* Engagement Log - replaces freeform notes */}
-      <EngagementLog companyId={companyId} />
+      <div data-tour="engagement-log">
+        <EngagementLog companyId={companyId} />
+      </div>
 
       {/* PM Targets */}
-      <PMTargetPanel companyId={companyId} scorecard={scorecard} />
+      <div data-tour="company-targets-panel">
+        <PMTargetPanel companyId={companyId} scorecard={scorecard} />
+      </div>
     </div>
   );
 }
@@ -826,7 +830,7 @@ export default function CompanyDetailPage() {
       </button>
 
       {/* Header card */}
-      <div className="card p-5">
+      <div data-tour="company-detail-overview" className="card p-5">
         <div className="flex items-start gap-4">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
