@@ -43,8 +43,8 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/pm/settings':    { icon: '⚙️', title: 'Settings',             subtitle: 'Manage your profile and preferences',                         breadcrumb: ['PM Portal', 'Settings']           },
   '/employment':     { icon: '👥', title: 'Portfolio Employment',  subtitle: '',                                                              breadcrumb: ['PM Portal', 'Employment']          },
   '/completeness':   { icon: '📊', title: 'Data Completeness',     subtitle: '',                                                            breadcrumb: ['PM Portal', 'Data Completeness']  },
-  '/attention':      { icon: '🎯', title: 'Attention Score',       subtitle: 'Which companies need your time this week',                    breadcrumb: ['PM Portal', 'Attention Score']     },
-  '/trends':         { icon: '📈', title: 'Score Trends',          subtitle: 'Portfolio momentum — who is improving, who is stalling',     breadcrumb: ['PM Portal', 'Score Trends']        },
+  '/attention':      { icon: '🎯', title: 'Attention Score',       subtitle: '',                                                            breadcrumb: ['PM Portal', 'Attention Score']     },
+  '/trends':         { icon: '📈', title: 'Score Trends',          subtitle: '',                                                            breadcrumb: ['PM Portal', 'Score Trends']        },
 
   // Admin Portal pages
   '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',  subtitle: 'Platform overview and activity',                        breadcrumb: ['Admin Portal', 'Dashboard']     },

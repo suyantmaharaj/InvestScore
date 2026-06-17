@@ -91,6 +91,13 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
+    // Engagement logs (seed uses this collection name)
+    match /engagementLogs/{docId} {
+      allow read:  if isAuthenticated() && (isAdmin() || isPM() ||
+        (isSME() && resource.data.companyId == request.auth.token.companyId));
+      allow write: if isAuthenticated();
+    }
+
     // B-BBEE certificate verifications
     match /bbbeeVerifications/{docId} {
       allow read: if isAuthenticated() && (

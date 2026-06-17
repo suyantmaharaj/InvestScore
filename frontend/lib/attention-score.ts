@@ -106,7 +106,8 @@ export function calculateAttentionScore(input: AttentionScoreInput): AttentionSc
     return 'stable';
   })();
 
-  const isLowScore     = input.currentScore < 50;
+  // overallScore is on a 1–3 scale; use classification rather than a raw threshold
+  const isLowScore      = input.currentClassification === 'Low';
   const isHighAttention = attentionScore >= 50;
   const quadrant: QuadrantKey =
     isLowScore &&  isHighAttention ? 'priority' :

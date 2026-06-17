@@ -38,11 +38,13 @@ function StackedBar({ segments }: {
         {segments.map((s, i) => {
           const pct = s.total > 0 ? (s.value / s.total) * 100 : 0;
           return pct > 0 ? (
-            <Tooltip key={i} content={`${s.label}: ${s.value.toLocaleString()} (${Math.round(pct)}%)`} position="top">
-              <div
-                className="h-full"
-                style={{ width: `${pct}%`, background: s.color, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }}
-              />
+            <Tooltip
+              key={i}
+              content={`${s.label}: ${s.value.toLocaleString()} (${Math.round(pct)}%)`}
+              position="top"
+              wrapperStyle={{ width: `${pct}%`, height: '100%', transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }}
+            >
+              <div className="w-full h-full" style={{ background: s.color }} />
             </Tooltip>
           ) : null;
         })}

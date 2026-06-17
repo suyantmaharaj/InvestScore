@@ -13,6 +13,8 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
   useEffect(() => {
     if (portfolio.length === 0) { setLoading(false); return; }
 
+    let cancelled = false;
+
     const load = async () => {
       try {
         setLoading(true);
@@ -21,77 +23,98 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
 
         const results = await Promise.all(
           portfolio.map(async ({ company, scorecard }) => {
-            const [historySnap, subSnap, targetDoc] = await Promise.all([
-              getDocs(query(collection(db, 'scorecards'), where('companyId', '==', company.id))),
-              getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id))),
-              getDoc(doc(db, 'targets', company.id)),
-            ]);
+            // Per-company try-catch so one failure doesn't wipe all results
+            try {
+              const [historySnap, subSnap, targetDoc] = await Promise.all([
+                getDocs(query(collection(db, 'scorecards'), where('companyId', '==', company.id))),
+                getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id))),
+                getDoc(doc(db, 'targets', company.id)),
+              ]);
 
-            const recentScores = historySnap.docs
-              .map(d => d.data() as PMScorecard)
-              .sort((a, b) => a.calculatedAt.localeCompare(b.calculatedAt))
-              .slice(-4)
-              .map(s => s.overallScore);
+              const recentScores = historySnap.docs
+                .map(d => d.data() as PMScorecard)
+                .sort((a, b) => (a.calculatedAt ?? '').localeCompare(b.calculatedAt ?? ''))
+                .slice(-4)
+                .map(s => s.overallScore);
 
-            const scoredDocs = subSnap.docs.filter(d => d.data().status === 'scored');
+              const scoredDocs = subSnap.docs.filter(d => d.data().status === 'scored');
 
-            const allSubs = scoredDocs
-              .map(d => d.data())
-              .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''));
+              const allSubs = scoredDocs
+                .map(d => d.data())
+                .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''));
 
-            const subsInYear = scoredDocs.filter(d => {
-              const s = d.data();
-              return (s.scoredAt ?? s.submittedAt ?? '') >= twelveMonthsAgo;
-            }).length;
+              const subsInYear = scoredDocs.filter(d => {
+                const s = d.data();
+                return (s.scoredAt ?? s.submittedAt ?? '') >= twelveMonthsAgo;
+              }).length;
 
-            const lastSubDate    = allSubs[0]?.scoredAt ?? allSubs[0]?.submittedAt;
-            const daysSinceLast  = lastSubDate
-              ? Math.floor((now.getTime() - new Date(lastSubDate).getTime()) / 86400000)
-              : 365;
+              const lastSubDate   = allSubs[0]?.scoredAt ?? allSubs[0]?.submittedAt;
+              const daysSinceLast = lastSubDate
+                ? Math.floor((now.getTime() - new Date(lastSubDate).getTime()) / 86400000)
+                : 365;
 
-            const kpiData        = allSubs[0]?.data ?? {};
-            const kpiValues      = Object.values(kpiData) as (number | null)[];
-            const kpiCompleteness = kpiValues.length > 0
-              ? kpiValues.filter(v => v !== null && v !== undefined).length / kpiValues.length
-              : 0;
+              const kpiData         = (allSubs[0]?.data ?? {}) as Record<string, number | null>;
+              const kpiValues       = Object.values(kpiData) as (number | null)[];
+              const kpiCompleteness = kpiValues.length > 0
+                ? kpiValues.filter(v => v !== null && v !== undefined).length / kpiValues.length
+                : 0;
 
-            const targetsMap    = targetDoc.exists() ? (targetDoc.data()?.targets ?? {}) as Record<string, number> : {};
-            const targetEntries = Object.entries(targetsMap).map(([sdgId, v]) => ({ sdgId: parseInt(sdgId), targetScore: v }));
-            const hasTargets    = targetEntries.length > 0;
-            let targetAttainment = 0;
-            if (hasTargets && scorecard) {
-              const met = targetEntries.filter(t => {
-                const s = scorecard.sdgScores.find(x => x.sdgId === t.sdgId);
-                return s && s.score >= t.targetScore;
+              const targetsMap    = targetDoc.exists() ? ((targetDoc.data()?.targets ?? {}) as Record<string, number>) : {};
+              const targetEntries = Object.entries(targetsMap).map(([sdgId, v]) => ({ sdgId: parseInt(sdgId), targetScore: v }));
+              const hasTargets    = targetEntries.length > 0;
+              let targetAttainment = 0;
+              if (hasTargets && scorecard) {
+                const met = targetEntries.filter(t => {
+                  const s = scorecard.sdgScores.find(x => x.sdgId === t.sdgId);
+                  return s && s.score >= t.targetScore;
+                });
+                targetAttainment = met.length / targetEntries.length;
+              }
+
+              return calculateAttentionScore({
+                companyId:             company.id,
+                companyName:           company.name,
+                recentScores,
+                submissionsLast12:     subsInYear,
+                daysSinceLastSub:      daysSinceLast,
+                kpiCompleteness,
+                hasTargets,
+                targetAttainment,
+                currentScore:          scorecard?.overallScore ?? 0,
+                currentClassification: scorecard?.classification ?? 'Low',
               });
-              targetAttainment = met.length / targetEntries.length;
+            } catch (companyErr) {
+              console.error(`useAttentionScores: error for ${company.name}`, companyErr);
+              // Fall back to a score computed from portfolio data only
+              return calculateAttentionScore({
+                companyId:             company.id,
+                companyName:           company.name,
+                recentScores:          scorecard ? [scorecard.overallScore] : [],
+                submissionsLast12:     0,
+                daysSinceLastSub:      365,
+                kpiCompleteness:       0.5,
+                hasTargets:            false,
+                targetAttainment:      0,
+                currentScore:          scorecard?.overallScore ?? 0,
+                currentClassification: scorecard?.classification ?? 'Low',
+              });
             }
-
-            return calculateAttentionScore({
-              companyId:             company.id,
-              companyName:           company.name,
-              recentScores,
-              submissionsLast12:     subsInYear,
-              daysSinceLastSub:      daysSinceLast,
-              kpiCompleteness,
-              hasTargets,
-              targetAttainment,
-              currentScore:          scorecard?.overallScore ?? 0,
-              currentClassification: scorecard?.classification ?? 'Low',
-            });
           })
         );
 
-        setScores(results.sort((a, b) => b.attentionScore - a.attentionScore));
+        if (!cancelled) {
+          setScores(results.sort((a, b) => b.attentionScore - a.attentionScore));
+        }
       } catch (err) {
         console.error('useAttentionScores error:', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
-  }, [portfolio.length]);
+    return () => { cancelled = true; };
+  }, [portfolio]); // use full array reference — matches usePortfolioEmployment pattern
 
   return { scores, loading };
 }

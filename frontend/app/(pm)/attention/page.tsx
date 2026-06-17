@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Crosshair, ChevronRight } from 'lucide-react';
+import { Crosshair, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { usePMData } from '@/hooks/usePMData';
 import { useAttentionScores } from '@/hooks/useAttentionScores';
 import { QUADRANT_CONFIG, QuadrantKey, AttentionScoreResult } from '@/lib/attention-score';
 import { SkeletonCard } from '@/components/shared/Skeleton';
+import PageContext from '@/components/shared/PageContext';
 
 // ─── Scatter helpers ──────────────────────────────────────────────────────────
 
@@ -111,8 +112,32 @@ export default function AttentionPage() {
     );
   }
 
+  const avgAttention = scores.length
+    ? Math.round(scores.reduce((s, c) => s + c.attentionScore, 0) / scores.length)
+    : 0;
+  const improving = scores.filter(s => s.trend === 'improving').length;
+  const declining = scores.filter(s => s.trend === 'declining').length;
+
   return (
-    <div className="p-4 lg:p-6 space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
+
+      <PageContext>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <strong style={{ color: 'var(--text-primary)' }}>{scores.length}</strong> companies tracked
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          Avg attention score:{' '}
+          <strong style={{ color: avgAttention >= 60 ? '#EF4444' : avgAttention >= 40 ? '#F59E0B' : '#00A651' }}>
+            {avgAttention}
+          </strong>
+        </span>
+        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span style={{ color: '#00A651' }}>↑ {improving}</span> improving ·{' '}
+          <span style={{ color: '#EF4444' }}>↓ {declining}</span> declining
+        </span>
+      </PageContext>
 
       {/* Summary quadrant cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -123,7 +148,7 @@ export default function AttentionPage() {
             <button
               key={key}
               onClick={() => setQuadrantFilter(active ? 'all' : key)}
-              className="card text-left transition-all"
+              className="card p-4 text-left transition-all"
               style={{
                 borderColor: active ? cfg.color : 'var(--border)',
                 boxShadow:   active ? `0 0 0 2px ${cfg.color}33` : undefined,
@@ -150,13 +175,13 @@ export default function AttentionPage() {
 
       {/* Scatter plot */}
       <div className="card overflow-hidden">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="px-5 pt-5 pb-3 flex items-center gap-2">
           <Crosshair size={16} style={{ color: 'var(--sanlam-teal)' }} />
           <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
             Attention Quadrant
           </h2>
           <span className="text-[11px] ml-auto" style={{ color: 'var(--text-muted)' }}>
-            X = Score · Y = Attention Needed
+            X = Overall Score · Y = Attention Needed
           </span>
         </div>
 
@@ -322,7 +347,7 @@ export default function AttentionPage() {
       </div>
 
       {/* Company list */}
-      <div className="card">
+      <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
             {quadrantFilter === 'all' ? 'All Companies' : QUADRANT_CONFIG[quadrantFilter].label} ({filtered.length})
@@ -371,7 +396,18 @@ export default function AttentionPage() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-lg font-bold" style={{ color: cfg.color }}>{s.attentionScore}</p>
-                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>attention</p>
+                    <div className="flex items-center justify-end gap-1 mt-0.5">
+                      {s.trend === 'improving'
+                        ? <TrendingUp size={10} style={{ color: '#00A651' }} />
+                        : s.trend === 'declining'
+                        ? <TrendingDown size={10} style={{ color: '#EF4444' }} />
+                        : <Minus size={10} style={{ color: 'var(--text-muted)' }} />}
+                      <p className="text-[10px]" style={{
+                        color: s.trend === 'improving' ? '#00A651' : s.trend === 'declining' ? '#EF4444' : 'var(--text-muted)',
+                      }}>
+                        {s.trend}
+                      </p>
+                    </div>
                   </div>
                   <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 </div>

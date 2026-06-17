@@ -1072,6 +1072,538 @@ const AI_CONTEXT = {
 };
 
 // ============================================================
+// MARVEL COMPANIES — fictional seed data for PM portal demo
+// ============================================================
+
+const PERIOD_TIMING: Record<string, { submittedDaysAgo: number; scoredDaysAgo: number }> = {
+  'Q2 2025': { submittedDaysAgo: 365, scoredDaysAgo: 358 },
+  'Q3 2025': { submittedDaysAgo: 275, scoredDaysAgo: 268 },
+  'Q4 2025': { submittedDaysAgo: 185, scoredDaysAgo: 178 },
+  'Q1 2026': { submittedDaysAgo: 7,   scoredDaysAgo: 6   },
+};
+
+interface MarvelSubmission {
+  submissionPeriod: string;
+  data:             Record<string, number | null>;
+}
+
+interface MarvelEntry {
+  company: {
+    id:                       string;
+    name:                     string;
+    sector:                   string;
+    industry:                 string;
+    location:                 string;
+    mandate:                  string;
+    bbbeeLevel:               number | null;
+    bbbeeVerificationStatus:  string | null;
+    description:              string;
+    website:                  string | null;
+    spokespersonName:         string;
+    spokespersonTitle:        string;
+    spokespersonEmail:        string;
+    targetIrr:                number;
+    active:                   boolean;
+  };
+  smeUser: { email: string; password: string; name: string };
+  submissions: MarvelSubmission[];
+}
+
+const MARVEL_COMPANIES: MarvelEntry[] = [
+
+  // ── 1. STARK INDUSTRIES SA ─────────────────────────────────────────────────
+  {
+    company: {
+      id: 'stark-industries-sa', name: 'Stark Industries SA',
+      sector: 'manufacturing', industry: 'Advanced Manufacturing & Clean Tech',
+      location: 'Johannesburg, Gauteng', mandate: 'Growth',
+      bbbeeLevel: 2, bbbeeVerificationStatus: 'verified',
+      description: 'Advanced manufacturing company producing precision components and clean energy equipment for the South African industrial sector.',
+      website: 'https://stark-sa.co.za',
+      spokespersonName: 'Tony Stark-Dlamini', spokespersonTitle: 'Chief Executive Officer',
+      spokespersonEmail: 'tony@stark-sa.co.za', targetIrr: 22, active: true,
+    },
+    smeUser: { email: 'sme.stark@investscore.co.za', password: 'Stark@2026!', name: 'Tony Stark-Dlamini' },
+    submissions: [
+      {
+        submissionPeriod: 'Q3 2025',
+        data: {
+          total_employees: 108, youth_employees: 54, female_employees: 38,
+          management_employees: 28, contractor_employees: 6, staff_employees: 80,
+          black_employees: 89, coloured_employees: 12, indian_employees: 4, white_employees: 3, male_employees: 70,
+          scope1_co2e: 42, scope2_co2e: 38, electricity_consumption: 41000,
+          renewable_energy_produced: 18000, renewable_energy_utilised: 18000,
+          total_water_consumption: 280, recycled_waste_pct: 52,
+          bbbee_rating: 2, black_ownership_pct: 55, black_female_ownership_pct: 22, black_board_pct: 72,
+          procurement_black_owned_pct: 68, procurement_women_owned_pct: 31,
+          total_annual_revenue: 145000000, csi_spend: 185000, local_suppliers: 24, smes_in_supply_chain: 18,
+          units_produced: 4200, local_raw_material_pct: 74, apprentices_supported: 8,
+        },
+      },
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 118, youth_employees: 61, female_employees: 44,
+          management_employees: 31, contractor_employees: 4, staff_employees: 87,
+          black_employees: 98, coloured_employees: 13, indian_employees: 4, white_employees: 3, male_employees: 74,
+          scope1_co2e: 38, scope2_co2e: 31, electricity_consumption: 38000,
+          renewable_energy_produced: 24000, renewable_energy_utilised: 24000,
+          total_water_consumption: 260, recycled_waste_pct: 61,
+          bbbee_rating: 2, black_ownership_pct: 55, black_female_ownership_pct: 26, black_board_pct: 75,
+          procurement_black_owned_pct: 72, procurement_women_owned_pct: 38,
+          total_annual_revenue: 158000000, csi_spend: 210000, local_suppliers: 28, smes_in_supply_chain: 22,
+          units_produced: 4800, local_raw_material_pct: 79, apprentices_supported: 10,
+        },
+      },
+    ],
+  },
+
+  // ── 2. WAKANDA CAPITAL ─────────────────────────────────────────────────────
+  {
+    company: {
+      id: 'wakanda-capital', name: 'Wakanda Capital',
+      sector: 'financial_services', industry: 'Alternative Finance & SME Lending',
+      location: 'Pretoria, Gauteng', mandate: 'Empowerment',
+      bbbeeLevel: 1, bbbeeVerificationStatus: 'verified',
+      description: '100% Black-owned alternative finance provider deploying revenue-based finance to Black-owned SMEs in township and peri-urban markets.',
+      website: 'https://wakandacapital.co.za',
+      spokespersonName: "T'Challa Mokoena", spokespersonTitle: 'Managing Director',
+      spokespersonEmail: 'tchalla@wakandacapital.co.za', targetIrr: 17, active: true,
+    },
+    smeUser: { email: 'sme.wakanda@investscore.co.za', password: 'Wakanda@2026!', name: "T'Challa Mokoena" },
+    submissions: [
+      {
+        submissionPeriod: 'Q3 2025',
+        data: {
+          total_employees: 22, youth_employees: 14, female_employees: 13,
+          management_employees: 6, contractor_employees: 2, staff_employees: 16,
+          black_employees: 22, coloured_employees: 0, indian_employees: 0, white_employees: 0, male_employees: 9,
+          scope1_co2e: 4, scope2_co2e: 8, electricity_consumption: 8800,
+          renewable_energy_produced: 0, renewable_energy_utilised: 0,
+          total_water_consumption: 45, recycled_waste_pct: 22,
+          bbbee_rating: 1, black_ownership_pct: 100, black_female_ownership_pct: 60, black_board_pct: 100,
+          procurement_black_owned_pct: 88, procurement_women_owned_pct: 55,
+          total_annual_revenue: 18000000, csi_spend: 45000, local_suppliers: 8, smes_in_supply_chain: 8,
+          smes_funded: 18, black_smes_funded_pct: 100, women_led_smes_funded_pct: 44,
+          capital_deployed_smes: 8200000, jobs_supported_smes: 124,
+        },
+      },
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 28, youth_employees: 18, female_employees: 17,
+          management_employees: 7, contractor_employees: 1, staff_employees: 21,
+          black_employees: 28, coloured_employees: 0, indian_employees: 0, white_employees: 0, male_employees: 11,
+          scope1_co2e: 4, scope2_co2e: 9, electricity_consumption: 9200,
+          renewable_energy_produced: 2400, renewable_energy_utilised: 2400,
+          total_water_consumption: 52, recycled_waste_pct: 28,
+          bbbee_rating: 1, black_ownership_pct: 100, black_female_ownership_pct: 60, black_board_pct: 100,
+          procurement_black_owned_pct: 91, procurement_women_owned_pct: 61,
+          total_annual_revenue: 24000000, csi_spend: 68000, local_suppliers: 11, smes_in_supply_chain: 11,
+          smes_funded: 26, black_smes_funded_pct: 100, women_led_smes_funded_pct: 50,
+          capital_deployed_smes: 12400000, jobs_supported_smes: 188,
+        },
+      },
+    ],
+  },
+
+  // ── 3. ROMANOFF & ASSOCIATES ───────────────────────────────────────────────
+  {
+    company: {
+      id: 'romanoff-associates', name: 'Romanoff & Associates',
+      sector: 'ict', industry: 'Cybersecurity & IT Services',
+      location: 'Cape Town, Western Cape', mandate: 'Empowerment',
+      bbbeeLevel: 1, bbbeeVerificationStatus: 'verified',
+      description: 'Black women-owned cybersecurity and managed IT services provider serving mid-market South African businesses.',
+      website: 'https://romanoff.co.za',
+      spokespersonName: 'Natasha Romanoff-Ndlovu', spokespersonTitle: 'CEO & Founder',
+      spokespersonEmail: 'natasha@romanoff.co.za', targetIrr: 16, active: true,
+    },
+    smeUser: { email: 'sme.romanoff@investscore.co.za', password: 'Romanoff@2026!', name: 'Natasha Romanoff-Ndlovu' },
+    submissions: [
+      {
+        submissionPeriod: 'Q3 2025',
+        data: {
+          total_employees: 31, youth_employees: 16, female_employees: 19,
+          management_employees: 8, contractor_employees: 5, staff_employees: 23,
+          black_employees: 28, coloured_employees: 2, indian_employees: 1, white_employees: 0, male_employees: 12,
+          scope1_co2e: 6, scope2_co2e: 14, electricity_consumption: 15000,
+          renewable_energy_produced: 0, renewable_energy_utilised: 0,
+          total_water_consumption: 78, recycled_waste_pct: 18,
+          bbbee_rating: 1, black_ownership_pct: 100, black_female_ownership_pct: 100, black_board_pct: 100,
+          procurement_black_owned_pct: 74, procurement_women_owned_pct: 68,
+          total_annual_revenue: 32000000, csi_spend: 28000, local_suppliers: 12, smes_in_supply_chain: 9,
+          new_customers_connected: 420, average_cost_of_service: 890,
+        },
+      },
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 38, youth_employees: 21, female_employees: 24,
+          management_employees: 9, contractor_employees: 3, staff_employees: 29,
+          black_employees: 35, coloured_employees: 2, indian_employees: 1, white_employees: 0, male_employees: 14,
+          scope1_co2e: 6, scope2_co2e: 15, electricity_consumption: 16500,
+          renewable_energy_produced: 3600, renewable_energy_utilised: 3600,
+          total_water_consumption: 82, recycled_waste_pct: 24,
+          bbbee_rating: 1, black_ownership_pct: 100, black_female_ownership_pct: 100, black_board_pct: 100,
+          procurement_black_owned_pct: 80, procurement_women_owned_pct: 72,
+          total_annual_revenue: 41000000, csi_spend: 42000, local_suppliers: 15, smes_in_supply_chain: 12,
+          new_customers_connected: 680, average_cost_of_service: 820,
+        },
+      },
+    ],
+  },
+
+  // ── 4. BANNER GREEN TECH ───────────────────────────────────────────────────
+  // One submission only — overdue, Low classification
+  {
+    company: {
+      id: 'banner-green-tech', name: 'Banner Green Tech',
+      sector: 'infrastructure', industry: 'Water Infrastructure & Sanitation',
+      location: 'Durban, KwaZulu-Natal', mandate: 'Development',
+      bbbeeLevel: null, bbbeeVerificationStatus: null,
+      description: 'Early-stage water infrastructure and sanitation technology company developing low-cost water purification solutions for peri-urban communities.',
+      website: null,
+      spokespersonName: 'Bruce Banner-Khumalo', spokespersonTitle: 'Founder',
+      spokespersonEmail: 'bruce@bannergreentech.co.za', targetIrr: 10, active: true,
+    },
+    smeUser: { email: 'sme.banner@investscore.co.za', password: 'Banner@2026!', name: 'Bruce Banner-Khumalo' },
+    submissions: [
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 8, youth_employees: 5, female_employees: 3,
+          management_employees: 2, contractor_employees: 4, staff_employees: 4,
+          black_employees: 7, coloured_employees: 1, indian_employees: 0, white_employees: 0, male_employees: 5,
+          scope1_co2e: null, scope2_co2e: null, electricity_consumption: null,
+          renewable_energy_produced: null, renewable_energy_utilised: null,
+          total_water_consumption: null, recycled_waste_pct: null,
+          bbbee_rating: null, black_ownership_pct: 75, black_female_ownership_pct: null, black_board_pct: null,
+          procurement_black_owned_pct: null, procurement_women_owned_pct: null,
+          total_annual_revenue: 420000, csi_spend: null, local_suppliers: 3, smes_in_supply_chain: 3,
+          water_connections: 180, water_loss_reduction_pct: null,
+        },
+      },
+    ],
+  },
+
+  // ── 5. ROGERS HOUSING SOLUTIONS ────────────────────────────────────────────
+  {
+    company: {
+      id: 'rogers-housing', name: 'Rogers Housing Solutions',
+      sector: 'housing', industry: 'Affordable Housing Development',
+      location: 'Johannesburg, Gauteng', mandate: 'Growth',
+      bbbeeLevel: 3, bbbeeVerificationStatus: 'verified',
+      description: 'Affordable housing developer focused on integrated residential communities in Johannesburg South and Soweto, with an in-house digital mortgage origination platform.',
+      website: 'https://rogershousing.co.za',
+      spokespersonName: 'Steve Rogers-Sithole', spokespersonTitle: 'Managing Director',
+      spokespersonEmail: 'steve@rogershousing.co.za', targetIrr: 18, active: true,
+    },
+    smeUser: { email: 'sme.rogers@investscore.co.za', password: 'Rogers@2026!', name: 'Steve Rogers-Sithole' },
+    submissions: [
+      {
+        submissionPeriod: 'Q2 2025',
+        data: {
+          total_employees: 42, youth_employees: 18, female_employees: 22,
+          management_employees: 10, contractor_employees: 8, staff_employees: 34,
+          black_employees: 36, coloured_employees: 4, indian_employees: 1, white_employees: 1, male_employees: 20,
+          scope1_co2e: 18, scope2_co2e: 22, electricity_consumption: 24000,
+          renewable_energy_produced: 0, renewable_energy_utilised: 0,
+          total_water_consumption: 420, recycled_waste_pct: 12,
+          bbbee_rating: 3, black_ownership_pct: 52, black_female_ownership_pct: 28, black_board_pct: 67,
+          procurement_black_owned_pct: 58, procurement_women_owned_pct: 28,
+          total_annual_revenue: 88000000, csi_spend: 92000, local_suppliers: 16, smes_in_supply_chain: 12,
+          affordable_houses: 124, social_housing_units: 42,
+        },
+      },
+      {
+        submissionPeriod: 'Q4 2025',
+        data: {
+          total_employees: 48, youth_employees: 21, female_employees: 26,
+          management_employees: 11, contractor_employees: 6, staff_employees: 42,
+          black_employees: 42, coloured_employees: 4, indian_employees: 1, white_employees: 1, male_employees: 22,
+          scope1_co2e: 16, scope2_co2e: 20, electricity_consumption: 22000,
+          renewable_energy_produced: 4800, renewable_energy_utilised: 4800,
+          total_water_consumption: 390, recycled_waste_pct: 19,
+          bbbee_rating: 3, black_ownership_pct: 52, black_female_ownership_pct: 28, black_board_pct: 67,
+          procurement_black_owned_pct: 62, procurement_women_owned_pct: 31,
+          total_annual_revenue: 102000000, csi_spend: 118000, local_suppliers: 18, smes_in_supply_chain: 14,
+          affordable_houses: 156, social_housing_units: 58,
+        },
+      },
+    ],
+  },
+
+  // ── 6. MAXIMOFF ENERGY ─────────────────────────────────────────────────────
+  // Declining — no Q1 2026 submission (overdue)
+  {
+    company: {
+      id: 'maximoff-energy', name: 'Maximoff Energy',
+      sector: 'manufacturing', industry: 'Solar PV Assembly & Distribution',
+      location: 'Port Elizabeth, Eastern Cape', mandate: 'Empowerment',
+      bbbeeLevel: 2, bbbeeVerificationStatus: 'verified',
+      description: 'Solar PV panel assembly and distribution company supplying the residential and commercial solar market in the Eastern Cape and Western Cape.',
+      website: 'https://maximoffenergy.co.za',
+      spokespersonName: 'Wanda Maximoff-Dube', spokespersonTitle: 'Chief Operations Officer',
+      spokespersonEmail: 'wanda@maximoffenergy.co.za', targetIrr: 15, active: true,
+    },
+    smeUser: { email: 'sme.maximoff@investscore.co.za', password: 'Maximoff@2026!', name: 'Wanda Maximoff-Dube' },
+    submissions: [
+      {
+        submissionPeriod: 'Q2 2025',
+        data: {
+          total_employees: 58, youth_employees: 38, female_employees: 22,
+          management_employees: 12, contractor_employees: 8, staff_employees: 50,
+          black_employees: 52, coloured_employees: 4, indian_employees: 1, white_employees: 1, male_employees: 36,
+          scope1_co2e: 28, scope2_co2e: 44, electricity_consumption: 48000,
+          renewable_energy_produced: 12000, renewable_energy_utilised: 12000,
+          total_water_consumption: 220, recycled_waste_pct: 44,
+          bbbee_rating: 2, black_ownership_pct: 68, black_female_ownership_pct: 34, black_board_pct: 80,
+          procurement_black_owned_pct: 72, procurement_women_owned_pct: 36,
+          total_annual_revenue: 38000000, csi_spend: 42000, local_suppliers: 14, smes_in_supply_chain: 10,
+          units_produced: 2800, local_raw_material_pct: 38, apprentices_supported: 6,
+        },
+      },
+      {
+        submissionPeriod: 'Q4 2025',
+        data: {
+          total_employees: 52, youth_employees: 30, female_employees: 18,
+          management_employees: 10, contractor_employees: 14, staff_employees: 38,
+          black_employees: 46, coloured_employees: 4, indian_employees: 1, white_employees: 1, male_employees: 34,
+          scope1_co2e: null, scope2_co2e: null, electricity_consumption: null,
+          renewable_energy_produced: null, renewable_energy_utilised: null,
+          total_water_consumption: null, recycled_waste_pct: null,
+          bbbee_rating: 2, black_ownership_pct: 68, black_female_ownership_pct: 34, black_board_pct: 80,
+          procurement_black_owned_pct: 65, procurement_women_owned_pct: 28,
+          total_annual_revenue: 34000000, csi_spend: 18000, local_suppliers: 11, smes_in_supply_chain: 8,
+          units_produced: 2200, local_raw_material_pct: 32, apprentices_supported: 4,
+        },
+      },
+    ],
+  },
+
+  // ── 7. DANVERS LOGISTICS ───────────────────────────────────────────────────
+  {
+    company: {
+      id: 'danvers-logistics', name: 'Danvers Logistics',
+      sector: 'logistics', industry: 'Cold Chain Logistics & Distribution',
+      location: 'Cape Town, Western Cape', mandate: 'Growth',
+      bbbeeLevel: 2, bbbeeVerificationStatus: 'verified',
+      description: 'Women-led cold chain logistics company providing temperature-controlled distribution for food retail and pharmaceutical clients across the Western and Eastern Cape.',
+      website: 'https://danverslogistics.co.za',
+      spokespersonName: 'Carol Danvers-Nkosi', spokespersonTitle: 'CEO',
+      spokespersonEmail: 'carol@danverslogistics.co.za', targetIrr: 20, active: true,
+    },
+    smeUser: { email: 'sme.danvers@investscore.co.za', password: 'Danvers@2026!', name: 'Carol Danvers-Nkosi' },
+    submissions: [
+      {
+        submissionPeriod: 'Q2 2025',
+        data: {
+          total_employees: 74, youth_employees: 32, female_employees: 44,
+          management_employees: 18, contractor_employees: 4, staff_employees: 70,
+          black_employees: 64, coloured_employees: 8, indian_employees: 1, white_employees: 1, male_employees: 30,
+          scope1_co2e: 88, scope2_co2e: 32, electricity_consumption: 34000,
+          renewable_energy_produced: 8000, renewable_energy_utilised: 8000,
+          total_water_consumption: 180, recycled_waste_pct: 58,
+          bbbee_rating: 2, black_ownership_pct: 62, black_female_ownership_pct: 38, black_board_pct: 78,
+          procurement_black_owned_pct: 74, procurement_women_owned_pct: 48,
+          total_annual_revenue: 122000000, csi_spend: 148000, local_suppliers: 22, smes_in_supply_chain: 16,
+        },
+      },
+      {
+        submissionPeriod: 'Q4 2025',
+        data: {
+          total_employees: 82, youth_employees: 36, female_employees: 50,
+          management_employees: 20, contractor_employees: 2, staff_employees: 80,
+          black_employees: 72, coloured_employees: 8, indian_employees: 1, white_employees: 1, male_employees: 32,
+          scope1_co2e: 82, scope2_co2e: 28, electricity_consumption: 31000,
+          renewable_energy_produced: 12000, renewable_energy_utilised: 12000,
+          total_water_consumption: 165, recycled_waste_pct: 64,
+          bbbee_rating: 2, black_ownership_pct: 62, black_female_ownership_pct: 38, black_board_pct: 80,
+          procurement_black_owned_pct: 78, procurement_women_owned_pct: 52,
+          total_annual_revenue: 138000000, csi_spend: 182000, local_suppliers: 26, smes_in_supply_chain: 20,
+        },
+      },
+    ],
+  },
+
+  // ── 8. PARKER RETAIL GROUP ─────────────────────────────────────────────────
+  // One submission only — Low classification
+  {
+    company: {
+      id: 'parker-retail', name: 'Parker Retail Group',
+      sector: 'retail', industry: 'Informal & Community Retail',
+      location: 'Soweto, Gauteng', mandate: 'Development',
+      bbbeeLevel: null, bbbeeVerificationStatus: null,
+      description: 'Community retail operator managing a network of upgraded spaza shops and a small supermarket in Soweto, focused on affordable food access.',
+      website: null,
+      spokespersonName: 'Peter Parker-Zulu', spokespersonTitle: 'Founder & Owner',
+      spokespersonEmail: 'peter@parkerretail.co.za', targetIrr: 9, active: true,
+    },
+    smeUser: { email: 'sme.parker@investscore.co.za', password: 'Parker@2026!', name: 'Peter Parker-Zulu' },
+    submissions: [
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 14, youth_employees: 10, female_employees: 8,
+          management_employees: 3, contractor_employees: 2, staff_employees: 12,
+          black_employees: 14, coloured_employees: 0, indian_employees: 0, white_employees: 0, male_employees: 6,
+          scope1_co2e: null, scope2_co2e: null, electricity_consumption: null,
+          renewable_energy_produced: null, renewable_energy_utilised: null,
+          total_water_consumption: null, recycled_waste_pct: null,
+          bbbee_rating: null, black_ownership_pct: 100, black_female_ownership_pct: null, black_board_pct: null,
+          procurement_black_owned_pct: null, procurement_women_owned_pct: null,
+          total_annual_revenue: 680000, csi_spend: null, local_suppliers: 6, smes_in_supply_chain: 6,
+          products_local_producers_pct: 42, low_income_customers: 2400, sustainable_products_pct: null,
+        },
+      },
+    ],
+  },
+
+  // ── 9. ODINSON AGRI ────────────────────────────────────────────────────────
+  {
+    company: {
+      id: 'odinson-agri', name: 'Odinson Agri',
+      sector: 'manufacturing', industry: 'Agricultural Processing & Export',
+      location: 'Tzaneen, Limpopo', mandate: 'Empowerment',
+      bbbeeLevel: 2, bbbeeVerificationStatus: 'verified',
+      description: 'Black-owned macadamia and subtropical fruit processing plant supplying premium export markets and local food manufacturers.',
+      website: 'https://odinsonagri.co.za',
+      spokespersonName: 'Thor Odinson-Mahlangu', spokespersonTitle: 'Managing Director',
+      spokespersonEmail: 'thor@odinsonagri.co.za', targetIrr: 16, active: true,
+    },
+    smeUser: { email: 'sme.odinson@investscore.co.za', password: 'Odinson@2026!', name: 'Thor Odinson-Mahlangu' },
+    submissions: [
+      {
+        submissionPeriod: 'Q3 2025',
+        data: {
+          total_employees: 91, youth_employees: 38, female_employees: 54,
+          management_employees: 16, contractor_employees: 12, staff_employees: 79,
+          black_employees: 88, coloured_employees: 2, indian_employees: 0, white_employees: 1, male_employees: 37,
+          scope1_co2e: 62, scope2_co2e: 74, electricity_consumption: 80000,
+          renewable_energy_produced: 0, renewable_energy_utilised: 0,
+          total_water_consumption: 8400, recycled_waste_pct: 28,
+          bbbee_rating: 2, black_ownership_pct: 74, black_female_ownership_pct: 22, black_board_pct: 83,
+          procurement_black_owned_pct: 61, procurement_women_owned_pct: 38,
+          total_annual_revenue: 44000000, csi_spend: 58000, local_suppliers: 18, smes_in_supply_chain: 14,
+          units_produced: 3200, local_raw_material_pct: 92, apprentices_supported: 5,
+        },
+      },
+      {
+        submissionPeriod: 'Q1 2026',
+        data: {
+          total_employees: 104, youth_employees: 44, female_employees: 62,
+          management_employees: 18, contractor_employees: 8, staff_employees: 96,
+          black_employees: 101, coloured_employees: 2, indian_employees: 0, white_employees: 1, male_employees: 42,
+          scope1_co2e: 58, scope2_co2e: 68, electricity_consumption: 74000,
+          renewable_energy_produced: 14000, renewable_energy_utilised: 14000,
+          total_water_consumption: 7800, recycled_waste_pct: 36,
+          bbbee_rating: 2, black_ownership_pct: 74, black_female_ownership_pct: 26, black_board_pct: 83,
+          procurement_black_owned_pct: 68, procurement_women_owned_pct: 44,
+          total_annual_revenue: 52000000, csi_spend: 72000, local_suppliers: 22, smes_in_supply_chain: 18,
+          units_produced: 3800, local_raw_material_pct: 94, apprentices_supported: 7,
+        },
+      },
+    ],
+  },
+];
+
+async function seedMarvelCompanies() {
+  console.log('\nSeeding Marvel companies...');
+
+  for (const entry of MARVEL_COMPANIES) {
+    console.log(`  ${entry.company.name}:`);
+
+    // 1. Company document
+    await db.collection('companies').doc(entry.company.id).set({
+      ...entry.company,
+      createdAt: new Date().toISOString(),
+    });
+
+    // 2. Firebase Auth user + custom claims
+    let uid: string | null = null;
+    try {
+      try {
+        const existing = await adminAuth.getUserByEmail(entry.smeUser.email);
+        await adminAuth.deleteUser(existing.uid);
+      } catch {}
+
+      const user = await adminAuth.createUser({
+        email:         entry.smeUser.email,
+        password:      entry.smeUser.password,
+        displayName:   entry.smeUser.name,
+        emailVerified: true,
+      });
+      uid = user.uid;
+      await adminAuth.setCustomUserClaims(uid, {
+        role:      'sme',
+        companyId: entry.company.id,
+      });
+    } catch (err) {
+      console.error(`    Auth error for ${entry.smeUser.email}:`, err);
+    }
+
+    // 3. Users document
+    if (uid) {
+      await db.collection('users').doc(uid).set({
+        uid,
+        email:     entry.smeUser.email,
+        name:      entry.smeUser.name,
+        role:      'sme',
+        companyId: entry.company.id,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // 4. Submissions + scorecards
+    for (const sub of entry.submissions) {
+      const timing = PERIOD_TIMING[sub.submissionPeriod]
+        ?? { submittedDaysAgo: 90, scoredDaysAgo: 83 };
+
+      const kpiInputs = Object.entries(sub.data).map(([kpiId, value]) => ({
+        kpiId,
+        value: value as number | null,
+      }));
+
+      const { overallScore, classification, kpiResults } =
+        calculateScore(entry.company.sector as any, kpiInputs);
+      const sdgScores = calculateSDGScores(kpiResults, entry.company.sector);
+
+      const suffix       = sub.submissionPeriod.replace(/\s+/g, '_').toLowerCase();
+      const submissionId = `sub_${entry.company.id}_${suffix}`;
+      const scorecardId  = `scorecard_${entry.company.id}_${suffix}`;
+
+      await db.collection('submissions').doc(submissionId).set({
+        id:               submissionId,
+        companyId:        entry.company.id,
+        period:           sub.submissionPeriod,
+        status:           'scored',
+        data:             sub.data,
+        submittedAt:      daysAgoISO(timing.submittedDaysAgo),
+        scoredAt:         daysAgoISO(timing.scoredDaysAgo),
+      });
+
+      await db.collection('scorecards').doc(scorecardId).set({
+        id:               scorecardId,
+        companyId:        entry.company.id,
+        submissionId,
+        overallScore,
+        classification,
+        sdgScores,
+        calculatedAt:     daysAgoISO(timing.scoredDaysAgo),
+        submissionPeriod: sub.submissionPeriod,
+      });
+
+      console.log(`    ${sub.submissionPeriod}: ${overallScore.toFixed(2)} (${classification})`);
+    }
+
+    console.log(`    ✓ ${entry.company.name}`);
+  }
+
+  console.log(`  Seeded ${MARVEL_COMPANIES.length} Marvel companies`);
+}
+
+// ============================================================
 // SEED FUNCTIONS
 // ============================================================
 
@@ -1268,13 +1800,25 @@ async function main() {
   console.log('\nSeeding AI context...');
   await db.collection('aiContext').doc('global').set(AI_CONTEXT);
 
+  await seedMarvelCompanies();
+
   console.log('\n✅ Seed complete!\n');
   console.log('Demo credentials:');
-  console.log('  Admin: admin@investscore.co.za  / Admin@2026!');
-  console.log('  PM:    pm@investscore.co.za     / PM@2026!');
-  console.log('  SME 1: sme1@investscore.co.za   / SME@2026!   → Khaya Capital (Financial Services, Level 4)');
-  console.log('  SME 2: sme2@investscore.co.za   / SME2@2026!  → Nkosi Manufacturing (Manufacturing, Level 1)');
-  console.log('  SME 3: sme3@investscore.co.za   / SME3@2026!  → Tshiamo Tech (ICT / Clean Energy, Level 2)');
+  console.log('  Admin: admin@investscore.co.za       / Admin@2026!');
+  console.log('  PM:    pm@investscore.co.za          / PM@2026!');
+  console.log('  SME 1: sme1@investscore.co.za        / SME@2026!        → Khaya Capital');
+  console.log('  SME 2: sme2@investscore.co.za        / SME2@2026!       → Nkosi Manufacturing');
+  console.log('  SME 3: sme3@investscore.co.za        / SME3@2026!       → Tshiamo Tech');
+  console.log('  --- Marvel series ---');
+  console.log('  sme.stark@investscore.co.za          / Stark@2026!      → Stark Industries SA');
+  console.log('  sme.wakanda@investscore.co.za        / Wakanda@2026!    → Wakanda Capital');
+  console.log('  sme.romanoff@investscore.co.za       / Romanoff@2026!   → Romanoff & Associates');
+  console.log('  sme.banner@investscore.co.za         / Banner@2026!     → Banner Green Tech');
+  console.log('  sme.rogers@investscore.co.za         / Rogers@2026!     → Rogers Housing Solutions');
+  console.log('  sme.maximoff@investscore.co.za       / Maximoff@2026!   → Maximoff Energy');
+  console.log('  sme.danvers@investscore.co.za        / Danvers@2026!    → Danvers Logistics');
+  console.log('  sme.parker@investscore.co.za         / Parker@2026!     → Parker Retail Group');
+  console.log('  sme.odinson@investscore.co.za        / Odinson@2026!    → Odinson Agri');
   console.log('\nData seeded per SME company:');
   console.log('  • Q1 2026 submission + scorecard (current)');
   console.log('  • Q4, Q3, Q2, Q1 2025 submissions + scorecards (history/trends)');

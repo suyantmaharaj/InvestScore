@@ -3,13 +3,15 @@
 import { useState, useRef, ReactNode } from 'react';
 
 interface Props {
-  content:   ReactNode;
-  children:  ReactNode;
-  position?: 'top' | 'bottom' | 'left' | 'right';
-  delay?:    number;
+  content:        ReactNode;
+  children:       ReactNode;
+  position?:      'top' | 'bottom' | 'left' | 'right';
+  delay?:         number;
+  wrapperStyle?:  React.CSSProperties;
+  wrapperClassName?: string;
 }
 
-export default function Tooltip({ content, children, position = 'top', delay = 300 }: Props) {
+export default function Tooltip({ content, children, position = 'top', delay = 300, wrapperStyle, wrapperClassName }: Props) {
   const [visible, setVisible] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -24,7 +26,7 @@ export default function Tooltip({ content, children, position = 'top', delay = 3
   }[position];
 
   return (
-    <div className="relative inline-flex" onMouseEnter={show} onMouseLeave={hide}>
+    <div className={`relative inline-flex ${wrapperClassName ?? ''}`} style={wrapperStyle} onMouseEnter={show} onMouseLeave={hide}>
       {children}
       {visible && (
         <div
