@@ -66,13 +66,14 @@ export interface AttentionScoreResult {
 
 export function calculateAttentionScore(input: AttentionScoreInput): AttentionScoreResult {
   // Velocity: declining scores = higher attention needed
+  // overallScore is on a 1–3 scale; a meaningful quarterly delta is ±0.4
   const velocity = (() => {
     if (input.recentScores.length < 2) return 0.5;
     const latest = input.recentScores[input.recentScores.length - 1];
     const prev   = input.recentScores[input.recentScores.length - 2];
     const delta  = latest - prev;
-    // delta range −20…+20 → inverted 0…1 (decline = 1)
-    return Math.max(0, Math.min(1, (20 - delta) / 40));
+    // Map delta −0.4…+0.4 → 1…0 (decline = high attention)
+    return Math.max(0, Math.min(1, (0.4 - delta) / 0.8));
   })();
 
   // Consistency: low submission frequency = higher attention needed
@@ -101,8 +102,8 @@ export function calculateAttentionScore(input: AttentionScoreInput): AttentionSc
     if (input.recentScores.length < 2) return 'stable';
     const delta = input.recentScores[input.recentScores.length - 1] -
                   input.recentScores[input.recentScores.length - 2];
-    if (delta > 1.5)  return 'improving';
-    if (delta < -1.5) return 'declining';
+    if (delta > 0.05)  return 'improving';
+    if (delta < -0.05) return 'declining';
     return 'stable';
   })();
 

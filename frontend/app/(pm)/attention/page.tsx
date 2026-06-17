@@ -20,11 +20,15 @@ const PAD_B   = 40;
 const DATA_W  = PLOT_W - PAD_L - PAD_R;
 const DATA_H  = PLOT_H - PAD_T - PAD_B;
 
+// overallScore is on a 1–3 scale; normalize to 0–1 before mapping to pixel space
+const SCORE_MIN = 1;
+const SCORE_MAX = 3;
 function scoreToX(score: number) {
-  return PAD_L + (score / 100) * DATA_W;
+  const norm = (score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN);
+  return PAD_L + norm * DATA_W;
 }
 function attentionToY(attention: number) {
-  return PAD_T + ((100 - attention) / 100) * DATA_H; // inverted: high attention at top
+  return PAD_T + ((100 - attention) / 100) * DATA_H;
 }
 
 function companyColor(name: string) {
@@ -225,15 +229,15 @@ export default function AttentionPage() {
             <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + DATA_H} stroke="var(--border)" strokeWidth={1} />
             <line x1={PAD_L} y1={PAD_T + DATA_H} x2={PAD_L + DATA_W} y2={PAD_T + DATA_H} stroke="var(--border)" strokeWidth={1} />
 
-            {/* X axis ticks */}
-            {[0, 25, 50, 75, 100].map(v => (
+            {/* X axis ticks — score scale 1.0–3.0 */}
+            {[1.0, 1.5, 2.0, 2.5, 3.0].map(v => (
               <g key={v}>
                 <line
                   x1={scoreToX(v)} y1={PAD_T + DATA_H}
                   x2={scoreToX(v)} y2={PAD_T + DATA_H + 4}
                   stroke="var(--border)" strokeWidth={1}
                 />
-                <text x={scoreToX(v)} y={PAD_T + DATA_H + 14} textAnchor="middle" fontSize={9} fill="var(--text-muted)">{v}</text>
+                <text x={scoreToX(v)} y={PAD_T + DATA_H + 14} textAnchor="middle" fontSize={9} fill="var(--text-muted)">{v.toFixed(1)}</text>
               </g>
             ))}
 

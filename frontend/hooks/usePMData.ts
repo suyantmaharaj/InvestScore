@@ -62,6 +62,9 @@ export function usePMData() {
           return;
         }
 
+        // Ensure JWT has current custom claims before any Firestore read
+        await auth.currentUser?.getIdToken(true);
+
         const uid = auth.currentUser?.uid;
 
         const companiesSnap = await getDocs(collection(db, 'companies'));

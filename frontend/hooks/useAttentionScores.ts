@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { PMPortfolioEntry, PMScorecard } from './usePMData';
 import { calculateAttentionScore, AttentionScoreResult } from '@/lib/attention-score';
 
@@ -18,6 +18,8 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
     const load = async () => {
       try {
         setLoading(true);
+        // Force token refresh so custom claims (role) are up-to-date before Firestore reads
+        await auth.currentUser?.getIdToken(true);
         const now             = new Date();
         const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString();
 
@@ -85,13 +87,14 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
               });
             } catch (companyErr) {
               console.error(`useAttentionScores: error for ${company.name}`, companyErr);
-              // Fall back to a score computed from portfolio data only
+              // Fall back to neutral defaults so one Firestore error doesn't
+              // distort the quadrant distribution (submissionsLast12=2 → consistency≈0.6)
               return calculateAttentionScore({
                 companyId:             company.id,
                 companyName:           company.name,
                 recentScores:          scorecard ? [scorecard.overallScore] : [],
-                submissionsLast12:     0,
-                daysSinceLastSub:      365,
+                submissionsLast12:     2,
+                daysSinceLastSub:      90,
                 kpiCompleteness:       0.5,
                 hasTargets:            false,
                 targetAttainment:      0,

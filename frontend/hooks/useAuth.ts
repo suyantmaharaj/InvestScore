@@ -32,6 +32,10 @@ export function useAuth() {
         return;
       }
 
+      // Refresh JWT so custom claims (role, companyId) are present before any
+      // Firestore read — rules check request.auth.token.role, not the users doc
+      await firebaseUser.getIdToken(true);
+
       const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (snap.exists()) {
         const data = snap.data();
