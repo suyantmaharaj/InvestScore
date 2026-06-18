@@ -144,7 +144,7 @@ export default function LearningHubPage() {
 
       {tab === 'home' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div data-tour="learning-courses" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {LEARNING_COURSES.map((course, ci) => {
               const pct = getCourseCompletionPct(course.id, course.lessons);
               const cert = getCourseProgress(course.id);

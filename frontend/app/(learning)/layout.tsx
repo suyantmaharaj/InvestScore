@@ -3,20 +3,23 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useTour } from '@/contexts/TourContext';
 import LearningTopNav from '@/components/learning/LearningTopNav';
 import { ThemeProvider } from '@/lib/theme';
 
 export default function LearningLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { active: tourActive } = useTour();
 
   useEffect(() => {
+    if (tourActive) return;
     if (!loading && !user) router.replace('/login');
     if (!loading && user?.role === 'pm') router.replace('/heatmap');
     if (!loading && user?.role === 'admin') router.replace('/admin/dashboard');
-  }, [user, loading, router]);
+  }, [user, loading, router, tourActive]);
 
-  if (loading || !user) {
+  if ((loading || !user) && !tourActive) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
         <div

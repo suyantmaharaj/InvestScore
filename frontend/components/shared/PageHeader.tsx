@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Sun, Moon, Bell, ChevronRight,
-  Settings, LogOut, ChevronDown,
+  Settings, LogOut, ChevronDown, Map,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import Tooltip from '@/components/shared/Tooltip';
+import { useTour } from '@/contexts/TourContext';
+import {
+  SME_TOUR_START, SME_TOUR_END,
+  PM_TOUR_START,  PM_TOUR_END,
+  ADMIN_TOUR_START, ADMIN_TOUR_END,
+  TOUR_CREDENTIALS,
+} from '@/lib/tour';
 
 function formatTimeAgo(iso: string): string {
   const diff  = Date.now() - new Date(iso).getTime();
@@ -96,6 +103,18 @@ export default function PageHeader({ actions }: Props) {
   const { theme, toggleTheme } = useTheme();
   const { user, logout }       = useAuth();
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+
+  const { active: tourActive, startTour } = useTour();
+
+  const handleTour = useCallback(() => {
+    if (user?.role === 'pm') {
+      startTour({ startStep: PM_TOUR_START, endStep: PM_TOUR_END, ...TOUR_CREDENTIALS.pm });
+    } else if (user?.role === 'admin') {
+      startTour({ startStep: ADMIN_TOUR_START, endStep: ADMIN_TOUR_END, ...TOUR_CREDENTIALS.admin });
+    } else {
+      startTour({ startStep: SME_TOUR_START, endStep: SME_TOUR_END, ...TOUR_CREDENTIALS.sme });
+    }
+  }, [user, startTour]);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -204,6 +223,26 @@ export default function PageHeader({ actions }: Props) {
             {actions}
             <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
           </>
+        )}
+
+        {/* Tour button */}
+        {!tourActive && (
+          <Tooltip content="Take a guided tour of this portal" position="bottom">
+            <button
+              onClick={handleTour}
+              className="flex items-center gap-1.5 rounded-xl px-3 h-9 text-xs font-semibold transition-all duration-200"
+              style={{
+                background: 'rgba(0,181,237,0.08)',
+                color:      'var(--sanlam-teal)',
+                border:     '1px solid rgba(0,181,237,0.2)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.15)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.08)')}
+            >
+              <Map size={13} />
+              <span className="hidden sm:inline">Tour</span>
+            </button>
+          </Tooltip>
         )}
 
         {/* Theme toggle */}

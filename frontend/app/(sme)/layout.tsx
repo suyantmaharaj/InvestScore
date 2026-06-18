@@ -15,6 +15,7 @@ function SMEShell({ children }: { children: React.ReactNode }) {
   useSMEKeyboardShortcuts();
   const [collapsed, setCollapsed] = useState(false);
   const { show: showTour, complete: completeTour } = useOnboarding();
+  const { active: tourActive } = useTour();
   const pathname = usePathname();
   const isChat   = pathname === '/coach';
 
@@ -50,7 +51,7 @@ function SMEShell({ children }: { children: React.ReactNode }) {
           </ErrorBoundary>
         </main>
       </div>
-      {showTour && <OnboardingTour onComplete={completeTour} />}
+      {showTour && !tourActive && <OnboardingTour onComplete={completeTour} />}
     </div>
   );
 }
@@ -61,17 +62,16 @@ export default function SMELayout({ children }: { children: React.ReactNode }) {
   const { active: tourActive } = useTour();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !tourActive) {
       router.replace('/login');
     }
-    // Skip role-based redirect when the platform tour is active
     if (!loading && user && user.role !== 'sme' && !tourActive) {
       if (user.role === 'pm')    router.replace('/heatmap');
       if (user.role === 'admin') router.replace('/admin/dashboard');
     }
   }, [user, loading, router, tourActive]);
 
-  if (loading || !user) {
+  if ((loading || !user) && !tourActive) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg, #F4F6F8)' }}>
         <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#00B5ED', borderTopColor: 'transparent' }} />

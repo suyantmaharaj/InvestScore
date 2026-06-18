@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useTour } from '@/contexts/TourContext';
 import PMSideNav from '@/components/pm/PMSideNav';
 import PageHeader from '@/components/shared/PageHeader';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
@@ -11,14 +12,16 @@ export default function PMLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { active: tourActive } = useTour();
 
   useEffect(() => {
+    if (tourActive) return;
     if (!loading && !user)                  router.replace('/login');
     if (!loading && user?.role === 'sme')   router.replace('/dashboard');
     if (!loading && user?.role === 'admin') router.replace('/dashboard');
-  }, [user, loading, router]);
+  }, [user, loading, router, tourActive]);
 
-  if (loading || !user) {
+  if ((loading || !user) && !tourActive) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"

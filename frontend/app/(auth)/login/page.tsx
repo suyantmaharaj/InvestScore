@@ -118,12 +118,12 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="relative z-10 flex items-center gap-3">
           <p className="text-white/40 text-xs">Twin Transition Challenge 2026</p>
-          {/* Concealed demo script launcher — invisible until hovered */}
+          {/* Concealed tour launcher — invisible until hovered */}
           <button
-            onClick={() => router.push('/demo-script')}
+            onClick={() => startTour()}
             className="w-3 h-3 rounded-full transition-all duration-300 opacity-0 hover:opacity-40 focus:opacity-60"
             style={{ background: 'rgba(0,181,237,0.6)', flexShrink: 0 }}
-            aria-label="Demo script"
+            aria-label="Platform tour"
             tabIndex={-1}
           />
         </div>
@@ -229,24 +229,6 @@ export default function LoginPage() {
           >
             Register your company
           </button>
-
-          {/* Platform tour */}
-          <div style={{ borderTop: '1px solid var(--border, #DDE3EC)', paddingTop: '16px', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={startTour}
-              className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
-              style={{ background: 'rgba(0,181,237,0.1)', color: '#00B5ED', border: '1px solid rgba(0,181,237,0.25)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.18)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,181,237,0.1)')}
-            >
-              <span style={{ fontSize: '16px' }}>🗺</span>
-              Take a platform tour
-            </button>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted, #4A5568)', marginTop: '8px' }}>
-              No login required · 5 minutes · All three portals
-            </p>
-          </div>
 
         </div>
       </div>

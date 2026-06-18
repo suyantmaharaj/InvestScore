@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useTour } from '@/contexts/TourContext';
+import { TourStep } from '@/lib/tour';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const PORTAL_COLORS = {
@@ -16,38 +17,53 @@ const PAD = 8;
 
 export default function TourOverlay() {
   const {
-    active, stepIndex, currentStep,
-    nextStep, prevStep, endTour, totalSteps,
+    active, currentStep,
+    tourStepNumber, tourTotalSteps,
+    nextStep, prevStep, endTour,
   } = useTour();
 
   const [rect,    setRect]    = useState<Rect>(EMPTY_RECT);
   const [visible, setVisible] = useState(false);
 
-  const measureTarget = useCallback(() => {
-    if (!currentStep) return;
-
-    const el = document.querySelector(currentStep.selector) as HTMLElement | null;
-    if (!el) {
-      setTimeout(measureTarget, 200);
-      return;
-    }
-
-    // Scroll into view first, then re-measure after scroll settles
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    setTimeout(() => {
-      const r = el.getBoundingClientRect();
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-      setVisible(true);
-    }, 300);
-  }, [currentStep]);
-
   useEffect(() => {
     if (!active || !currentStep) { setVisible(false); return; }
     setVisible(false);
-    const t = setTimeout(measureTarget, currentStep.waitMs ?? 400);
-    return () => clearTimeout(t);
-  }, [active, currentStep, measureTarget]);
+
+    // Each step gets its own cancelled flag so stale retry loops from previous
+    // steps bail out immediately when the step changes.
+    let cancelled  = false;
+    let retryCount = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const attempt = () => {
+      if (cancelled) return;
+
+      const el = document.querySelector(currentStep.selector) as HTMLElement | null;
+      if (!el) {
+        retryCount++;
+        // After ~3 s the element is behind a condition that isn't met — skip it
+        if (retryCount >= 15) { nextStep(); return; }
+        retryTimer = setTimeout(attempt, 200);
+        return;
+      }
+
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      retryTimer = setTimeout(() => {
+        if (cancelled) return;
+        const r = el.getBoundingClientRect();
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+        setVisible(true);
+      }, 300);
+    };
+
+    const initialTimer = setTimeout(attempt, currentStep.waitMs ?? 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(initialTimer);
+      clearTimeout(retryTimer);
+    };
+  }, [active, currentStep, nextStep]);
 
   if (!active || !currentStep) return null;
 
@@ -59,8 +75,8 @@ export default function TourOverlay() {
   };
 
   const portalCfg = PORTAL_COLORS[currentStep.portal ?? 'sme'];
-  const progress  = ((stepIndex + 1) / totalSteps) * 100;
-  const isLast    = stepIndex === totalSteps - 1;
+  const progress  = (tourStepNumber / tourTotalSteps) * 100;
+  const isLast    = tourStepNumber === tourTotalSteps;
 
   return (
     <div
@@ -79,7 +95,7 @@ export default function TourOverlay() {
       <div style={{ position: 'absolute', top: `${sr.top}px`, left: 0, width: `${sr.left}px`, height: `${sr.height}px`, background: 'rgba(1,30,48,0.88)', pointerEvents: 'none', transition: 'all 350ms cubic-bezier(0.16,1,0.3,1)' }} />
       <div style={{ position: 'absolute', top: `${sr.top}px`, left: `${sr.left + sr.width}px`, right: 0, height: `${sr.height}px`, background: 'rgba(1,30,48,0.88)', pointerEvents: 'none', transition: 'all 350ms cubic-bezier(0.16,1,0.3,1)' }} />
 
-      {/* Teal pulsing ring around spotlight */}
+      {/* Pulsing ring around spotlight */}
       <div style={{
         position:     'absolute',
         top:          `${sr.top}px`,
@@ -87,13 +103,13 @@ export default function TourOverlay() {
         width:        `${sr.width}px`,
         height:       `${sr.height}px`,
         borderRadius: '10px',
-        boxShadow:    `0 0 0 2.5px #00B5ED, 0 0 0 5px rgba(0,181,237,0.2)`,
+        boxShadow:    `0 0 0 2.5px ${portalCfg.bg}, 0 0 0 5px ${portalCfg.bg}33`,
         pointerEvents: 'none',
         transition:   'all 350ms cubic-bezier(0.16,1,0.3,1)',
         animation:    'tourPulse 2s ease-in-out infinite',
       }} />
 
-      {/* Tooltip label attached near the element */}
+      {/* Tooltip label */}
       <TooltipBubble step={currentStep} rect={sr} color={portalCfg.bg} />
 
       {/* Floating panel — bottom right */}
@@ -120,7 +136,7 @@ export default function TourOverlay() {
             {portalCfg.label}
           </span>
           <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>
-            {stepIndex + 1} / {totalSteps}
+            {tourStepNumber} / {tourTotalSteps}
           </span>
           <button
             onClick={endTour}
@@ -141,7 +157,7 @@ export default function TourOverlay() {
           </p>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {stepIndex > 0 && (
+            {tourStepNumber > 1 && (
               <button
                 onClick={prevStep}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}
@@ -159,15 +175,15 @@ export default function TourOverlay() {
           </div>
 
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: '8px' }}>
-            ← → arrow keys · Esc to exit
+            arrow keys to navigate, Esc to exit
           </p>
         </div>
       </div>
 
       <style>{`
         @keyframes tourPulse {
-          0%, 100% { box-shadow: 0 0 0 2.5px #00B5ED, 0 0 0 5px rgba(0,181,237,0.2); }
-          50%       { box-shadow: 0 0 0 2.5px #00B5ED, 0 0 0 10px rgba(0,181,237,0.06); }
+          0%, 100% { box-shadow: 0 0 0 2.5px var(--pulse-color, #00B5ED), 0 0 0 5px var(--pulse-color-faint, rgba(0,181,237,0.2)); }
+          50%       { box-shadow: 0 0 0 2.5px var(--pulse-color, #00B5ED), 0 0 0 10px var(--pulse-color-faint, rgba(0,181,237,0.06)); }
         }
       `}</style>
     </div>
