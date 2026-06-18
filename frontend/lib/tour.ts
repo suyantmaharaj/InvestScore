@@ -21,6 +21,18 @@ export const TOUR_STEPS: TourStep[] = [
     portal:      'sme',
   },
 
+  // REGISTER
+  {
+    id:          'register-form',
+    route:       '/register',
+    selector:    '[data-tour="register-form"]',
+    title:       'Joining the portfolio',
+    description: 'New SMEs apply through a passcode-gated form. A Portfolio Manager reviews the request in the admin panel, approves it, and the company appears in the portfolio immediately.',
+    position:    'right',
+    portal:      'sme',
+    waitMs:      400,
+  },
+
   // SME: DASHBOARD
   {
     id:          'sme-hero-score',
@@ -286,12 +298,12 @@ export const TOUR_STEPS: TourStep[] = [
 export const TOTAL_TOUR_STEPS = TOUR_STEPS.length;
 
 // Step range constants for each portal tour
-export const SME_TOUR_START   = 1;   // sme-hero-score
-export const SME_TOUR_END     = 12;  // learning-courses
-export const PM_TOUR_START    = 13;  // pm-hero-stats
-export const PM_TOUR_END      = 20;  // engagement-log
-export const ADMIN_TOUR_START = 21;  // admin-bbbee-queue
-export const ADMIN_TOUR_END   = 23;  // audit-log-entries
+export const SME_TOUR_START   = 2;   // sme-hero-score
+export const SME_TOUR_END     = 13;  // learning-courses
+export const PM_TOUR_START    = 14;  // pm-hero-stats
+export const PM_TOUR_END      = 21;  // engagement-log
+export const ADMIN_TOUR_START = 22;  // admin-bbbee-queue
+export const ADMIN_TOUR_END   = 24;  // audit-log-entries
 
 // Credentials for each portal tour
 export const TOUR_CREDENTIALS = {

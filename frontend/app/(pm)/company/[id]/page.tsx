@@ -777,7 +777,7 @@ export default function CompanyDetailPage() {
   const params   = useParams();
   const router   = useRouter();
   const id       = typeof params.id === 'string' ? params.id : '';
-  const [tab, setTab] = useState<Tab>('employment');
+  const [tab, setTab] = useState<Tab>('overview');
 
   const { company, scorecard, submission, loading, error } = usePMCompanyDetail(id);
   const { toggle: toggleWatch, isWatched } = useWatchlist();

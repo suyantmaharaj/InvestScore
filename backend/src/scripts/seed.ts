@@ -1622,7 +1622,10 @@ async function createUser(userData: typeof DEMO_USERS[number]) {
       emailVerified: true,
     });
 
-    await adminAuth.setCustomUserClaims(user.uid, { role: userData.role });
+    await adminAuth.setCustomUserClaims(user.uid, {
+      role:      userData.role,
+      ...('companyId' in userData && userData.companyId ? { companyId: userData.companyId } : {}),
+    });
 
     await db.collection('users').doc(user.uid).set({
       uid:       user.uid,
