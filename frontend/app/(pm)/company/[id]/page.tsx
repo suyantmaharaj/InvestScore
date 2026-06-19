@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, TrendingUp, TrendingDown, Minus, Star,
   ExternalLink, Shield, Clock, CheckCircle, XCircle, AlertTriangle,
@@ -17,8 +17,9 @@ import EmptyState from '@/components/shared/EmptyState';
 import { toDisplay } from '@/lib/score';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore from '@/components/shared/AnimatedScore';
+import ScoreDetailTab from '@/components/pm/ScoreDetailTab';
 
-type Tab = 'employment' | 'overview' | 'sdg' | 'documents';
+type Tab = 'employment' | 'overview' | 'sdg' | 'documents' | 'score';
 
 function scoreColor(s: number) {
   if (s >= 2.4) return '#00A651';
@@ -773,11 +774,17 @@ function DocumentsTab({ companyId }: { companyId: string }) {
 }
 
 /* ── Main Page ── */
-export default function CompanyDetailPage() {
-  const params   = useParams();
-  const router   = useRouter();
-  const id       = typeof params.id === 'string' ? params.id : '';
-  const [tab, setTab] = useState<Tab>('overview');
+function CompanyDetailPageInner() {
+  const params        = useParams();
+  const router        = useRouter();
+  const searchParams  = useSearchParams();
+  const id            = typeof params.id === 'string' ? params.id : '';
+
+  const urlTab  = (searchParams.get('tab') as Tab) || 'overview';
+  const urlSdg  = searchParams.get('sdg') ? parseInt(searchParams.get('sdg')!) : null;
+
+  const [tab, setTab]               = useState<Tab>(urlTab);
+  const [defaultSdg]                = useState<number | null>(urlSdg);
 
   const { company, scorecard, submission, loading, error } = usePMCompanyDetail(id);
   const { toggle: toggleWatch, isWatched } = useWatchlist();
@@ -786,6 +793,7 @@ export default function CompanyDetailPage() {
     { key: 'employment', label: 'Employment & Transformation' },
     { key: 'overview',   label: 'Overview'                    },
     { key: 'sdg',        label: 'SDG Scorecard'               },
+    { key: 'score',      label: 'Score Detail'                },
     { key: 'documents',  label: 'Documents'                   },
   ];
 
@@ -923,6 +931,13 @@ export default function CompanyDetailPage() {
       {/* Tab content */}
       {tab === 'documents' ? (
         <DocumentsTab companyId={id} />
+      ) : tab === 'score' ? (
+        <ScoreDetailTab
+          companyId={id}
+          company={company}
+          scorecard={scorecard}
+          defaultSdgId={defaultSdg}
+        />
       ) : !scorecard ? (
         <EmptyState
           icon="📊"
@@ -944,5 +959,13 @@ export default function CompanyDetailPage() {
       )}
 
     </div>
+  );
+}
+
+export default function CompanyDetailPage() {
+  return (
+    <Suspense>
+      <CompanyDetailPageInner />
+    </Suspense>
   );
 }

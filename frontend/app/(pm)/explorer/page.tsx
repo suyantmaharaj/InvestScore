@@ -262,13 +262,19 @@ export default function HeatMapPage() {
                       <td
                         key={sdg.id}
                         className="px-1 py-2 text-center"
+                        style={{ cursor: score ? 'pointer' : 'default' }}
                         onMouseEnter={() => setHoveredCell({ companyId: company.id, sdgId: sdg.id })}
                         onMouseLeave={() => setHoveredCell(null)}
+                        onClick={e => {
+                          if (!score) return;
+                          e.stopPropagation();
+                          router.push(`/company/${company.id}?tab=score&sdg=${sdg.id}`);
+                        }}
                       >
                         <Tooltip
                           content={
                             score
-                              ? `${company.name} · SDG ${sdg.id}: ${toDisplay(score)} (${s?.classification})`
+                              ? `${company.name} · SDG ${sdg.id}: ${toDisplay(score)} (${s?.classification}) — Click to see breakdown`
                               : `${company.name} · SDG ${sdg.id}: N/A`
                           }
                           position="top"
@@ -278,7 +284,7 @@ export default function HeatMapPage() {
                             style={{
                               background: scoreBg(score),
                               border:     `1px solid ${score ? scoreColor(score) + '40' : 'var(--border)'}`,
-                              transform:  isHovered ? 'scale(1.2)' : 'scale(1)',
+                              transform:  isHovered && score ? 'scale(1.2)' : 'scale(1)',
                               transition: 'transform 150ms var(--ease-out)',
                             }}
                           >
@@ -317,7 +323,7 @@ export default function HeatMapPage() {
       </div>
 
       <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-        Click any row to view the full company scorecard and investment narrative
+        Click a coloured cell to see the SDG score breakdown · Click a row to view the full company scorecard
       </p>
 
     </div>
