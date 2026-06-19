@@ -118,14 +118,11 @@ export default function SMEDashboardPage() {
       }
       try {
         const snap = await getDocs(
-          query(
-            collection(db, 'submissions'),
-            where('companyId', '==', company.id),
-            where('status', '==', 'scored')
-          )
+          query(collection(db, 'submissions'), where('companyId', '==', company.id))
         );
-        if (!snap.empty) {
-          const d = snap.docs
+        const scoredDocs = snap.docs.filter(docSnap => docSnap.data().status === 'scored');
+        if (scoredDocs.length > 0) {
+          const d = scoredDocs
             .map(docSnap => docSnap.data())
             .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''))[0];
           const date = d.scoredAt || d.submittedAt || null;

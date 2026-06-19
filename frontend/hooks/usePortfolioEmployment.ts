@@ -53,18 +53,13 @@ export function usePortfolioEmployment(portfolio: PMPortfolioEntry[]) {
     const load = async () => {
       try {
         await auth.currentUser?.getIdToken(true);
-        // Fetch all scored submissions per company - no orderBy to avoid composite index requirement
         const submissions = await Promise.all(
           portfolio.map(async ({ company }) => {
             const snap = await getDocs(
-              query(
-                collection(db, 'submissions'),
-                where('companyId', '==', company.id),
-                where('status', '==', 'scored'),
-              )
+              query(collection(db, 'submissions'), where('companyId', '==', company.id))
             );
-            // Sort by scoredAt in JS - avoids composite index
             const sorted = snap.docs
+              .filter(d => d.data().status === 'scored')
               .map(d => d.data())
               .sort((a, b) =>
                 (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? '')

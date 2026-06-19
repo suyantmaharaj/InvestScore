@@ -64,20 +64,15 @@ export default function PMDashboardPage() {
 
     const load = async () => {
       try {
-        // Per-company queries (no composite index needed, matches existing pattern)
         const snaps = await Promise.all(
           portfolio.slice(0, 10).map(({ company }) =>
-            getDocs(query(
-              collection(db, 'submissions'),
-              where('companyId', '==', company.id),
-              where('status',    '==', 'scored'),
-            ))
+            getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id)))
           )
         );
 
         const activities = snaps
           .flatMap(snap =>
-            snap.docs.map(d => ({
+            snap.docs.filter(d => d.data().status === 'scored').map(d => ({
               type:      'submission_scored',
               companyId: d.data().companyId as string,
               period:    d.data().submissionPeriod as string | null,

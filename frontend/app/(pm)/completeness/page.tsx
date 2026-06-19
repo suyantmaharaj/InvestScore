@@ -37,15 +37,11 @@ export default function DataCompletenessPage() {
       try {
         const result: Record<string, Record<string, number | null>> = {};
         await Promise.all(portfolio.map(async ({ company }) => {
-          // No orderBy with where - sort in JS to avoid composite index requirement
           const snap = await getDocs(
-            query(
-              collection(db, 'submissions'),
-              where('companyId', '==', company.id),
-              where('status', '==', 'scored'),
-            )
+            query(collection(db, 'submissions'), where('companyId', '==', company.id))
           );
           const sorted = snap.docs
+            .filter(d => d.data().status === 'scored')
             .map(d => d.data())
             .sort((a, b) =>
               (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? '')

@@ -83,21 +83,17 @@ export default function PMPortfolioOverviewPage() {
 
       await Promise.all(portfolio.map(async ({ company }) => {
         try {
-          // No orderBy with where - sort in JS to avoid composite index requirement
           const snap = await getDocs(
-            query(
-              collection(db, 'submissions'),
-              where('companyId', '==', company.id),
-              where('status', '==', 'scored'),
-            )
+            query(collection(db, 'submissions'), where('companyId', '==', company.id))
           );
+          const scoredSnap = snap.docs.filter(d => d.data().status === 'scored');
 
-          if (snap.empty) {
+          if (scoredSnap.length === 0) {
             statuses[company.id] = { submitted: false, submittedAt: null, daysAgo: null };
             return;
           }
 
-          const sorted = snap.docs
+          const sorted = scoredSnap
             .map(d => d.data())
             .sort((a, b) =>
               (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? '')

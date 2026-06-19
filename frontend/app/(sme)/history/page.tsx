@@ -186,12 +186,12 @@ export default function ScoreHistoryPage() {
       try {
         const [scorecardSnap, submissionSnap] = await Promise.all([
           getDocs(query(collection(db, 'scorecards'),  where('companyId', '==', user.companyId))),
-          getDocs(query(collection(db, 'submissions'), where('companyId', '==', user.companyId), where('status', '==', 'scored'))),
+          getDocs(query(collection(db, 'submissions'), where('companyId', '==', user.companyId))),
         ]);
 
         const subByPeriod = new Map<string, any>();
         const subById     = new Map<string, any>();
-        submissionSnap.docs.forEach(d => {
+        submissionSnap.docs.filter(d => d.data().status === 'scored').forEach(d => {
           const s = { id: d.id, ...d.data() };
           if ((s as any).period)           subByPeriod.set((s as any).period,           s);
           if ((s as any).submissionPeriod) subByPeriod.set((s as any).submissionPeriod, s);

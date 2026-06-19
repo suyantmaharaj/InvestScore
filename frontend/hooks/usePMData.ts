@@ -152,7 +152,6 @@ export function usePMCompanyDetail(companyId: string) {
           getDocs(query(
             collection(db, 'submissions'),
             where('companyId', '==', companyId),
-            where('status', '==', 'scored'),
           )),
         ]);
 
@@ -165,8 +164,9 @@ export function usePMCompanyDetail(companyId: string) {
           setScorecard(latest);
         }
 
-        if (!submissionSnap.empty) {
-          const latest = submissionSnap.docs
+        const scoredSubmissions = submissionSnap.docs.filter(d => d.data().status === 'scored');
+        if (scoredSubmissions.length > 0) {
+          const latest = scoredSubmissions
             .map(d => d.data())
             .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''))[0];
           setSubmission(latest.data);

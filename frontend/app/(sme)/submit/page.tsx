@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, ChevronLeft, ChevronRight, RefreshCw, Save, Send } from 'lucide-react';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useSMEContext } from '@/context/SMEDataContext';
@@ -208,17 +208,16 @@ export default function SubmitPage() {
 
       try {
         const snap = await getDocs(
-          query(
-            collection(db, 'submissions'),
-            where('companyId', '==', user.companyId),
-            where('status',    '==', 'scored'),
-            orderBy('scoredAt', 'desc'),
-            limit(1)
-          )
+          query(collection(db, 'submissions'), where('companyId', '==', user.companyId))
         );
-        if (snap.empty) return;
+        const scored = snap.docs
+          .filter(d => d.data().status === 'scored')
+          .sort((a, b) => (b.data().scoredAt ?? b.data().submittedAt ?? '').localeCompare(
+            a.data().scoredAt ?? a.data().submittedAt ?? ''
+          ));
+        if (scored.length === 0) return;
 
-        const lastSub  = snap.docs[0].data();
+        const lastSub  = scored[0].data();
         const lastData = lastSub.data as Record<string, number | null> | undefined;
         const lastPeriod = lastSub.submissionPeriod as string | undefined;
         if (!lastData || !lastPeriod) return;

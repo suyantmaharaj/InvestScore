@@ -362,14 +362,11 @@ export default function ScorecardPage() {
     const loadSubmission = async () => {
       try {
         const snap = await getDocs(
-          query(
-            collection(db, 'submissions'),
-            where('companyId', '==', scorecard.companyId),
-            where('status', '==', 'scored')
-          )
+          query(collection(db, 'submissions'), where('companyId', '==', scorecard.companyId))
         );
-        if (!snap.empty) {
-          const sorted = snap.docs
+        const scoredDocs = snap.docs.filter(d => d.data().status === 'scored');
+        if (scoredDocs.length > 0) {
+          const sorted = scoredDocs
             .map(d => d.data())
             .sort((a, b) => (b.scoredAt || b.submittedAt || '').localeCompare(a.scoredAt || a.submittedAt || ''));
           setSubmissionData(sorted[0].data || {});

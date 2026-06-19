@@ -27,11 +27,23 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
           portfolio.map(async ({ company, scorecard }) => {
             // Per-company try-catch so one failure doesn't wipe all results
             try {
-              const [historySnap, subSnap, targetDoc] = await Promise.all([
+              // scorecards and targets: allow read for any authenticated user — safe to batch
+              const [historySnap, targetDoc] = await Promise.all([
                 getDocs(query(collection(db, 'scorecards'), where('companyId', '==', company.id))),
-                getDocs(query(collection(db, 'submissions'), where('companyId', '==', company.id))),
                 getDoc(doc(db, 'targets', company.id)),
               ]);
+
+              // submissions: requires isPM() claim in deployed rules — isolate so a
+              // permissions failure doesn't abort the whole per-company calculation
+              let scoredDocs: ReturnType<typeof historySnap.docs[0]['data']>[] = [];
+              try {
+                const subSnap = await getDocs(
+                  query(collection(db, 'submissions'), where('companyId', '==', company.id))
+                );
+                scoredDocs = subSnap.docs.filter(d => d.data().status === 'scored');
+              } catch {
+                // Rules not yet deployed with PM read access — continue with empty submissions
+              }
 
               const recentScores = historySnap.docs
                 .map(d => d.data() as PMScorecard)
@@ -39,13 +51,11 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
                 .slice(-4)
                 .map(s => s.overallScore);
 
-              const scoredDocs = subSnap.docs.filter(d => d.data().status === 'scored');
-
-              const allSubs = scoredDocs
+              const allSubs = (scoredDocs as any[])
                 .map(d => d.data())
-                .sort((a, b) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''));
+                .sort((a: any, b: any) => (b.scoredAt ?? b.submittedAt ?? '').localeCompare(a.scoredAt ?? a.submittedAt ?? ''));
 
-              const subsInYear = scoredDocs.filter(d => {
+              const subsInYear = (scoredDocs as any[]).filter(d => {
                 const s = d.data();
                 return (s.scoredAt ?? s.submittedAt ?? '') >= twelveMonthsAgo;
               }).length;
