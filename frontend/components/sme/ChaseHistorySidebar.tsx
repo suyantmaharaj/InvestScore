@@ -100,7 +100,7 @@ export default function ChaseHistorySidebar({
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
         <div className="flex items-center gap-2">
-          <ChaseAvatar size={24} />
+          <ChaseAvatar size={32} />
           <span className="text-sm font-semibold" style={{ color: 'white' }}>Chase</span>
         </div>
         <button

@@ -32,7 +32,7 @@ const SUGGESTED_PROMPTS = [
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-2 animate-fade-in animate-message-in">
-      <ChaseAvatar size={32} className="flex-shrink-0" />
+      <ChaseAvatar size={40} className="flex-shrink-0" />
       <div
         className="px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
@@ -105,7 +105,7 @@ function MessageBubble({
           You
         </div>
       ) : (
-        <ChaseAvatar size={32} className="flex-shrink-0 mb-1" />
+        <ChaseAvatar size={40} className="flex-shrink-0 mb-1" />
       )}
 
       <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%]`}>
@@ -485,7 +485,7 @@ function ChaseInner() {
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-8 animate-fade-in">
               <div className="animate-chase-entrance mb-4">
-                <ChaseAvatar size={72} />
+                <ChaseAvatar size={88} />
               </div>
               <h2 className="font-bold text-xl mb-1" style={{ color: 'var(--text-primary)' }}>
                 Hi, I'm Chase
@@ -549,7 +549,7 @@ function ChaseInner() {
               style={{ background: 'rgba(0,181,237,0.06)', border: '1px solid rgba(0,181,237,0.2)' }}
             >
               <div className="flex items-start gap-3">
-                <ChaseAvatar size={28} className="flex-shrink-0 mt-0.5" />
+                <ChaseAvatar size={36} className="flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
                     I found {Object.keys(extracted).length} KPI value{Object.keys(extracted).length !== 1 ? 's' : ''} in that document
