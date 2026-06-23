@@ -14,14 +14,14 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
 
   useEffect(() => {
     if (!splashRef.current || !stageRef.current || !wordmarkRef.current || !ghostORef.current || !lensRef.current) return;
-    const splash      = splashRef.current;
-    const stage       = stageRef.current;
-    const wordmark    = wordmarkRef.current;
-    const ghostO      = ghostORef.current;
-    const lens        = lensRef.current;
-    const bloom       = emblemBloomRef.current;
-    const partner     = partnerRef.current;
-    const waterCanvas = waterCanvasRef.current;
+    const splash      = splashRef.current      as HTMLElement;
+    const stage       = stageRef.current       as HTMLDivElement;
+    const wordmark    = wordmarkRef.current    as HTMLHeadingElement;
+    const ghostO      = ghostORef.current      as HTMLSpanElement;
+    const lens        = lensRef.current        as HTMLDivElement;
+    const bloom       = emblemBloomRef.current as HTMLDivElement | null;
+    const partner     = partnerRef.current     as HTMLDivElement | null;
+    const waterCanvas = waterCanvasRef.current as HTMLCanvasElement | null;
 
     const letters = Array.from(wordmark.querySelectorAll<HTMLElement>('.sp-letter'));
     let destroyed = false;
