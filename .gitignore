@@ -38,3 +38,7 @@ yarn-error.log*
 
 # Misc
 .turbo
+# Root-level package files created by local tool installs (e.g. firebase-tools)
+/package-lock.json
+/package.json
+/node_modules/
