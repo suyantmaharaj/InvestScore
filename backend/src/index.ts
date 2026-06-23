@@ -28,8 +28,20 @@ const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
 
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:3000')
+  .split(',')
+  .map(o => o.trim());
+
 app.use(cors({
-  origin:      process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, Postman, same-origin)
+    if (!origin) return cb(null, true);
+    const allowed =
+      ALLOWED_ORIGINS.includes('*') ||
+      ALLOWED_ORIGINS.includes(origin) ||
+      origin.endsWith('.vercel.app');
+    cb(allowed ? null : new Error('Not allowed by CORS'), allowed);
+  },
   credentials: true,
 }));
 
