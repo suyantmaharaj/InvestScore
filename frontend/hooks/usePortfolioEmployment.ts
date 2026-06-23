@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { PMPortfolioEntry } from './usePMData';
 
 export interface CompanyEmploymentRow {
@@ -52,7 +52,6 @@ export function usePortfolioEmployment(portfolio: PMPortfolioEntry[]) {
 
     const load = async () => {
       try {
-        await auth.currentUser?.getIdToken(true);
         const submissions = await Promise.all(
           portfolio.map(async ({ company }) => {
             const snap = await getDocs(

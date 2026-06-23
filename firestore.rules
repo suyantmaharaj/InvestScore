@@ -34,12 +34,9 @@ service cloud.firestore {
       allow write: if isAdmin() || isPM();
     }
 
-    // Submissions: SMEs can read/write their own company only; PM/admin read all
+    // Submissions: any authenticated user can read; only SMEs write their own company
     match /submissions/{docId} {
-      allow read: if isAuthenticated() && (
-        isAdmin() || isPM() ||
-        (isSME() && resource.data.companyId == request.auth.token.companyId)
-      );
+      allow read: if isAuthenticated();
       allow create, update: if isSME() &&
         request.resource.data.companyId == request.auth.token.companyId;
       allow delete: if isAdmin();

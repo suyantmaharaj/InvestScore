@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { PMPortfolioEntry, PMScorecard } from './usePMData';
 import { calculateAttentionScore, AttentionScoreResult } from '@/lib/attention-score';
 
@@ -18,8 +18,6 @@ export function useAttentionScores(portfolio: PMPortfolioEntry[]) {
     const load = async () => {
       try {
         setLoading(true);
-        // Force token refresh so custom claims (role) are up-to-date before Firestore reads
-        await auth.currentUser?.getIdToken(true);
         const now             = new Date();
         const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString();
 

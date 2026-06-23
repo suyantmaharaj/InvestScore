@@ -151,10 +151,6 @@ export default function PMDashboardPage() {
     <div className="max-w-5xl mx-auto space-y-6 animate-page-in">
 
       <PageContext>
-        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          104+ SMME Growth &amp; Empowerment Solution
-        </span>
-        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
         <span
           className="flex items-center gap-1.5 text-xs font-medium"
           style={{ color: '#00A651' }}

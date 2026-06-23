@@ -41,10 +41,10 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/profile':      { icon: '🏢', title: 'Company Profile',    subtitle: '',                                                   breadcrumb: ['SME Portal', 'Company Profile'] },
 
   // PM Portal pages
-  '/pm-dashboard': { icon: '📊', title: 'Portfolio Dashboard', subtitle: '104+ SMME Growth & Empowerment Solution — portfolio overview', breadcrumb: ['PM Portal', 'Dashboard'] },
+  '/pm-dashboard': { icon: '📊', title: 'Portfolio Dashboard', subtitle: '', breadcrumb: ['PM Portal', 'Dashboard'] },
   '/heatmap':       { icon: '📋', title: 'Portfolio Overview',  subtitle: '',                                                   breadcrumb: ['PM Portal', 'Portfolio Overview'] },
   '/explorer':      { icon: '🗺️', title: 'SDG Heat Map',        subtitle: '',                                                   breadcrumb: ['PM Portal', 'Heat Map']           },
-  '/compare':       { icon: '⚖️', title: 'Compare Companies',    subtitle: 'Side-by-side SDG performance across up to 4 companies', breadcrumb: ['PM Portal', 'Compare']       },
+  '/compare':       { icon: '⚖️', title: 'Compare Companies',    subtitle: '', breadcrumb: ['PM Portal', 'Compare']       },
   '/alerts':        { icon: '🔔', title: 'Alerts',              subtitle: '',                                                   breadcrumb: ['PM Portal', 'Alerts']            },
   '/company':       { icon: '🏢', title: 'Company Detail',      subtitle: 'Full scorecard and investment narrative',            breadcrumb: ['PM Portal', 'Company Detail']    },
   '/notifications':  { icon: '🔔', title: 'Notifications',        subtitle: '',                                                              breadcrumb: ['PM Portal', 'Notifications']       },

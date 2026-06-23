@@ -110,10 +110,6 @@ export default function PortfolioEmploymentPage() {
           companies
         </span>
         <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          104+ SMME Growth &amp; Empowerment Solution
-        </span>
-        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
         <button
           onClick={() => exportPortfolioPDF(employmentData, portfolio)}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition pressable"
