@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  turbopack: {
+  turbopack: process.env.VERCEL ? undefined : {
     root: path.resolve(__dirname),
   },
   async headers() {
