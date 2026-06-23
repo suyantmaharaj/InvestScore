@@ -5,8 +5,9 @@ import {
   collection, getDocs, query,
   where, doc, getDoc,
 } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { getCached, setCached } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface PMCompany {
   id:          string;
@@ -45,11 +46,14 @@ export interface PMPortfolioEntry {
 }
 
 export function usePMData() {
+  const { user }    = useAuth();
   const [portfolio, setPortfolio] = useState<PMPortfolioEntry[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+
     const load = async () => {
       try {
         setLoading(true);
@@ -62,18 +66,13 @@ export function usePMData() {
           return;
         }
 
-        // Ensure JWT has current custom claims before any Firestore read
-        await auth.currentUser?.getIdToken(true);
-
-        const uid = auth.currentUser?.uid;
-
         const companiesSnap = await getDocs(collection(db, 'companies'));
 
         const companies: PMCompany[] = companiesSnap.docs
           .map(d => ({ id: d.id, ...d.data() } as PMCompany & { active?: boolean; assignedPmUid?: string }))
           .filter((c: any) =>
             c.active !== false &&
-            (!c.assignedPmUid || c.assignedPmUid === uid)
+            (!c.assignedPmUid || c.assignedPmUid === user.uid)
           ) as PMCompany[];
 
         const entries: PMPortfolioEntry[] = await Promise.all(
@@ -112,7 +111,7 @@ export function usePMData() {
     };
 
     load();
-  }, []);
+  }, [user]);
 
   const scoredEntries = portfolio.filter(e => e.scorecard);
   const stats = {
@@ -129,6 +128,7 @@ export function usePMData() {
 }
 
 export function usePMCompanyDetail(companyId: string) {
+  const { user }    = useAuth();
   const [company,    setCompany]    = useState<PMCompany | null>(null);
   const [scorecard,  setScorecard]  = useState<PMScorecard | null>(null);
   const [submission, setSubmission] = useState<Record<string, number | null> | null>(null);
@@ -136,12 +136,11 @@ export function usePMCompanyDetail(companyId: string) {
   const [error,      setError]      = useState<string | null>(null);
 
   useEffect(() => {
-    if (!companyId) return;
+    if (!companyId || !user) return;
 
     const load = async () => {
       try {
         setLoading(true);
-        await auth.currentUser?.getIdToken(true);
 
         const [companySnap, scorecardSnap, submissionSnap] = await Promise.all([
           getDoc(doc(db, 'companies', companyId)),
@@ -180,17 +179,18 @@ export function usePMCompanyDetail(companyId: string) {
     };
 
     load();
-  }, [companyId]);
+  }, [companyId, user]);
 
   return { company, scorecard, submission, loading, error };
 }
 
 export function useScoreHistory(companyId: string) {
+  const { user }  = useAuth();
   const [history, setHistory] = useState<Array<{ period: string; score: number }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!companyId) return;
+    if (!companyId || !user) return;
     const load = async () => {
       try {
         // No orderBy with where - sort by calculatedAt in JS
@@ -208,7 +208,7 @@ export function useScoreHistory(companyId: string) {
       }
     };
     load();
-  }, [companyId]);
+  }, [companyId, user]);
 
   return { history, loading };
 }
