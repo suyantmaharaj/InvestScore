@@ -135,6 +135,21 @@ router.delete('/:companyId/:docId', verifyToken, requireRole('sme', 'admin'), as
 
 // ── B-BBEE CERTIFICATES ───────────────────────────────────────────────────────
 
+// GET /api/documents/bbbee/pending — list all pending verifications (admin only)
+router.get('/bbbee/pending', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {
+  try {
+    const snap = await db.collection('bbbeeVerifications')
+      .where('status', '==', 'pending')
+      .orderBy('submittedAt', 'desc')
+      .get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return res.json({ verifications: items });
+  } catch (err) {
+    console.error('GET /bbbee/pending error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 // POST /api/documents/bbbee/:verificationId/review — Admin approves or rejects
 // Must be defined BEFORE /:companyId/bbbee to avoid route ambiguity
 router.post('/bbbee/:verificationId/review', verifyToken, requireRole('admin'), async (req: AuthRequest, res: Response) => {

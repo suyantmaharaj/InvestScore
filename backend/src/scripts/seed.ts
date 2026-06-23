@@ -24,9 +24,15 @@ const adminAuth = admin.auth();
 const DEMO_USERS = [
   { email: 'admin@investscore.co.za', password: 'Admin@2026!', role: 'admin', name: 'Sanlam Admin' },
   { email: 'pm@investscore.co.za',    password: 'PM@2026!',    role: 'pm',    name: 'Lerato Dlamini' },
-  { email: 'sme1@investscore.co.za',  password: 'SME@2026!',   role: 'sme',   name: 'Sipho Nkosi',   companyId: 'company_001' },
-  { email: 'sme2@investscore.co.za',  password: 'SME2@2026!',  role: 'sme',   name: 'Amahle Zulu',   companyId: 'company_002' },
-  { email: 'sme3@investscore.co.za',  password: 'SME3@2026!',  role: 'sme',   name: 'Thabo Mokoena', companyId: 'company_003' },
+  { email: 'sme1@investscore.co.za',  password: 'SME@2026!',   role: 'sme',   name: 'Sipho Nkosi',      companyId: 'company_001' },
+  { email: 'sme2@investscore.co.za',  password: 'SME2@2026!',  role: 'sme',   name: 'Amahle Zulu',      companyId: 'company_002' },
+  { email: 'sme3@investscore.co.za',  password: 'SME3@2026!',  role: 'sme',   name: 'Thabo Mokoena',    companyId: 'company_003' },
+  { email: 'sme4@investscore.co.za',  password: 'SME4@2026!',  role: 'sme',   name: 'Nokwanda Dube',    companyId: 'company_004' },
+  { email: 'sme5@investscore.co.za',  password: 'SME5@2026!',  role: 'sme',   name: 'Mandla Sithole',   companyId: 'company_005' },
+  { email: 'sme6@investscore.co.za',  password: 'SME6@2026!',  role: 'sme',   name: 'Refilwe Moagi',    companyId: 'company_006' },
+  { email: 'sme7@investscore.co.za',  password: 'SME7@2026!',  role: 'sme',   name: 'Tshepo Letsie',    companyId: 'company_007' },
+  { email: 'sme8@investscore.co.za',  password: 'SME8@2026!',  role: 'sme',   name: 'Ziyanda Ntuli',    companyId: 'company_008' },
+  { email: 'sme9@investscore.co.za',  password: 'SME9@2026!',  role: 'sme',   name: 'Lungelo Dlamini',  companyId: 'company_009' },
 ] as const;
 
 // ============================================================
@@ -1525,6 +1531,7 @@ async function seedMarvelCompanies() {
     try {
       try {
         const existing = await adminAuth.getUserByEmail(entry.smeUser.email);
+        await db.collection('users').doc(existing.uid).delete();
         await adminAuth.deleteUser(existing.uid);
       } catch {}
 
@@ -1611,6 +1618,8 @@ async function createUser(userData: typeof DEMO_USERS[number]) {
   try {
     try {
       const existing = await adminAuth.getUserByEmail(userData.email);
+      // Delete the old Firestore doc before deleting the Auth user (old UID)
+      await db.collection('users').doc(existing.uid).delete();
       await adminAuth.deleteUser(existing.uid);
       console.log(`  Deleted existing user: ${userData.email}`);
     } catch {}

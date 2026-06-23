@@ -7,8 +7,6 @@ import {
   UserPlus, Brain, AlertTriangle,
   Shield, CheckCircle, XCircle, ExternalLink, Clock,
 } from 'lucide-react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
@@ -60,13 +58,13 @@ export default function AdminDashboardPage() {
     if (!user) return;
     const loadBBBEE = async () => {
       try {
-        const snap = await getDocs(
-          query(collection(db, 'bbbeeVerifications'), where('status', '==', 'pending'))
-        );
-        const items = snap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .sort((a: any, b: any) => b.submittedAt.localeCompare(a.submittedAt));
-        setPendingBBBEE(items);
+        const { auth } = await import('@/lib/firebase');
+        const token = await auth.currentUser?.getIdToken();
+        const res   = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/bbbee/pending`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        setPendingBBBEE(json.verifications || []);
       } catch (err) {
         console.error('Load B-BBEE error:', err);
       }
@@ -83,7 +81,7 @@ export default function AdminDashboardPage() {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/bbbee/${verificationId}/review`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ action, rejectionReason: rejectionReason.trim() || undefined }),
+        body:    JSON.stringify({ decision: action, rejectionReason: rejectionReason.trim() || undefined }),
       });
       setPendingBBBEE(prev => prev.filter(v => v.id !== verificationId));
       setShowRejectId(null);

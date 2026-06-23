@@ -63,6 +63,8 @@ app.use('/api/company-management', companyManagementRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'InvestScore API' }));
 
+app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));
+
 app.listen(PORT, () => {
   console.log(`InvestScore API running on port ${PORT}`);
 });

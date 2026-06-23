@@ -68,11 +68,13 @@ export default function RegistrationsPage() {
     if (!user) return;
     const loadCompanies = async () => {
       try {
-        const { db }                    = await import('@/lib/firebase');
-        const { collection, getDocs }   = await import('firebase/firestore');
-        const snap = await getDocs(collection(db, 'companies'));
-        setCompanies(snap.docs.map(d => ({ id: d.id, name: d.data().name as string }))
-          .sort((a, b) => a.name.localeCompare(b.name)));
+        const res  = await apiFetch('/api/company-management');
+        if (!res?.ok) return;
+        const json = await res.json();
+        const list = (json.companies || [])
+          .map((c: any) => ({ id: c.id, name: c.name as string }))
+          .sort((a: any, b: any) => a.name.localeCompare(b.name));
+        setCompanies(list);
       } catch (err) {
         console.error('Load companies error:', err);
       }
