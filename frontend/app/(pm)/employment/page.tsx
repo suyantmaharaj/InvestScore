@@ -191,7 +191,8 @@ export default function PortfolioEmploymentPage() {
       </div>
 
       {/* Per-company breakdown table */}
-      <div className="card" style={{ background: 'var(--surface)' }}>
+      <div className="card overflow-x-auto" style={{ background: 'var(--surface)' }}>
+        <div style={{ minWidth: '560px' }}>
         <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Employment by Company
@@ -289,6 +290,7 @@ export default function PortfolioEmploymentPage() {
           <span className="text-center" style={{ color: '#E8A020' }}>{youthPct}%</span>
           <span className="text-center" style={{ color: '#00A651' }}>{permPct}%</span>
         </div>
+        </div>{/* end min-width wrapper */}
       </div>
 
     </div>

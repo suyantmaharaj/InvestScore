@@ -284,7 +284,7 @@ export default function SMEDashboardPage() {
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: TrendingUp,    iconColor: '#00A651', value: String(highCount),  label: 'High Impact SDGs',  sub: 'Performing well',       subColor: '#00A651', delay: 'delay-100' },
           { icon: AlertTriangle, iconColor: '#E8A020', value: String(lowCount),   label: 'Needs Attention',   sub: 'Below sector average',  subColor: '#E8A020', delay: 'delay-150' },
@@ -419,7 +419,7 @@ export default function SMEDashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-9 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-2">
           {SDG_LIST.map((sdg, idx) => {
             const s = scoreMap.get(sdg.id);
             return (

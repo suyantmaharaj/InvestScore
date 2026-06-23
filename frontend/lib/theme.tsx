@@ -16,9 +16,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored    = localStorage.getItem('investscore-theme') as Theme | null;
-    const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initial   = stored || preferred;
+    const stored  = localStorage.getItem('investscore-theme') as Theme | null;
+    const initial = stored || 'light';
     // Suppress transition on initial mount so first paint is instant.
     document.documentElement.classList.add('no-theme-transition');
     applyTheme(initial);

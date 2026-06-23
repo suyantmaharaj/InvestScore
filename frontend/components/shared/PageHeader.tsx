@@ -164,7 +164,7 @@ export default function PageHeader({ actions }: Props) {
 
   return (
     <header
-      className="h-16 flex items-center px-5 lg:px-8 flex-shrink-0"
+      className="h-16 flex items-center pl-14 pr-5 lg:px-8 flex-shrink-0"
       style={{
         position:             'sticky',
         top:                  0,
@@ -284,7 +284,7 @@ export default function PageHeader({ actions }: Props) {
 
           {bellOpen && (
             <div
-              className="absolute right-0 top-full mt-2 w-80 rounded-2xl overflow-hidden animate-card-in"
+              className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.25rem)] rounded-2xl overflow-hidden animate-card-in"
               style={{
                 background: 'var(--surface)',
                 border:     '1px solid var(--border)',
@@ -439,7 +439,7 @@ export default function PageHeader({ actions }: Props) {
           {/* Dropdown panel */}
           {dropdownOpen && (
             <div
-              className="absolute right-0 top-full mt-2 w-64 rounded-2xl overflow-hidden animate-card-in"
+              className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.25rem)] rounded-2xl overflow-hidden animate-card-in"
               style={{
                 background: 'var(--surface)',
                 border:     '1px solid var(--border)',
