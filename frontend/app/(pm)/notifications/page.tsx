@@ -113,8 +113,7 @@ export default function NotificationsPage() {
               <button
                 onClick={() => markAllRead()}
                 className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl pressable"
-                style={{ transition: 'background 150ms var(--ease-out), border-color 150ms var(--ease-out), opacity 160ms var(--ease-out)', transform: 'none' }}
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--sanlam-teal)' }}
+                style={{ transition: 'background 150ms var(--ease-out), border-color 150ms var(--ease-out), opacity 160ms var(--ease-out)', transform: 'none', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--sanlam-teal)' }}
               >
                 <CheckCheck size={15} />
                 Mark all read
