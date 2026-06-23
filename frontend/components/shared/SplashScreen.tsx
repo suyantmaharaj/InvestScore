@@ -84,8 +84,8 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
     const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     function getTargetOffset() {
-      const sr = stage.getBoundingClientRect();
-      const or = ghostO.getBoundingClientRect();
+      const sr = stage!.getBoundingClientRect();
+      const or = ghostO!.getBoundingClientRect();
       return {
         x: (or.left + or.right)  / 2 - (sr.left + sr.right)  / 2,
         y: (or.top  + or.bottom) / 2 - (sr.top  + sr.bottom) / 2,
