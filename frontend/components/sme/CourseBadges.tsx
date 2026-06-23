@@ -9,7 +9,7 @@ import { getCourseProgress, getCourseCompletionPct } from '@/lib/learn-progress'
 interface BadgeData {
   courseId:  string;
   title:     string;
-  icon:      string;
+  icon:      string | undefined;
   color:     string;
   earned:    boolean;
   certId?:   string;
