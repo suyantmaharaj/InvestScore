@@ -786,6 +786,13 @@ function CompanyDetailPageInner() {
   const [tab, setTab]               = useState<Tab>(urlTab);
   const [defaultSdg]                = useState<number | null>(urlSdg);
 
+  // Sync tab when URL params change (e.g. tour navigation pushes ?tab=score)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as Tab;
+    const validTabs: Tab[] = ['employment', 'overview', 'sdg', 'score', 'documents'];
+    if (tabParam && validTabs.includes(tabParam)) setTab(tabParam);
+  }, [searchParams]);
+
   const { company, scorecard, submission, loading, error } = usePMCompanyDetail(id);
   const { toggle: toggleWatch, isWatched } = useWatchlist();
 
@@ -916,6 +923,7 @@ function CompanyDetailPageInner() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
+            {...(t.key === 'score' ? { 'data-tour': 'score-detail-tab' } : {})}
             className="px-4 py-2 text-sm font-medium rounded-lg pressable"
             style={{
               background: tab === t.key ? 'var(--sanlam-navy)' : 'transparent',

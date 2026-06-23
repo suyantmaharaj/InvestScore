@@ -246,6 +246,38 @@ export const TOUR_STEPS: TourStep[] = [
     portal:      'pm',
   },
 
+  // PM: SCORE DETAIL DRILL-DOWN
+  {
+    id:          'score-detail-tab',
+    route:       '/company/company_001',
+    selector:    '[data-tour="score-detail-tab"]',
+    title:       'Score Detail tab',
+    description: "Opens a per-SDG drill-down: raw submitted KPI values, the exact calculation formula, and a Claude-powered investment insight for each goal. Everything Lerato needs for a defensible investment memo.",
+    position:    'bottom',
+    portal:      'pm',
+    waitMs:      600,
+  },
+  {
+    id:          'score-detail-sdg-selector',
+    route:       '/company/company_001?tab=score',
+    selector:    '[data-tour="score-detail-sdg-selector"]',
+    title:       'SDG goal selector',
+    description: "All 17 SDGs listed with their current score. Click any goal to load its full KPI breakdown — which indicators were reported and how each compares to Sanlam's Low / Medium / High thresholds.",
+    position:    'right',
+    portal:      'pm',
+    waitMs:      900,
+  },
+  {
+    id:          'score-detail-panels',
+    route:       '/company/company_001?tab=score',
+    selector:    '[data-tour="score-detail-panels"]',
+    title:       'Raw Data, Calculation, and AI Insight',
+    description: "Three views of the same goal: submitted values with visual threshold bars, the exact weighted score formula, and a Claude-generated investment insight grounded in the company's actual data.",
+    position:    'top',
+    portal:      'pm',
+    waitMs:      700,
+  },
+
   // ADMIN: DASHBOARD
   {
     id:          'admin-bbbee-queue',
@@ -301,9 +333,9 @@ export const TOTAL_TOUR_STEPS = TOUR_STEPS.length;
 export const SME_TOUR_START   = 2;   // sme-hero-score
 export const SME_TOUR_END     = 13;  // learning-courses
 export const PM_TOUR_START    = 14;  // pm-hero-stats
-export const PM_TOUR_END      = 21;  // engagement-log
-export const ADMIN_TOUR_START = 22;  // admin-bbbee-queue
-export const ADMIN_TOUR_END   = 24;  // audit-log-entries
+export const PM_TOUR_END      = 24;  // score-detail-panels
+export const ADMIN_TOUR_START = 25;  // admin-bbbee-queue
+export const ADMIN_TOUR_END   = 27;  // audit-log-entries
 
 // Credentials for each portal tour
 export const TOUR_CREDENTIALS = {

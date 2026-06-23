@@ -162,7 +162,7 @@ export default function ScoreDetailTab({
     <div className="flex gap-5 animate-fade-in" style={{ minHeight: '500px' }}>
 
       {/* LEFT: SDG selector */}
-      <div className="flex-shrink-0" style={{ width: '196px' }}>
+      <div className="flex-shrink-0" data-tour="score-detail-sdg-selector" style={{ width: '196px' }}>
         <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-1"
           style={{ color: 'var(--text-muted)' }}>
           Select SDG goal
@@ -287,7 +287,7 @@ export default function ScoreDetailTab({
             </div>
 
             {/* Sub-tab bar */}
-            <div className="flex gap-1 p-1 rounded-xl mb-4" style={{ background: 'var(--bg)' }}>
+            <div data-tour="score-detail-panels" className="flex gap-1 p-1 rounded-xl mb-4" style={{ background: 'var(--bg)' }}>
               {[
                 { key: 'raw',     label: 'Raw Data',    desc: `${data.reportedCount}/${data.totalCount} KPIs reported` },
                 { key: 'calc',    label: 'Calculation', desc: 'How the score is derived'    },
