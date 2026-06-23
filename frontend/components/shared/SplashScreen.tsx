@@ -13,6 +13,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
   const waterCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (!splashRef.current || !stageRef.current || !wordmarkRef.current || !ghostORef.current || !lensRef.current) return;
     const splash      = splashRef.current;
     const stage       = stageRef.current;
     const wordmark    = wordmarkRef.current;
@@ -21,7 +22,6 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
     const bloom       = emblemBloomRef.current;
     const partner     = partnerRef.current;
     const waterCanvas = waterCanvasRef.current;
-    if (!splash || !stage || !wordmark || !ghostO || !lens) return;
 
     const letters = Array.from(wordmark.querySelectorAll<HTMLElement>('.sp-letter'));
     let destroyed = false;
@@ -84,8 +84,8 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
     const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     function getTargetOffset() {
-      const sr = stage!.getBoundingClientRect();
-      const or = ghostO!.getBoundingClientRect();
+      const sr = stage.getBoundingClientRect();
+      const or = ghostO.getBoundingClientRect();
       return {
         x: (or.left + or.right)  / 2 - (sr.left + sr.right)  / 2,
         y: (or.top  + or.bottom) / 2 - (sr.top  + sr.bottom) / 2,
