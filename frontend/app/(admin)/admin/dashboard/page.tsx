@@ -37,6 +37,7 @@ export default function AdminDashboardPage() {
   const [reviewingId,  setReviewingId]  = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     const load = async () => {
       try {
         const { auth } = await import('@/lib/firebase');
@@ -53,9 +54,10 @@ export default function AdminDashboardPage() {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     const loadBBBEE = async () => {
       try {
         const snap = await getDocs(
@@ -70,7 +72,7 @@ export default function AdminDashboardPage() {
       }
     };
     loadBBBEE();
-  }, []);
+  }, [user]);
 
   const handleReview = async (verificationId: string, action: 'approve' | 'reject') => {
     if (action === 'reject' && !rejectionReason.trim()) return;
@@ -170,27 +172,14 @@ export default function AdminDashboardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
 
-      <PageContext>
-        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{user?.email}</strong>
-        </span>
-        <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-        <span
-          className="text-xs font-medium px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(208,2,27,0.1)', color: '#FC8181' }}
-        >
-          Administrator
-        </span>
-        {stats?.pendingRegistrations ? (
-          <>
-            <div className="w-px h-4" style={{ background: 'var(--border)' }} />
-            <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#E8A020' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E8A020' }} />
-              {stats.pendingRegistrations} registration{stats.pendingRegistrations > 1 ? 's' : ''} pending
-            </span>
-          </>
-        ) : null}
-      </PageContext>
+      {stats?.pendingRegistrations ? (
+        <PageContext>
+          <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#E8A020' }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E8A020' }} />
+            {stats.pendingRegistrations} registration{stats.pendingRegistrations > 1 ? 's' : ''} pending
+          </span>
+        </PageContext>
+      ) : null}
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

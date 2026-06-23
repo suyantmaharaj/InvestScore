@@ -5,6 +5,7 @@ import { Check, X, Clock, Building2, Trash2, Copy, KeyRound } from 'lucide-react
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import PageContext from '@/components/shared/PageContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Registration {
   id:          string;
@@ -36,6 +37,7 @@ async function apiFetch(path: string, options?: RequestInit) {
 }
 
 export default function RegistrationsPage() {
+  const { user } = useAuth();
   const [registrations,   setRegistrations]   = useState<Registration[]>([]);
   const [loading,         setLoading]         = useState(true);
   const [actionId,        setActionId]        = useState<string | null>(null);
@@ -60,9 +62,10 @@ export default function RegistrationsPage() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (user) load(); }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     const loadCompanies = async () => {
       try {
         const { db }                    = await import('@/lib/firebase');
@@ -75,7 +78,7 @@ export default function RegistrationsPage() {
       }
     };
     loadCompanies();
-  }, []);
+  }, [user]);
 
   const handleApprove = async (id: string) => {
     setActionId(id);

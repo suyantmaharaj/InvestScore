@@ -72,6 +72,7 @@ router.post('/', verifyToken, requireRole('admin'), async (req: AuthRequest, res
       assignedPmEmail:   assignedPmEmail            || null,
       targetIrr:         targetIrr ? parseFloat(targetIrr) : null,
       active:            active !== false,
+      status:            'active',
       bbbeeVerificationStatus: null,
       createdAt:         new Date().toISOString(),
       createdBy:         req.user!.email,

@@ -55,15 +55,15 @@ const PAGE_META: Record<string, { title: string; subtitle: string; breadcrumb?: 
   '/trends':         { icon: '📈', title: 'Score Trends',          subtitle: '',                                                            breadcrumb: ['PM Portal', 'Score Trends']        },
 
   // Admin Portal pages
-  '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',  subtitle: 'Platform overview and activity',                        breadcrumb: ['Admin Portal', 'Dashboard']     },
-  '/admin/analytics':     { icon: '📈', title: 'Platform Analytics', subtitle: 'Usage, engagement, and platform health',              breadcrumb: ['Admin Portal', 'Analytics']     },
-  '/admin/users':         { icon: '👥', title: 'User Management',   subtitle: 'Manage PM and SME accounts',                            breadcrumb: ['Admin Portal', 'Users']         },
-  '/admin/registrations': { icon: '📝', title: 'Registrations',     subtitle: 'Review and approve pending SME requests',               breadcrumb: ['Admin Portal', 'Registrations'] },
-  '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor',      subtitle: 'Configure coaching rules and sector guidance',          breadcrumb: ['Admin Portal', 'AI Context']    },
-  '/admin/scoring':       { icon: '⚙️', title: 'Scoring Methodology',   subtitle: 'Edit KPI thresholds and sector weights',                 breadcrumb: ['Admin Portal', 'Scoring Config'] },
-  '/audit':               { icon: '📋', title: 'Audit Log',             subtitle: 'Complete record of all platform actions and changes',      breadcrumb: ['Admin Portal', 'Audit Log']      },
-  '/companies/new':       { icon: '🏭', title: 'Add Company',           subtitle: 'Create a new portfolio company',                            breadcrumb: ['Admin', 'Companies', 'New']      },
-  '/companies':           { icon: '🏭', title: 'Company Management',    subtitle: 'Add, edit, and manage portfolio companies',                 breadcrumb: ['Admin', 'Companies']             },
+  '/admin/dashboard':     { icon: '🛡️', title: 'Admin Dashboard',       subtitle: '', breadcrumb: ['Admin Portal', 'Dashboard']     },
+  '/admin/analytics':     { icon: '📈', title: 'Platform Analytics',    subtitle: '', breadcrumb: ['Admin Portal', 'Analytics']     },
+  '/admin/users':         { icon: '👥', title: 'User Management',       subtitle: '', breadcrumb: ['Admin Portal', 'Users']         },
+  '/admin/registrations': { icon: '📝', title: 'Registrations',         subtitle: '', breadcrumb: ['Admin Portal', 'Registrations'] },
+  '/admin/ai-context':    { icon: '🧠', title: 'AI Context Editor',     subtitle: '', breadcrumb: ['Admin Portal', 'AI Context']    },
+  '/admin/scoring':       { icon: '⚙️', title: 'Scoring Methodology',  subtitle: '', breadcrumb: ['Admin Portal', 'Scoring Config'] },
+  '/audit':               { icon: '📋', title: 'Audit Log',             subtitle: '', breadcrumb: ['Admin Portal', 'Audit Log']      },
+  '/companies/new':       { icon: '🏭', title: 'Add Company',           subtitle: '', breadcrumb: ['Admin', 'Companies', 'New']      },
+  '/companies':           { icon: '🏭', title: 'Company Management',    subtitle: '', breadcrumb: ['Admin', 'Companies']             },
 };
 
 function getInitials(name: string): string {

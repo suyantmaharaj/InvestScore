@@ -15,7 +15,7 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
   try {
     const [usersSnap, companiesSnap, submissionsSnap, pendingSnap] = await Promise.all([
       db.collection('users').get(),
-      db.collection('companies').where('status', '==', 'active').get(),
+      db.collection('companies').get(),
       db.collection('submissions').where('status', '==', 'scored').get(),
       db.collection('pendingRegistrations').where('status', '==', 'pending').get(),
     ]);
@@ -28,14 +28,15 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
     const linkedCompanyIds = new Set(
       users.filter(u => u.role === 'sme' && u.companyId).map(u => u.companyId)
     );
-    const companiesWithoutUsers = companiesSnap.docs.filter(d => !linkedCompanyIds.has(d.id)).length;
+    const allCompanies = companiesSnap.docs.filter(d => d.data().active !== false);
+    const companiesWithoutUsers = allCompanies.filter(d => !linkedCompanyIds.has(d.id)).length;
 
     return res.json({
       totalUsers:           users.length,
       smeCount,
       pmCount,
       adminCount,
-      activeCompanies:      companiesSnap.size,
+      activeCompanies:      allCompanies.length,
       totalSubmissions:     submissionsSnap.size,
       pendingRegistrations: pendingSnap.size,
       companiesWithoutUsers,
@@ -145,7 +146,7 @@ router.post('/users', async (req: AuthRequest, res: Response) => {
 router.get('/orphan-companies', async (req: AuthRequest, res: Response) => {
   try {
     const [companiesSnap, usersSnap] = await Promise.all([
-      db.collection('companies').where('status', '==', 'active').get(),
+      db.collection('companies').get(),
       db.collection('users').where('role', '==', 'sme').get(),
     ]);
 
@@ -155,7 +156,7 @@ router.get('/orphan-companies', async (req: AuthRequest, res: Response) => {
 
     const orphans = companiesSnap.docs
       .map(d => ({ id: d.id, ...d.data() }))
-      .filter((c: any) => !linkedCompanyIds.has(c.id))
+      .filter((c: any) => c.active !== false && !linkedCompanyIds.has(c.id))
       .sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''));
 
     return res.json({ companies: orphans });
