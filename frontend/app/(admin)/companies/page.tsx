@@ -16,6 +16,7 @@ interface Company {
   mandate:          string;
   bbbeeLevel?:      number;
   assignedPmEmail?: string;
+  assignedPmName?:  string;
   active:           boolean;
   targetIrr?:       number;
   location?:        string;
@@ -268,8 +269,8 @@ export default function CompaniesPage() {
 
               {/* PM */}
               <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
-                {company.assignedPmEmail
-                  ? company.assignedPmEmail.split('@')[0]
+                {company.assignedPmName || company.assignedPmEmail
+                  ? (company.assignedPmName || company.assignedPmEmail!.split('@')[0])
                   : <span style={{ color: 'var(--border)' }}>Unassigned</span>}
               </p>
 
