@@ -12,20 +12,20 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title:       'InvestScore — Sanlam Investments SDG Platform',
+  title: {
+    template: '%s — InvestScore',
+    default:  'InvestScore — Sanlam Investments SDG Platform',
+  },
   description: 'SDG impact scoring platform for Sanlam Investments. Track, benchmark and improve ESG performance across your SMME portfolio.',
   keywords:    ['SDG', 'ESG', 'impact investing', 'Sanlam', 'SME scorecard', 'responsible investment'],
   authors:     [{ name: 'Sanlam Investments' }],
   icons: {
-    icon:             [
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple:            '/apple-touch-icon.png',
-    other:            [
-      { rel: 'android-chrome-192x192', url: '/android-chrome-192x192.png' },
-      { rel: 'android-chrome-512x512', url: '/android-chrome-512x512.png' },
-    ],
+    apple: '/apple-touch-icon.png',
   },
   manifest:    '/site.webmanifest',
   openGraph: {
