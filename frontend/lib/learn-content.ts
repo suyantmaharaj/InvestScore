@@ -55,8 +55,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'A revenue-based finance provider in Johannesburg funds 12 Black-owned SMEs, which collectively employ 87 people. That capital deployment directly scores on SDG 1.',
     coachPrompt: 'How can I improve my SDG 1 score? My company is in the financial services sector.',
     kpis: ['csi_spend', 'smes_funded', 'capital_deployed_smes', 'jobs_supported_smes', 'total_annual_revenue'],
-    videoUrl: 'https://www.youtube.com/embed/oArDpS6dyPs',
-    videoTitle: 'Understanding SDG 1 - No Poverty',
+    videoUrl: 'https://www.youtube.com/embed/DjNmCCec3mo',
+    videoTitle: 'SDG 1: No Poverty — UN Sustainable Development Goals Deep Dive',
     quiz: [
       {
         id: 'sdg1-q1',
@@ -99,6 +99,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'A manufacturing company in Durban takes on 8 apprentices per year through a MERSETA learnership programme. These 8 individuals are counted in the apprentices_supported KPI.',
     coachPrompt: 'How do I start a learnership programme to improve my SDG 4 score?',
     kpis: ['apprentices_supported'],
+    videoUrl: 'https://www.youtube.com/embed/vqaZRKmkZjw',
+    videoTitle: 'Learnerships in South Africa — What They Are & How They Work',
     quiz: [],
   },
 
@@ -119,8 +121,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Wetility Finance employs 32 women out of 72 staff (44%) - rare in the solar energy sector. This strong gender balance significantly boosts their SDG 5 score.',
     coachPrompt: 'My female employee percentage is low. What practical steps can I take to improve SDG 5?',
     kpis: ['female_employees', 'black_female_ownership_pct', 'procurement_women_owned_pct'],
-    videoUrl: 'https://www.youtube.com/embed/OQdS0cCflLM',
-    videoTitle: 'Gender Equality in South African Business',
+    videoUrl: 'https://www.youtube.com/embed/IQfXyW-ZPbQ',
+    videoTitle: 'SDG 5: Gender Equality — UN Sustainable Development Goals Deep Dive',
     quiz: [
       {
         id: 'sdg5-q1',
@@ -168,8 +170,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Nkosi Manufacturing installed a 28,000 kWh solar system at their Gauteng plant. This generates 28 MWh annually and is captured in renewable_energy_produced.',
     coachPrompt: 'I want to install solar at my business to improve my clean energy score. Where should I start?',
     kpis: ['renewable_energy_produced', 'renewable_energy_utilised', 'electricity_consumption', 'scope2_co2e'],
-    videoUrl: 'https://www.youtube.com/embed/EhAemz1v7dQ',
-    videoTitle: 'Solar Energy for South African SMEs',
+    videoUrl: 'https://www.youtube.com/embed/NtX0pnzr7RE',
+    videoTitle: 'South African Small Businesses Turn to Solar Power',
     quiz: [
       {
         id: 'sdg7-q1',
@@ -217,8 +219,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'PCB Power Transformers employs 71 permanent staff with zero contractors. This strong job stability profile maximises their SDG 8 score even at a moderate headcount.',
     coachPrompt: 'How do I improve my SDG 8 score? I have mostly contract workers.',
     kpis: ['total_employees', 'youth_employees', 'management_employees', 'staff_employees', 'contractor_employees', 'total_annual_revenue'],
-    videoUrl: 'https://www.youtube.com/embed/kvBWxIBKkCU',
-    videoTitle: 'Creating Quality Employment in South Africa',
+    videoUrl: 'https://www.youtube.com/embed/ZpNz7dn9pXk',
+    videoTitle: 'SDG 8: Decent Work & Economic Growth — UN Sustainable Development Goals Deep Dive',
     quiz: [
       {
         id: 'sdg8-q1',
@@ -261,8 +263,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Khaya Capital achieved Level 4 B-BBEE with 25% Black ownership through a BEE transaction. Their procurement to Black-owned suppliers is 65%, above the 60% High threshold.',
     coachPrompt: 'How do I improve from B-BBEE Level 4 to Level 2? What are the biggest levers?',
     kpis: ['bbbee_rating', 'black_ownership_pct', 'black_female_ownership_pct', 'black_board_pct', 'procurement_black_owned_pct'],
-    videoUrl: 'https://www.youtube.com/embed/4kBQHvzLW10',
-    videoTitle: 'B-BBEE and Economic Transformation Explained',
+    videoUrl: 'https://www.youtube.com/embed/UnwzIwEmL9c',
+    videoTitle: 'B-BBEE Act — South African Business Studies',
     quiz: [
       {
         id: 'sdg10-q1',
@@ -310,8 +312,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Tshiamo Tech produces 65 tCO2e annually. By installing 12,000 kWh of solar, they displace approximately 11 tonnes of CO2e - reducing their Scope 2 footprint by 17%.',
     coachPrompt: 'How do I calculate my Scope 1 and Scope 2 emissions for the first time?',
     kpis: ['scope1_co2e', 'scope2_co2e', 'recycled_waste_pct', 'renewable_energy_utilised'],
-    videoUrl: 'https://www.youtube.com/embed/G4H1N_yXBiA',
-    videoTitle: 'Carbon Footprint Basics for South African SMEs',
+    videoUrl: 'https://www.youtube.com/embed/YUzHBMaVSqQ',
+    videoTitle: 'SDG 13: Climate Action — UN Sustainable Development Goals Deep Dive',
     quiz: [
       {
         id: 'sdg13-q1',
@@ -366,8 +368,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'PCB Power Transformers reports 71 employees: 60 staff, 11 management, 0 contractors. 67 are Black, 4 are White. 15 are female. This data comes directly from their payroll system.',
     coachPrompt: 'Help me understand how to collect and report my employment data correctly.',
     kpis: ['total_employees', 'youth_employees', 'female_employees', 'black_employees', 'management_employees', 'contractor_employees'],
-    videoUrl: 'https://www.youtube.com/embed/3OPbNcm1HuE',
-    videoTitle: 'How to Report Employment Data',
+    videoUrl: 'https://www.youtube.com/embed/NhRNl2ulIJs',
+    videoTitle: "South Africa's Employment Equity Rules",
     quiz: [
       {
         id: 'empl-q1',
@@ -422,6 +424,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Ziyanda Agri Co tracks electricity via their meter (22,000 kWh), has 3 vehicles (Scope 1), and runs a waste separation programme achieving 68% recycling. All data comes from existing records.',
     coachPrompt: 'I have never tracked my environmental data before. Where do I start?',
     kpis: ['scope1_co2e', 'scope2_co2e', 'electricity_consumption', 'renewable_energy_produced', 'total_water_consumption', 'recycled_waste_pct'],
+    videoUrl: 'https://www.youtube.com/embed/NwKk8yimiyA',
+    videoTitle: "How to Calculate Your Company's Carbon Footprint",
     quiz: [],
   },
 
@@ -444,8 +448,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Nkosi Manufacturing is 100% HDSA female owned - this automatically qualifies for Level 1 B-BBEE status and scores maximum points on ownership and management control.',
     coachPrompt: 'Explain the five pillars of B-BBEE and which ones I should focus on first.',
     kpis: ['bbbee_rating', 'black_ownership_pct', 'black_female_ownership_pct', 'black_board_pct', 'procurement_black_owned_pct', 'procurement_women_owned_pct'],
-    videoUrl: 'https://www.youtube.com/embed/R7sFjAuUMvI',
-    videoTitle: 'Getting Your B-BBEE Certificate',
+    videoUrl: 'https://www.youtube.com/embed/YVjuucb8dPE',
+    videoTitle: 'B-BBEE Explained — South Africa',
     quiz: [
       {
         id: 'bbbee-q1',
@@ -489,6 +493,8 @@ export const LEARNING_LESSONS: LearningLesson[] = [
     example: 'Siyanda Retail Group spends R185,000 per year on CSI (schools and welfare programmes) and works with 24 local suppliers, 18 of which are SMEs. Both are reported in the Community section.',
     coachPrompt: 'How do I increase my local supplier count and CSI spend to improve my score?',
     kpis: ['csi_spend', 'local_suppliers', 'smes_in_supply_chain'],
+    videoUrl: 'https://www.youtube.com/embed/tP_AIuDvLvk',
+    videoTitle: 'Corporate Social Investment in South Africa — Where Did R123 Billion Go?',
     quiz: [],
   },
 ];
