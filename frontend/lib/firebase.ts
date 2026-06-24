@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, inMemoryPersistence, initializeAuth } from 'firebase/auth';
+import { getAuth, browserLocalPersistence, initializeAuth } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -21,7 +21,7 @@ export const auth = (() => {
 
   try {
     return initializeAuth(app, {
-      persistence: inMemoryPersistence,
+      persistence: browserLocalPersistence,
     });
   } catch {
     return getAuth(app);
