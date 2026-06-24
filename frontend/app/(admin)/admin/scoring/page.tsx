@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext       from '@/components/shared/PageContext';
+import { useAuth }      from '@/hooks/useAuth';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -425,6 +426,7 @@ function HistoryTab({ history }: { history: HistoryEntry[] }) {
 type ActiveTab = 'thresholds' | 'weights' | 'history';
 
 export default function ScoringConfigPage() {
+  const { user } = useAuth();
   const [config,   setConfig]   = useState<ScoringConfig | null>(null);
   const [edited,   setEdited]   = useState<ScoringConfig | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -457,7 +459,7 @@ export default function ScoringConfigPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (user) load(); }, [load, user]);
 
   const handleSave = async () => {
     if (!edited || !reason.trim()) return;

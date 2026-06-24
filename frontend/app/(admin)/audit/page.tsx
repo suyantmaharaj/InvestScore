@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Search, Download, RefreshCw,
   TrendingUp, User, Settings, Bell, FileText,
@@ -91,6 +92,7 @@ function groupByDate(entries: AuditEntry[]): { label: string; entries: AuditEntr
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AuditLogPage() {
+  const { user } = useAuth();
   const [entries,        setEntries]        = useState<AuditEntry[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [loadingMore,    setLoadingMore]    = useState(false);
@@ -118,7 +120,7 @@ export default function AuditLogPage() {
     }
   }, []);
 
-  useEffect(() => { loadEntries(); }, [loadEntries]);
+  useEffect(() => { if (user) loadEntries(); }, [loadEntries, user]);
 
   const handleRefresh = () => {
     setLoading(true);

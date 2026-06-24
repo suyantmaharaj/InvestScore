@@ -5,6 +5,7 @@ import {
   UserPlus, Trash2, Search,
   Shield, Briefcase, Building2, X, Check, AlertTriangle,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import Tooltip from '@/components/shared/Tooltip';
@@ -63,6 +64,7 @@ async function apiFetch(path: string, options?: RequestInit) {
 }
 
 export default function UsersPage() {
+  const { user } = useAuth();
   const [users,      setUsers]      = useState<UserRecord[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [search,     setSearch]     = useState('');
@@ -100,7 +102,7 @@ export default function UsersPage() {
     }
   };
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => { if (user) loadUsers(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async (uid: string) => {
     setDeleting(true);

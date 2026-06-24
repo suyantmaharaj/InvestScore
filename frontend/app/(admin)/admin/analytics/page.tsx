@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { SkeletonCard }    from '@/components/shared/Skeleton';
 import PageContext          from '@/components/shared/PageContext';
+import { useAuth }         from '@/hooks/useAuth';
 import AnimatedProgressBar from '@/components/shared/AnimatedProgressBar';
 import AnimatedScore       from '@/components/shared/AnimatedScore';
 import {
@@ -89,11 +90,13 @@ function MiniBarChart({ data }: { data: { month: string; count: number }[] }) {
 }
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
   const [stats,   setStats]   = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     const load = async () => {
       try {
         const res = await apiFetch('/api/analytics/platform');
@@ -108,7 +111,7 @@ export default function AnalyticsPage() {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

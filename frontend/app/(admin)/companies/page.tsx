@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Search, Plus, Building2, Edit2,
   CheckCircle, XCircle,
@@ -56,6 +57,7 @@ async function apiFetch(path: string, options?: RequestInit) {
 
 export default function CompaniesPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [companies,     setCompanies]     = useState<Company[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState('');
@@ -64,6 +66,7 @@ export default function CompaniesPage() {
   const [togglingId,    setTogglingId]    = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     const load = async () => {
       try {
         const res  = await apiFetch('/api/company-management');
@@ -75,7 +78,7 @@ export default function CompaniesPage() {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   const handleToggleActive = async (company: Company) => {
     setTogglingId(company.id);
