@@ -553,7 +553,7 @@ export default function ScoringConfigPage() {
 
   if (error && !edited) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto" data-tour="scoring-thresholds">
         <div className="card p-8 text-center" style={{ background: 'var(--surface)' }}>
           <AlertTriangle size={24} className="mx-auto mb-3" style={{ color: '#D0021B' }} />
           <p style={{ color: 'var(--text-muted)' }}>{error}</p>
@@ -565,7 +565,7 @@ export default function ScoringConfigPage() {
   // ── Render ──
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-page-in">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-in" data-tour="scoring-thresholds">
 
       {/* Context bar */}
       <PageContext>

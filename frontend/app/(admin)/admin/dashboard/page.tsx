@@ -257,21 +257,34 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* B-BBEE Verification Queue */}
-      {pendingBBBEE.length > 0 && (
-        <div data-tour="admin-bbbee-queue">
-          <div className="flex items-center gap-2 mb-4">
-            <Shield size={16} style={{ color: 'var(--sanlam-teal)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-              B-BBEE Certificates Pending Verification
-            </h2>
+      {/* B-BBEE Verification Queue — always rendered so tour can find it */}
+      <div data-tour="admin-bbbee-queue">
+        <div className="flex items-center gap-2 mb-4">
+          <Shield size={16} style={{ color: 'var(--sanlam-teal)' }} />
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            B-BBEE Certificates Pending Verification
+          </h2>
+          {pendingBBBEE.length > 0 && (
             <span
               className="text-xs font-bold px-2 py-0.5 rounded-full animate-pulse"
               style={{ background: 'rgba(232,160,32,0.15)', color: '#E8A020' }}
             >
               {pendingBBBEE.length}
             </span>
+          )}
+        </div>
+        {pendingBBBEE.length === 0 ? (
+          <div
+            className="card p-4 flex items-center gap-3"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          >
+            <CheckCircle size={18} style={{ color: '#00A651', flexShrink: 0 }} />
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>All clear</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No B-BBEE certificates awaiting verification.</p>
+            </div>
           </div>
+        ) : (
           <div className="space-y-3">
             {pendingBBBEE.map(v => (
               <div
@@ -361,8 +374,8 @@ export default function AdminDashboardPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Platform info */}
       <div className="card p-5" style={{ background: 'var(--surface)' }}>

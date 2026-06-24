@@ -41,8 +41,8 @@ export default function TourOverlay() {
       const el = document.querySelector(currentStep.selector) as HTMLElement | null;
       if (!el) {
         retryCount++;
-        // After ~3 s the element is behind a condition that isn't met — skip it
-        if (retryCount >= 15) { nextStep(); return; }
+        // After ~5 s the element is behind a condition that isn't met — skip it
+        if (retryCount >= 25) { nextStep(); return; }
         retryTimer = setTimeout(attempt, 200);
         return;
       }

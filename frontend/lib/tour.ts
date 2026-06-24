@@ -287,7 +287,7 @@ export const TOUR_STEPS: TourStep[] = [
     description: 'When an SME uploads their certificate, it lands here. Koko opens the PDF, verifies it is from a SANAS-accredited agency, then approves or rejects with a reason.',
     position:    'top',
     portal:      'admin',
-    waitMs:      600,
+    waitMs:      1800,
   },
 
   // ADMIN: SCORING CONFIG
@@ -299,7 +299,7 @@ export const TOUR_STEPS: TourStep[] = [
     description: 'The team adjusts KPI thresholds through the UI with no redeploy needed. Every change requires a written reason and is logged to the audit trail.',
     position:    'top',
     portal:      'admin',
-    waitMs:      500,
+    waitMs:      1500,
   },
 
   // ADMIN: AUDIT LOG
@@ -311,7 +311,7 @@ export const TOUR_STEPS: TourStep[] = [
     description: 'Every meaningful action (score calculated, target set, B-BBEE verified, config changed) is timestamped and searchable. This is the CRISA and UNPRI-ready governance layer.',
     position:    'top',
     portal:      'admin',
-    waitMs:      500,
+    waitMs:      1500,
   },
 
   // END
