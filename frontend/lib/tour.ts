@@ -99,7 +99,7 @@ export const TOUR_STEPS: TourStep[] = [
     id:          'submission-progress',
     route:       '/submit',
     selector:    '[data-tour="submission-progress"]',
-    title:       '4-step guided form',
+    title:       '5-step guided form',
     description: 'Employment, Environmental, Transformation, Community. Each step has help chips explaining why Sanlam collects each field and how to calculate it.',
     position:    'bottom',
     portal:      'sme',
