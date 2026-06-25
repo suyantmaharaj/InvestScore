@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSMEData } from '@/hooks/useSMEData';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
+import CertificateModal from '@/components/shared/CertificateModal';
 import { uploadCompanyDocument, formatFileSize, getFileIcon } from '@/lib/storage-upload';
 
 const SECTORS = [
@@ -66,6 +67,9 @@ export default function CompanyProfilePage() {
   const [bbbeeUploading, setBbbeeUploading] = useState(false);
   const [bbbeeProgress,  setBbbeeProgress]  = useState(0);
   const [claimedLevel,   setClaimedLevel]   = useState(1);
+  const [certModalUrl,   setCertModalUrl]   = useState<string | null>(null);
+  const [certModalName,  setCertModalName]  = useState<string | undefined>(undefined);
+  const [certModalType,  setCertModalType]  = useState<string | undefined>(undefined);
   const bbbeeInputRef = useRef<HTMLInputElement>(null);
 
   const totalStorageUsed  = documents.reduce((s, d) => s + (d.fileSize || 0), 0);
@@ -327,15 +331,13 @@ export default function CompanyProfilePage() {
                       })}
                     </p>
                   )}
-                  <a
-                    href={latest.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => { setCertModalUrl(latest.downloadUrl); setCertModalName(latest.originalName); setCertModalType(latest.fileType); }}
                     className="flex items-center gap-1 text-xs font-medium mt-1.5 hover:underline"
                     style={{ color: 'var(--sanlam-teal)' }}
                   >
                     <ExternalLink size={11} /> View certificate
-                  </a>
+                  </button>
                 </div>
               </div>
             );
@@ -563,6 +565,15 @@ export default function CompanyProfilePage() {
           }
         </button>
       </div>
+
+      {certModalUrl && (
+        <CertificateModal
+          url={certModalUrl}
+          fileName={certModalName}
+          fileType={certModalType}
+          onClose={() => { setCertModalUrl(null); setCertModalName(undefined); setCertModalType(undefined); }}
+        />
+      )}
     </div>
   );
 }

@@ -140,9 +140,10 @@ router.get('/bbbee/pending', verifyToken, requireRole('admin'), async (req: Auth
   try {
     const snap = await db.collection('bbbeeVerifications')
       .where('status', '==', 'pending')
-      .orderBy('submittedAt', 'desc')
       .get();
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const items = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a: any, b: any) => (b.submittedAt || b.uploadedAt || '').localeCompare(a.submittedAt || a.uploadedAt || ''));
     return res.json({ verifications: items });
   } catch (err) {
     console.error('GET /bbbee/pending error:', err);

@@ -10,8 +10,9 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCard } from '@/components/shared/Skeleton';
 import PageContext from '@/components/shared/PageContext';
+import CertificateModal from '@/components/shared/CertificateModal';
 import AnimatedScore from '@/components/shared/AnimatedScore';
-import { formatFileSize, getFileIcon } from '@/lib/storage-upload';
+import { formatFileSize } from '@/lib/storage-upload';
 
 interface AdminStats {
   totalUsers:           number;
@@ -33,6 +34,9 @@ export default function AdminDashboardPage() {
   const [showRejectId, setShowRejectId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [reviewingId,  setReviewingId]  = useState<string | null>(null);
+  const [certModalUrl,  setCertModalUrl]  = useState<string | null>(null);
+  const [certModalName, setCertModalName] = useState<string | undefined>(undefined);
+  const [certModalType, setCertModalType] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!user) return;
@@ -293,7 +297,7 @@ export default function AdminDashboardPage() {
                 style={{ background: 'var(--surface)', border: '1px solid rgba(232,160,32,0.2)' }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl flex-shrink-0">{getFileIcon(v.originalName)}</span>
+                  <Clock size={18} style={{ color: '#E8A020', flexShrink: 0, marginTop: 2 }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
@@ -316,15 +320,13 @@ export default function AdminDashboardPage() {
                       {v.companyId} · {formatFileSize(v.fileSize)} ·{' '}
                       {new Date(v.submittedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
-                    <a
-                      href={v.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => { setCertModalUrl(v.downloadUrl); setCertModalName(v.originalName); setCertModalType(v.fileType); }}
                       className="flex items-center gap-1 text-xs font-medium mt-1.5 hover:underline"
                       style={{ color: 'var(--sanlam-teal)' }}
                     >
                       <ExternalLink size={11} /> View certificate
-                    </a>
+                    </button>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
@@ -397,6 +399,14 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {certModalUrl && (
+        <CertificateModal
+          url={certModalUrl}
+          fileName={certModalName}
+          fileType={certModalType}
+          onClose={() => { setCertModalUrl(null); setCertModalName(undefined); setCertModalType(undefined); }}
+        />
+      )}
     </div>
   );
 }
