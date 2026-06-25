@@ -1,11 +1,12 @@
 import { Router, Response } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 import { db } from '../services/firebase.service';
 import { verifyToken, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 
 const router = Router();
-const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 // POST /api/ai/coach - Chase chat with full company context
 router.post('/coach', verifyToken, requireRole('sme'), async (req: AuthRequest, res: Response) => {
@@ -156,17 +157,20 @@ CHASE PERSONALITY AND STYLE:
 - Never make up scores or data. If you don't know something, say so.
 - Do not alter or question Sanlam's scoring methodology - it is fixed.`;
 
-    const response = await claude.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 800,
-      system:     systemPrompt,
-      messages:   messages.map((m: any) => ({ role: m.role, content: m.content })),
+    const history = messages.slice(0, -1).map((m: any) => ({
+      role:  m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }],
+    }));
+    const lastMsg = messages[messages.length - 1];
+
+    const chat = ai.chats.create({
+      model:  GEMINI_MODEL,
+      config: { systemInstruction: systemPrompt, maxOutputTokens: 800 },
+      history,
     });
 
-    const text = response.content
-      .filter((b: any) => b.type === 'text')
-      .map((b: any) => b.text)
-      .join('');
+    const response = await chat.sendMessage({ message: lastMsg.content });
+    const text     = response.text ?? '';
 
     return res.json({ message: text });
 
@@ -197,13 +201,13 @@ ${String(documentText).slice(0, 10000)}
 
 Respond ONLY with a JSON object. Keys are KPI IDs from the list. Values are numbers only. Only include KPIs you found with confidence. Example: {"total_employees": 71, "female_employees": 15}`;
 
-    const response = await claude.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 500,
-      messages:   [{ role: 'user', content: prompt }],
+    const response = await ai.models.generateContent({
+      model:    GEMINI_MODEL,
+      contents: prompt,
+      config:   { maxOutputTokens: 500 },
     });
 
-    const text  = response.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('');
+    const text = response.text ?? '';
     const clean = text.replace(/```json|```/g, '').trim();
     let extracted: Record<string, number> = {};
     try { extracted = JSON.parse(clean); } catch {}
@@ -274,16 +278,13 @@ Write a 3-paragraph narrative covering:
 Keep it professional, data-grounded, and investment-committee appropriate.
 Write in third person. Do not use bullet points. Keep under 250 words.`;
 
-    const response = await claude.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 600,
-      messages:   [{ role: 'user', content: prompt }],
+    const response = await ai.models.generateContent({
+      model:    GEMINI_MODEL,
+      contents: prompt,
+      config:   { maxOutputTokens: 600 },
     });
 
-    const text = response.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as any).text)
-      .join('');
+    const text = response.text ?? '';
 
     return res.json({ narrative: text });
 
@@ -388,16 +389,13 @@ Rules:
 - Sort actions by priority (critical first)
 - Respond with ONLY the JSON. Nothing else.`;
 
-    const response = await claude.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
+    const response = await ai.models.generateContent({
+      model:    GEMINI_MODEL,
+      contents: prompt,
+      config:   { maxOutputTokens: 1000 },
     });
 
-    const text = response.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as any).text)
-      .join('');
+    const text = response.text ?? '';
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
     const generatedAt = new Date().toISOString();
